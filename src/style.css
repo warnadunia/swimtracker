@@ -21,3 +21,8 @@
     display: none;
   }
 }
+/* Custom Utility untuk Bottom Nav Cutout (Lengkungan FAB) */
+@utility nav-cutout {
+  -webkit-mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
+  mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
+}
