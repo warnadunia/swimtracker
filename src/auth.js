@@ -1,7 +1,14 @@
 import './style.css';
 import { supabase } from './supabase';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Cek apakah sudah login, jika ya, langsung lempar ke app.html
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    window.location.replace('/app.html');
+    return;
+  }
+
   const formLogin = document.getElementById('form-login');
   const formRegister = document.getElementById('form-register');
 
@@ -76,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('Login gagal: Username atau Password salah!');
       } else {
-        window.location.href = '/index.html';
+        window.location.href = '/app.html';
       }
     });
   }

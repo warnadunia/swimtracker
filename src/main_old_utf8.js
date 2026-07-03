@@ -1,176 +1,70 @@
-import './style.css';
-import 'preline';
+﻿import './style.css';
 import Chart from 'chart.js/auto';
 import { supabase } from './supabase';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  
   // ==========================================
-  // 1. CEK SESI
+  // 1. CEK SESI & RENDER BIODATA
   // ==========================================
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) { 
-    window.location.replace('/index.html'); 
-    return; 
+  if (!session) {
+    window.location.href = '/auth.html';
+    return;
   }
 
   const user = session.user;
-
-  // ==========================================
-  // 2. INJEKSI KOMPONEN HTML
-  // ==========================================
-  try {
-    const [header, dashboard, progress, nav, modal] = await Promise.all([
-      fetch('/header.html').then(res => res.text()),
-      fetch('/dashboard.html').then(res => res.text()),
-      fetch('/progress.html').then(res => res.text()),
-      fetch('/bottomnav.html').then(res => res.text()),
-      fetch('/input.html').then(res => res.text())
-    ]);
-
-document.getElementById('header-container').innerHTML = header;
-  
-  // Pisahkan container-nya biar gak numpuk
-  document.getElementById('main-container').innerHTML = `
-    <div id="wrapper-dashboard">${dashboard}</div>
-    <div id="wrapper-progress">${progress}</div>
-  `;
-  document.getElementById('nav-container').innerHTML = nav;
-  document.getElementById('modal-container').innerHTML = modal;
-  } catch (error) {
-    console.error("Gagal memuat komponen HTML:", error);
-  }
-
-  if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
-
-  // ==========================================
-  // 3. FUNGSI SWITCH TAB 
-  // ==========================================
-  window.switchTab = function(tabId) {
-    const tabHistory = document.getElementById('tab-history');
-    const tabGrafik = document.getElementById('tab-grafik');
-    
-    // Pastikan referensi dom ditemukan
-    if (!tabHistory || !tabGrafik) return;
-    
-    // Sembunyikan semua tab
-    tabHistory.classList.add('hidden');
-    tabGrafik.classList.add('hidden');
-    
-    // Tampilkan target tab
-    const targetTab = document.getElementById(tabId);
-    if (targetTab) {
-      targetTab.classList.remove('hidden');
-    }
-
-    // Perbarui gaya tombol navigasi
-    const btns = document.querySelectorAll('.nav-tab-btn');
-    btns.forEach(btn => {
-      btn.classList.remove('text-brand-red');
-      btn.classList.add('text-gray-400');
-    });
-    
-    const activeBtn = document.querySelector(`[onclick="switchTab('${tabId}')"]`);
-    if (activeBtn) {
-      activeBtn.classList.remove('text-gray-400');
-      activeBtn.classList.add('text-brand-red');
-    }
-  };
-
-  // PENTING: Inisialisasi tampilan awal, paksa hanya tab history yang terlihat
-  window.switchTab('tab-history');
-
-  // ==========================================
-  // 4. SETUP PROFIL, ADMIN & KALKULASI KU
-  // ==========================================
   const fullName = user.user_metadata.full_name || 'Atlet';
-  const tabHistoryH2 = document.querySelector('#tab-history h2');
-  const tabHistoryImg = document.querySelector('#tab-history img');
-  if (tabHistoryH2) tabHistoryH2.innerText = fullName;
-  if (tabHistoryImg) tabHistoryImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=ff4d4d&color=fff&bold=true`;
+  const birthYear = user.user_metadata.birth_year || new Date().getFullYear();
 
-  window.masterCategories = [];
-  const { data: categories } = await supabase.from('master_categories').select('*').order('name');
-  if (categories) window.masterCategories = categories;
+  const elName = document.querySelector('#tab-history h2');
+  if (elName) elName.innerText = fullName;
 
-  const { data: profile } = await supabase.from('profiles').select('role, birth_year').eq('id', user.id).single();
-  
-  if (profile && profile.role === 'admin') {
-    const adminGear = document.getElementById('admin-gear');
-    if (adminGear) adminGear.classList.remove('hidden');
+  const elAvatar = document.querySelector('#tab-history img');
+  if (elAvatar) elAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=ff4d4d&color=fff&bold=true`;
+
+  const inputThnLahirModal = document.getElementById('input-tahun-lahir');
+  if (inputThnLahirModal) {
+    inputThnLahirModal.value = birthYear;
+    inputThnLahirModal.readOnly = true; 
+    inputThnLahirModal.classList.add('cursor-not-allowed', 'bg-gray-200', 'dark:bg-gray-800');
   }
 
-  // --- LOGIKA KU DASHBOARD & MODAL ---
-  if (profile && profile.birth_year) {
-    window.atletBirthYear = profile.birth_year;
-    
-    // 1. Nembak KU ke Dashboard (Tahun Ini - Tahun Lahir)
-    const currentYear = new Date().getFullYear();
-    const ageDash = currentYear - window.atletBirthYear;
-    let kuDash = ageDash <= 9 ? "KU 5 (<= 9 Thn)" : ageDash <= 11 ? "KU 4 (10-11 Thn)" : ageDash <= 13 ? "KU 3 (12-13 Thn)" : ageDash <= 15 ? "KU 2 (14-15 Thn)" : ageDash <= 18 ? "KU 1 (16-18 Thn)" : "Senior (> 18 Thn)";
-    
-    const dashKuEl = document.getElementById('dashboard-ku-text');
-    if (dashKuEl) dashKuEl.innerText = kuDash;
-  }
-
-  // 2. Fungsi Hitung KU buat Modal
   window.calculateKU = function() {
     const tglEvent = document.getElementById('input-tanggal-event');
-    const thnLahirInput = document.getElementById('input-tahun-lahir');
     const displayKu = document.getElementById('display-ku');
-
-    if (!window.atletBirthYear) return;
-    
-    // Langsung tembak tahun lahir ke form modal!
-    if (thnLahirInput) thnLahirInput.value = window.atletBirthYear;
-
-    // Kalau Tgl Event belum dipilih, kasih tau user
-    if (!tglEvent || !tglEvent.value) {
-        if (displayKu) displayKu.value = "Pilih Tgl Event";
-        return;
+    if (tglEvent && tglEvent.value) {
+      const eventYear = new Date(tglEvent.value).getFullYear();
+      const age = eventYear - birthYear;
+      let ku = "";
+      if (age <= 9) ku = "KU 5 (<= 9 Thn)";
+      else if (age <= 11) ku = "KU 4 (10-11 Thn)";
+      else if (age <= 13) ku = "KU 3 (12-13 Thn)";
+      else if (age <= 15) ku = "KU 2 (14-15 Thn)";
+      else if (age <= 18) ku = "KU 1 (16-18 Thn)";
+      else ku = "Senior (> 18 Thn)";
+      if (displayKu) displayKu.value = ku;
     }
-    
-    // Hitung kalau Tgl Event udah dipilih
-    const ageModal = new Date(tglEvent.value).getFullYear() - window.atletBirthYear;
-    let kuModal = ageModal <= 9 ? "KU 5" : ageModal <= 11 ? "KU 4" : ageModal <= 13 ? "KU 3" : ageModal <= 15 ? "KU 2" : ageModal <= 18 ? "KU 1" : "Senior";
-    
-    if (displayKu) displayKu.value = kuModal;
-  };
-
-  // 3. Pasang Trigger & Panggil sekali di awal biar modal siap
-  const inputTglEvent = document.getElementById('input-tanggal-event');
-  if (inputTglEvent) {
-      inputTglEvent.addEventListener('change', window.calculateKU);
   }
-  
-  // Eksekusi fungsi biar form tahun lahir langsung keisi walau belum buka modal
-  window.calculateKU();
+  const tglEventElem = document.getElementById('input-tanggal-event');
+  if (tglEventElem) tglEventElem.addEventListener('change', window.calculateKU);
 
-  // ==========================================
-  // 5. EVENT DELEGATION
-  // ==========================================
-  document.addEventListener('click', async (e) => {
-    if (e.target.closest('#theme-toggle')) {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
-    if (e.target.closest('#btn-logout')) {
-      if (confirm("Keluar dari aplikasi?")) {
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      if (confirm("Apakah Anda yakin ingin keluar?")) {
         await supabase.auth.signOut();
-        window.location.href = '/index.html';
+        window.location.href = '/auth.html';
       }
-    }
-    if (e.target.closest('#btn-open-modal')) {
-      const modalInput = document.getElementById('modal-input');
-      if (modalInput) modalInput.classList.remove('hidden');
-    }
-    if (e.target.closest('#btn-close-modal')) {
-      const modalInput = document.getElementById('modal-input');
-      if (modalInput) modalInput.classList.add('hidden');
-    }
-  });
+    });
+  }
+
+  const themeToggleBtn = document.getElementById('theme-toggle');
+  if (themeToggleBtn) themeToggleBtn.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
 
   // ==========================================
-  // 6. FETCH HISTORY DATA
+  // 2. LOGIC FETCHING HISTORY & MEDALI
   // ==========================================
   const containerHistory = document.getElementById('container-history-list');
   const historyYearFilter = document.getElementById('history-year-filter');
@@ -178,12 +72,13 @@ document.getElementById('header-container').innerHTML = header;
   if (historyYearFilter) historyYearFilter.value = currentYearStr;
 
   window.globalResultsData = []; 
-  window.globalEventsData = []; 
+  window.globalEventsData = []; // Simpan data event untuk fitur Edit
 
   async function loadDataUtama(selectedYear) {
-    if (containerHistory) containerHistory.innerHTML = `<div class="text-center py-8"><p class="text-xs text-gray-400">Loading...</p></div>`;
+    if (containerHistory) containerHistory.innerHTML = `<div class="text-center py-8"><p class="text-xs text-gray-400">≡ƒöä Loading...</p></div>`;
 
     try {
+      // AMBIL SELURUH DATA RESULT
       const { data: allResults, error: resultsError } = await supabase.from('event_results').select('time_record, rank, category, events (title, event_date)').eq('user_id', user.id);
       if (!resultsError && allResults) {
         window.globalResultsData = allResults; 
@@ -201,10 +96,11 @@ document.getElementById('header-container').innerHTML = header;
         initTabGrafik('Bebas');
       }
 
+      // AMBIL DATA EVENT
       const { data: events, error: eventError } = await supabase.from('events').select('*, event_results (*)').eq('user_id', user.id).order('event_date', { ascending: false });
       if (eventError) throw eventError;
 
-      window.globalEventsData = events; 
+      window.globalEventsData = events; // Simpan untuk Edit Modal
 
       const filteredEvents = events.filter(ev => ev.event_date.startsWith(selectedYear));
       if (filteredEvents.length === 0) {
@@ -221,10 +117,10 @@ document.getElementById('header-container').innerHTML = header;
         const top2 = sortedResults.slice(0, 2);
         let top2Html = '';
         top2.forEach(res => {
-          let medalIcon = '🏅', bgClass = 'bg-gray-100 dark:bg-gray-800 text-gray-600';
-          if (res.rank === 1) { medalIcon = '🥇'; bgClass = 'bg-yellow-500/20 text-yellow-600'; } 
-          else if (res.rank === 2) { medalIcon = '🥈'; bgClass = 'bg-gray-400/20 text-gray-400'; } 
-          else if (res.rank === 3) { medalIcon = '🥉'; bgClass = 'bg-amber-600/20 text-amber-500'; }
+          let medalIcon = '≡ƒÄû∩╕Å', bgClass = 'bg-gray-100 dark:bg-gray-800 text-gray-600';
+          if (res.rank === 1) { medalIcon = '≡ƒÑç'; bgClass = 'bg-yellow-500/20 text-yellow-600'; } 
+          else if (res.rank === 2) { medalIcon = '≡ƒÑê'; bgClass = 'bg-gray-400/20 text-gray-400'; } 
+          else if (res.rank === 3) { medalIcon = '≡ƒÑë'; bgClass = 'bg-amber-600/20 text-amber-500'; }
           top2Html += `<span class="${bgClass} border border-current/20 text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap">${medalIcon} Rank ${res.rank || '-'} - ${res.category}</span>`;
         });
 
@@ -238,15 +134,17 @@ document.getElementById('header-container').innerHTML = header;
             </div>`;
         });
 
+        // HTML CARD HISTORY DENGAN TOMBOL EDIT PENSIL
         htmlString += `
           <div class="bg-white dark:bg-brand-card rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-3">
             <div class="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50" onclick="toggleExpand(this)">
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <h4 class="font-bold text-sm text-gray-800 dark:text-white">${ev.title}</h4>
-                  <p class="text-[10px] text-gray-500">${ev.level} • ${dateStr}</p>
+                  <p class="text-[10px] text-gray-500">${ev.level} ΓÇó ${dateStr}</p>
                 </div>
                 <div class="flex items-center gap-3">
+                  <!-- TOMBOL EDIT -->
                   <button type="button" class="text-brand-red hover:text-red-400 transition-colors p-1" onclick="event.stopPropagation(); openEditModal('${ev.id}')" title="Edit Data">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                   </button>
@@ -271,7 +169,7 @@ document.getElementById('header-container').innerHTML = header;
   if (historyYearFilter) historyYearFilter.addEventListener('change', (e) => loadDataUtama(e.target.value));
 
   // ==========================================
-  // 7. TAB GRAFIK (TANPA TABEL)
+  // 3. LOGIC TAB GRAFIK 
   // ==========================================
   const pillsGaya = document.querySelectorAll('.pill-gaya');
   pillsGaya.forEach(pill => {
@@ -291,6 +189,9 @@ document.getElementById('header-container').innerHTML = header;
   const selectTahun = document.getElementById('grafik-year-filter');
 
   function initTabGrafik(styleName) {
+    const tbody = document.getElementById('table-grafik-body');
+    if (!tbody) return;
+    
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
     const uniqueDistances = [...new Set(styleRecords.map(item => item.category))];
     
@@ -304,6 +205,34 @@ document.getElementById('header-container').innerHTML = header;
         renderChartProgress('', selectTahun.value); 
       }
     }
+
+    tbody.innerHTML = '';
+    const sortedStyleRecords = styleRecords.sort((a, b) => new Date(b.events.event_date) - new Date(a.events.event_date));
+    
+    if (sortedStyleRecords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-xs text-gray-500">Belum ada data untuk Gaya ${styleName}</td></tr>`;
+      return;
+    }
+
+    sortedStyleRecords.forEach(item => {
+      const secs = timeToSeconds(item.time_record);
+      let statusHtml = '';
+      if (secs > 0 && secs < 28.5) statusHtml = `<span class="text-[9px] font-bold text-green-600 border border-green-500/30 bg-green-500/10 px-2 py-1 rounded-full uppercase">Lolos Limit</span>`;
+      else if (secs > 0) {
+        const diff = (secs - 28.5).toFixed(2);
+        statusHtml = `<span class="text-[9px] font-bold text-gray-500 border border-gray-600 bg-gray-800 px-2 py-1 rounded-full">+${diff}s</span>`;
+      } else statusHtml = `-`;
+
+      const jarakSingkat = item.category.replace(' Gaya ', ' ');
+
+      tbody.innerHTML += `
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+          <td class="px-4 py-3 font-bold text-gray-800 dark:text-gray-200 text-[11px]">${jarakSingkat}</td>
+          <td class="px-4 py-3 text-center"><span class="font-mono font-bold text-brand-red border border-brand-red/30 bg-brand-red/10 px-2 py-1 rounded text-[10px]">${item.time_record}</span></td>
+          <td class="px-4 py-3 text-center">${statusHtml}</td>
+          <td class="px-4 py-3 text-gray-500 dark:text-gray-400 leading-tight text-[10px] max-w-[100px] truncate">${item.events.title}</td>
+        </tr>`;
+    });
   }
 
   if (selectJarak) selectJarak.addEventListener('change', () => renderChartProgress(selectJarak.value, selectTahun.value));
@@ -362,52 +291,59 @@ document.getElementById('header-container').innerHTML = header;
   }
 
   // ==========================================
-  // 8. LOGIC MODAL (ADD / EDIT & UPSERT DATA)
+  // 4. LOGIC MODAL (ADD / EDIT & UPSERT DATA)
   // ==========================================
-  const modalElem = document.getElementById('modal-input');
+  const modal = document.getElementById('modal-input');
   const modalInner = document.getElementById('modal-inner');
   
   function toggleModal() {
-    if (modalElem.classList.contains('hidden')) {
-      modalElem.classList.remove('hidden');
+    if (modal.classList.contains('hidden')) {
+      modal.classList.remove('hidden');
       setTimeout(() => modalInner.classList.remove('opacity-0', 'translate-y-10'), 10);
     } else {
       modalInner.classList.add('opacity-0', 'translate-y-10');
-      setTimeout(() => modalElem.classList.add('hidden'), 300);
+      setTimeout(() => modal.classList.add('hidden'), 300);
     }
   }
 
   document.getElementById('btn-close-modal').addEventListener('click', toggleModal);
 
+  // LOGIC TOMBOL FAB (BUAT EVENT BARU)
   document.getElementById('btn-open-modal').addEventListener('click', () => {
     document.getElementById('modal-input-mode').value = ''; 
     document.getElementById('modal-title').innerText = 'INPUT DATA KEJUARAAN';
     
+    // Kosongkan form
     document.getElementById('input-event-name').value = '';
     document.getElementById('input-event-level').value = 'Pilih Tingkat';
     document.getElementById('input-tanggal-event').value = '';
     if(document.getElementById('display-ku')) document.getElementById('display-ku').value = '';
     
+    // Reset baris nomor jadi 1 baris kosong
     document.getElementById('container-nomor-lomba').innerHTML = '';
     document.getElementById('btn-add-nomor').click(); 
     
     toggleModal();
   });
 
+  // LOGIC TOMBOL PENSIL (EDIT EVENT)
   window.openEditModal = function(eventId) {
     const ev = window.globalEventsData.find(e => e.id === eventId);
     if (!ev) return;
 
+    // Set Mode Edit
     document.getElementById('modal-input-mode').value = eventId;
     document.getElementById('modal-title').innerText = "EDIT DATA KEJUARAAN";
 
+    // Isi Form Umum
     document.getElementById('input-event-name').value = ev.title;
     document.getElementById('input-event-level').value = ev.level;
     document.getElementById('input-tanggal-event').value = ev.event_date;
-    if(window.calculateKU) window.calculateKU(); 
+    window.calculateKU(); 
 
+    // Isi Baris Nomor dari Database
     const container = document.getElementById('container-nomor-lomba');
-    container.innerHTML = ''; 
+    container.innerHTML = ''; // Bersihkan dulu
 
     if (ev.event_results && ev.event_results.length > 0) {
       ev.event_results.forEach(res => {
@@ -415,13 +351,7 @@ document.getElementById('header-container').innerHTML = header;
         newRow.className = 'row-lomba grid grid-cols-12 gap-1 items-center transition-opacity duration-300';
         newRow.innerHTML = `
           <div class="col-span-5">
-              ${(function(){
-                let opts = '<option value="" disabled>Pilih Nomor</option>';
-                if (window.masterCategories && window.masterCategories.length > 0) {
-                  window.masterCategories.forEach(cat => opts += `<option value="${cat.name}" ${res.category === cat.name ? 'selected' : ''}>${cat.name}</option>`);
-                }
-                return `<select class="input-kategori w-full px-2 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none appearance-none cursor-pointer">${opts}</select>`;
-              })()}
+            <input type="text" list="list-nomor-renang" value="${res.category}" placeholder="Ketik/Pilih Nomor" class="input-kategori w-full px-2 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none">
           </div>
           <div class="col-span-4 relative flex items-center justify-center">
             <input type="text" value="${res.time_record}" placeholder="00:00:00:00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
@@ -441,7 +371,7 @@ document.getElementById('header-container').innerHTML = header;
         container.appendChild(newRow);
       });
     } else {
-      document.getElementById('btn-add-nomor').click(); 
+      document.getElementById('btn-add-nomor').click(); // Jika event kosong, beri 1 baris
     }
     
     toggleModal();
@@ -451,13 +381,7 @@ document.getElementById('header-container').innerHTML = header;
     const newRow = document.createElement('div');
     newRow.className = 'row-lomba grid grid-cols-12 gap-1 items-center opacity-0 transition-opacity duration-300';
     newRow.innerHTML = `
-      ${(function(){
-        let opts = '<option value="" disabled selected>Pilih Nomor</option>';
-        if (window.masterCategories && window.masterCategories.length > 0) {
-          window.masterCategories.forEach(cat => opts += `<option value="${cat.name}">${cat.name}</option>`);
-        }
-        return `<div class="col-span-5"><select class="input-kategori w-full px-2 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none appearance-none cursor-pointer">${opts}</select></div>`;
-      })()} 
+      <div class="col-span-5"><input type="text" list="list-nomor-renang" placeholder="Ketik/Pilih Nomor" class="input-kategori w-full px-2 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none"></div>
       <div class="col-span-4 relative flex items-center justify-center">
         <input type="text" placeholder="00:00:00:00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
         <button type="button" onclick="openStopwatch(this)" class="absolute right-1 text-brand-red hover:text-red-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>
@@ -469,6 +393,7 @@ document.getElementById('header-container').innerHTML = header;
     setTimeout(() => newRow.classList.remove('opacity-0'), 10);
   });
 
+  // LOGIC SIMPAN (INSERT BARU / UPDATE)
   const btnSaveEvent = document.getElementById('btn-save-event');
   if (btnSaveEvent) {
     btnSaveEvent.addEventListener('click', async () => {
@@ -478,23 +403,28 @@ document.getElementById('header-container').innerHTML = header;
 
       if (!title || level === 'Pilih Tingkat' || !eventDate) return alert('Lengkapi Nama Event, Tingkat, & Tanggal!');
 
-      btnSaveEvent.innerText = "Menyimpan...";
+      btnSaveEvent.innerText = "ΓÅ│ Menyimpan...";
       btnSaveEvent.disabled = true;
 
       try {
         const editId = document.getElementById('modal-input-mode').value;
         let activeEventId = editId;
 
+        // 1. UPDATE / INSERT DATA EVENT
         if (editId) {
+          // Mode Update
           const { error: eventError } = await supabase.from('events').update({ title, level, event_date: eventDate }).eq('id', editId);
           if (eventError) throw eventError;
+          // Sapu bersih nomor lama agar tidak duplicate atau pusing deteksi mana yg dihapus/diubah
           await supabase.from('event_results').delete().eq('event_id', editId); 
         } else {
+          // Mode Insert
           const { data: eventData, error: eventError } = await supabase.from('events').insert([{ user_id: user.id, title, level, event_date: eventDate }]).select().single();
           if (eventError) throw eventError;
           activeEventId = eventData.id;
         }
 
+        // 2. INSERT NOMOR LOMBA (Dari Form yang aktif)
         const resultsToInsert = [];
         document.querySelectorAll('.row-lomba').forEach(row => {
           const category = row.querySelector('.input-kategori').value.trim();
@@ -507,19 +437,19 @@ document.getElementById('header-container').innerHTML = header;
 
         if (resultsToInsert.length > 0) await supabase.from('event_results').insert(resultsToInsert);
         
-        alert(editId ? 'Data Kejuaraan Berhasil Diperbarui!' : 'Data Kejuaraan Berhasil Disimpan!');
+        alert(editId ? '≡ƒÄë Data Kejuaraan Berhasil Diperbarui!' : '≡ƒÄë Data Kejuaraan Berhasil Disimpan!');
         window.location.reload();
       } catch (err) {
         alert('Gagal menyimpan: ' + err.message);
-        btnSaveEvent.innerText = "Simpan Semua Data";
+        btnSaveEvent.innerText = "≡ƒÆ╛ Simpan Semua Data";
         btnSaveEvent.disabled = false;
       }
     });
   }
-}); 
+}); // END DOMContentLoaded
 
 // ==========================================
-// 9. FUNGSI UMUM WINDOW 
+// FUNGSI UMUM WINDOW (Auto Mask, Tabs, Stopwatch, Expand)
 // ==========================================
 document.addEventListener('input', (e) => {
   if (e.target.classList.contains('time-input')) {
@@ -527,6 +457,15 @@ document.addEventListener('input', (e) => {
     e.target.value = (val.match(/.{1,2}/g)?.join(':') || '').substring(0, 11);
   }
 });
+
+window.switchTab = function(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.replace('block', 'hidden'));
+  document.getElementById(tabId).classList.replace('hidden', 'block');
+  const navButtons = document.querySelectorAll('nav button');
+  navButtons.forEach(btn => { btn.classList.remove('text-brand-red'); btn.classList.add('text-gray-400'); });
+  const activeBtn = document.querySelector(`nav button[onclick="switchTab('${tabId}')"]`);
+  if (activeBtn) { activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('text-brand-red'); }
+};
 
 window.toggleExpand = function(element) {
   const content = element.parentElement.querySelector('.content-expand');

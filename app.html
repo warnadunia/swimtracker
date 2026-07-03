@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="data:,\">
+  <title>Swim Tracker App</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <script>
+    // Init theme
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</head>
+
+<body class="bg-gray-50 dark:bg-brand-dark pb-24 text-gray-800 dark:text-gray-200">
+  <div id="header-container"></div>
+  <main id="main-container" class="p-4 max-w-md mx-auto"></main>
+  <div id="nav-container"></div>
+  <div id="modal-container"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
