@@ -318,13 +318,22 @@ document.getElementById('header-container').innerHTML = header;
 
   function renderChartProgress(specificCategory, targetYearStr) {
     const ctx = document.getElementById('prestasiChart');
-    if (!ctx || !window.Chart) return;
-    if (!specificCategory) { if (window.myProgressChart) window.myProgressChart.destroy(); return; }
+    
+    // BUG FIXED: Hapus pengecekan !window.Chart karena module vite gak nyimpen Chart di window global
+    if (!ctx) return; 
+    
+    if (!specificCategory) { 
+      if (window.myProgressChart) window.myProgressChart.destroy(); 
+      return; 
+    }
 
-    const targetYear = parseInt(targetYearStr);
+    // 1. Set Tahun Berjalan & Tahun Lalu
+    const targetYear = parseInt(targetYearStr) || new Date().getFullYear();
     const lastYear = targetYear - 1;
+    
     const catRecords = window.globalResultsData.filter(r => r.category === specificCategory && r.events);
 
+    // Fungsi narik waktu tercepat tiap bulan
     const getMonthlyBest = (year) => {
       const monthly = new Array(12).fill(null);
       catRecords.forEach(r => {
@@ -332,30 +341,71 @@ document.getElementById('header-container').innerHTML = header;
         if (d.getFullYear() === year) {
           const monthIdx = d.getMonth();
           const secs = timeToSeconds(r.time_record);
-          if (monthly[monthIdx] === null || secs < monthly[monthIdx]) monthly[monthIdx] = secs;
+          // Ambil waktu paling kecil (tercepat) di bulan tersebut
+          if (monthly[monthIdx] === null || secs < monthly[monthIdx]) {
+            monthly[monthIdx] = secs;
+          }
         }
       });
       return monthly;
     };
 
+    // Bersihkan chart lama sebelum render baru
     if (window.myProgressChart) window.myProgressChart.destroy();
 
+    // 2. Render Chart Baru
     window.myProgressChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'],
         datasets: [
-          { label: `Tahun ${targetYear}`, data: getMonthlyBest(targetYear), borderColor: '#ff4d4d', borderWidth: 3, pointBackgroundColor: '#ff4d4d', pointRadius: 4, tension: 0.3 },
-          { label: `Tahun ${lastYear}`, data: getMonthlyBest(lastYear), borderColor: '#6b7280', borderWidth: 2, pointRadius: 0, tension: 0.3 },
-          { label: 'Limit KU', data: new Array(12).fill(28.5), borderColor: '#eab308', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, fill: false }
+          { 
+            label: `Tahun ${targetYear} (Berjalan)`, 
+            data: getMonthlyBest(targetYear), 
+            borderColor: '#ff4d4d', 
+            borderWidth: 3, 
+            pointBackgroundColor: '#ff4d4d', 
+            pointRadius: 5, 
+            tension: 0.3,
+            spanGaps: true // Biar garis grafiknya nyambung meski ada bulan yg kosong
+          },
+          { 
+            label: `Tahun ${lastYear} (Lalu)`, 
+            data: getMonthlyBest(lastYear), 
+            borderColor: '#6b7280', 
+            borderWidth: 2, 
+            pointBackgroundColor: '#6b7280', 
+            pointRadius: 3,
+            borderDash: [5, 5], // Garis putus-putus biar beda sama tahun berjalan
+            tension: 0.3,
+            spanGaps: true
+          },
+          { 
+            label: 'Limit KU', 
+            data: new Array(12).fill(28.5), // Boleh di-dinamiskan nanti kalau udah ada DB limit KU
+            borderColor: '#eab308', 
+            borderWidth: 2, 
+            borderDash: [2, 2], 
+            pointRadius: 0, 
+            fill: false 
+          }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+        responsive: true, 
+        maintainAspectRatio: false, 
+        interaction: { mode: 'index', intersect: false },
         plugins: { legend: { display: false } },
         scales: { 
-          y: { reverse: true, grid: { color: 'rgba(75, 85, 99, 0.2)', drawBorder: false }, ticks: { color: '#9ca3af', stepSize: 2 } },
-          x: { grid: { display: false, drawBorder: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
+          y: { 
+            reverse: true, // WAJIB! Biar waktu paling kecil (tercepat) posisinya di atas
+            grid: { color: 'rgba(75, 85, 99, 0.2)', drawBorder: false }, 
+            ticks: { color: '#9ca3af', stepSize: 2 } 
+          },
+          x: { 
+            grid: { display: false, drawBorder: false }, 
+            ticks: { color: '#9ca3af', font: { size: 10 } } 
+          }
         }
       }
     });
