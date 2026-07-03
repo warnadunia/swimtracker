@@ -287,27 +287,81 @@ document.getElementById('header-container').innerHTML = header;
     });
   });
 
-  const selectJarak = document.getElementById('grafik-jarak-filter');
+ 
+
+// ================== BATAS ATAS (Mulai Blok Dari Sini) ==================
+  // const selectJarak = document.getElementById('grafik-jarak-filter'); // HAPUS YG LAMA, GANTI INI
   const selectTahun = document.getElementById('grafik-year-filter');
 
   function initTabGrafik(styleName) {
-    const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
-    const uniqueDistances = [...new Set(styleRecords.map(item => item.category))];
+    const tbody = document.getElementById('table-grafik-body');
+    if (!tbody) return;
     
-    if (selectJarak) {
-      selectJarak.innerHTML = '';
-      if (uniqueDistances.length > 0) {
-        uniqueDistances.forEach(dist => selectJarak.innerHTML += `<option value="${dist}">${dist.split(' ')[0]} M</option>`);
-        renderChartProgress(uniqueDistances[0], selectTahun.value);
-      } else {
-        selectJarak.innerHTML = '<option value="">- Kosong -</option>';
-        renderChartProgress('', selectTahun.value); 
-      }
+    // Ambil data berdasarkan gaya (Bebas, Kupu, dll)
+    const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
+    
+    // Ambil jarak pertama buat dirender di grafik
+    const uniqueDistances = [...new Set(styleRecords.map(item => item.category))];
+    const categoryToChart = uniqueDistances.length > 0 ? uniqueDistances[0] : '';
+    
+    if (selectTahun) {
+      renderChartProgress(categoryToChart, selectTahun.value);
     }
+
+    // --- RENDER TABEL LISTING ---
+    tbody.innerHTML = '';
+    const sortedStyleRecords = styleRecords.sort((a, b) => new Date(b.events.event_date) - new Date(a.events.event_date));
+    
+    if (sortedStyleRecords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-xs text-gray-500">Belum ada data untuk Gaya ${styleName}</td></tr>`;
+      return;
+    }
+
+    sortedStyleRecords.forEach(item => {
+      const secs = timeToSeconds(item.time_record);
+      let statusHtml = '';
+      
+      // Styling Badge Status KU
+      if (secs > 0 && secs <= 28.5) { 
+        // Lolos Limit (Hijau)
+        statusHtml = `<span class="text-[9px] font-bold text-emerald-500 border border-emerald-900 bg-emerald-900/30 px-3 py-1 rounded-full uppercase">Lolos Limit</span>`;
+      } else if (secs > 0) {
+        // Belum Lolos (Abu-abu)
+        const diff = (secs - 28.5).toFixed(2);
+        statusHtml = `<span class="text-[9px] font-bold text-gray-400 border border-gray-700 bg-gray-800 px-3 py-1 rounded-full">+${diff} s</span>`;
+      } else {
+        statusHtml = `-`;
+      }
+
+      const jarakSingkat = item.category.replace(' Gaya ', ' ');
+      const eventYear = new Date(item.events.event_date).getFullYear();
+      
+      // Render Baris Tabel
+      tbody.innerHTML += `
+        <tr class="hover:bg-gray-50 dark:hover:bg-[#221c29] transition-colors">
+          <td class="px-4 py-4 font-bold text-gray-800 dark:text-gray-100 text-xs">${jarakSingkat}</td>
+          <td class="px-4 py-4 text-center">
+            <!-- Badge Waktu Merah -->
+            <span class="font-mono font-bold text-brand-red border border-red-900/50 bg-red-900/20 px-3 py-1.5 rounded-md text-xs tracking-wider">${item.time_record}</span>
+          </td>
+          <td class="px-4 py-4 text-center">${statusHtml}</td>
+          <td class="px-4 py-4 text-gray-500 dark:text-gray-400 leading-tight text-[10px]">
+            <div class="font-bold text-gray-300 truncate max-w-[90px]">${item.events.title}</div>
+            <div>${eventYear}</div>
+          </td>
+        </tr>`;
+    });
   }
 
-  if (selectJarak) selectJarak.addEventListener('change', () => renderChartProgress(selectJarak.value, selectTahun.value));
-  if (selectTahun) selectTahun.addEventListener('change', () => renderChartProgress(selectJarak.value, selectTahun.value));
+  // Event Listener Dropdown Tahun (Dropdown Jarak dihapus)
+  if (selectTahun) {
+    selectTahun.addEventListener('change', () => {
+      const activePill = document.querySelector('.pill-gaya.bg-brand-red');
+      if (activePill) {
+        initTabGrafik(activePill.getAttribute('data-style'));
+      }
+    });
+  }
 
   function timeToSeconds(timeStr) {
     if (!timeStr) return 0;
