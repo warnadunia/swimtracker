@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="data:,">
+  <title>Renang Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 dark:bg-brand-dark text-gray-800 dark:text-gray-200 font-sans pb-24">
+
+  <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-brand-dark sticky top-0 z-50">
+    <h1 class="text-lg font-bold uppercase tracking-wider">Prestasi & Rekor</h1>
+    <button id="theme-toggle" class="p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">🌓</button>
+  </header>
+
+  <main class="p-4 max-w-md mx-auto">
+    <div id="tab-history" class="tab-content block">
+      
+      <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 flex items-center gap-4">
+        <div class="relative w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0 border-2 border-brand-red shadow-inner">
+          <img src="https://ui-avatars.com/api/?name=Asayori+Tech&background=ff4d4d&color=fff&bold=true" alt="Profile" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold tracking-wider uppercase mb-0.5">Halo Atlet Masa Depan,</p>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white leading-tight">Asayori</h2>
+          <p class="text-[10px] font-bold text-brand-red mt-1 bg-brand-red/10 border border-brand-red/20 px-2 py-0.5 rounded-md inline-block">
+            KU 2 (14-15 Tahun)
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="bg-white dark:bg-brand-card p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm cursor-pointer">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h3 class="font-bold text-base">KRAPSI 2026</h3>
+              <p class="text-xs text-gray-400">Tingkat Nasional • 2026</p>
+            </div>
+            <span class="bg-yellow-500/20 text-yellow-500 text-[10px] font-bold px-2 py-1 rounded">🥇 Emas</span>
+          </div>
+          <hr class="border-gray-100 dark:border-gray-700 my-2">
+          <div class="space-y-1.5 text-xs font-mono">
+            <div class="flex justify-between">
+              <span class="text-gray-400">25 M Punggung</span>
+              <span>00:43:45 <span class="text-gray-500 text-[10px]">(Rank 12)</span></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">100 M Gaya Bebas</span>
+              <span>01:43:76 <span class="text-gray-500 text-[10px]">(Rank 9)</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-grafik" class="tab-content hidden pb-6">
+      
+      <!-- <button onclick="toggleModal()" class="w-full bg-brand-red hover:bg-red-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-brand-red/30 transition-transform active:scale-95 mb-6 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Input Manual Kejuaraan
+      </button> -->
+
+      <div class="flex overflow-x-auto gap-3 pb-2 mb-4 hide-scrollbar">
+        <button class="filter-gaya active-gaya px-5 py-2.5 rounded-full bg-brand-red text-white text-xs font-bold whitespace-nowrap shadow-md shadow-brand-red/40 transition-all">Gaya Bebas</button>
+        <button class="filter-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-brand-card text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red dark:hover:text-white transition-all">Gaya Dada</button>
+        <button class="filter-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-brand-card text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red dark:hover:text-white transition-all">Gaya Punggung</button>
+        <button class="filter-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-brand-card text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red dark:hover:text-white transition-all">Gaya Kupu</button>
+      </div>
+
+      <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-bold text-sm tracking-wider text-gray-800 dark:text-white uppercase">Tren Waktu (Detik)</h3>
+          
+          <div class="relative">
+            <select id="year-filter" class="appearance-none bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white text-[10px] font-bold rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-brand-red cursor-pointer">
+              <option value="2025">2026</option>
+              <option value="2024">2025</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <svg class="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative h-56 w-full">
+          <canvas id="prestasiChart"></canvas>
+        </div>
+        
+        <div class="flex justify-center gap-6 mt-5 text-[10px] font-medium text-gray-500 dark:text-gray-400">
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-brand-red"></span> Tahun Berjalan</div>
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-gray-400 dark:bg-gray-600"></span> Tahun Lalu</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
+        <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+          <h3 class="font-bold text-sm tracking-wider text-gray-800 dark:text-white uppercase">Hasil Perlombaan</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs whitespace-nowrap">
+            <thead class="text-[10px] text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/40">
+              <tr>
+                <th class="px-4 py-3 font-bold">Jarak</th>
+                <th class="px-4 py-3 font-bold text-center">Rekor Waktu</th>
+                <th class="px-4 py-3 font-bold text-center">Status KU</th>
+                <th class="px-4 py-3 font-bold">Event</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                <td class="px-4 py-4 font-bold text-gray-800 dark:text-gray-200">25 M Bebas</td>
+                <td class="px-4 py-4 text-center">
+                  <span class="font-mono font-bold text-brand-red border border-brand-red/30 bg-brand-red/10 px-2 py-1 rounded text-[11px]">00:00:12</span>
+                </td>
+                <td class="px-4 py-4 text-center">
+                  <span class="text-[9px] font-bold text-green-600 dark:text-emerald-400 border border-green-500/30 bg-green-500/10 px-2 py-1 rounded-full uppercase">Lolos Limit</span>
+                </td>
+                <td class="px-4 py-4 text-gray-500 dark:text-gray-400 leading-tight text-[11px]">KRAPSSI<br>2026</td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                <td class="px-4 py-4 font-bold text-gray-800 dark:text-gray-200">50 M Bebas</td>
+                <td class="px-4 py-4 text-center">
+                  <span class="font-mono font-bold text-brand-red border border-brand-red/30 bg-brand-red/10 px-2 py-1 rounded text-[11px]">00:00:30</span>
+                </td>
+                <td class="px-4 py-4 text-center">
+                  <span class="text-[9px] font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full uppercase">+1.50 s</span>
+                </td>
+                <td class="px-4 py-4 text-gray-500 dark:text-gray-400 leading-tight text-[11px]">O2SN Provinsi<br>2026</td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                <td class="px-4 py-4 font-bold text-gray-800 dark:text-gray-200">50 M Bebas</td>
+                <td class="px-4 py-4 text-center">
+                  <span class="font-mono font-bold text-brand-red border border-brand-red/30 bg-brand-red/10 px-2 py-1 rounded text-[11px]">00:00:28</span>
+                </td>
+                <td class="px-4 py-4 text-center">
+                  <span class="text-[9px] font-bold text-green-600 dark:text-emerald-400 border border-green-500/30 bg-green-500/10 px-2 py-1 rounded-full uppercase">Lolos Limit</span>
+                </td>
+                <td class="px-4 py-4 text-gray-500 dark:text-gray-400 leading-tight text-[11px]">O2SN Nasional<br>2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-brand-card border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+    <button class="flex flex-col items-center text-gray-400 hover:text-brand-red focus:text-brand-red" onclick="switchTab('tab-history')">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span class="text-[10px] mt-1 font-medium">History</span>
+    </button>
+
+    <button id="btn-open-modal" class="relative -top-6 bg-brand-red text-white p-4 rounded-full shadow-lg shadow-brand-red/40 hover:scale-105 transition-transform">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    </button>
+
+    <button class="flex flex-col items-center text-gray-400 hover:text-brand-red focus:text-brand-red" onclick="switchTab('tab-grafik')">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+      <span class="text-[10px] mt-1 font-medium">Grafik</span>
+    </button>
+  </nav>
+
+  <div id="modal-input" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm overflow-y-auto">
+    <div class="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div id="modal-inner" class="w-full max-w-md bg-white dark:bg-brand-dark border dark:border-gray-700 shadow-xl rounded-t-2xl sm:rounded-2xl transform transition-all opacity-0 translate-y-10">
+        
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <h3 class="font-bold text-gray-800 dark:text-white">INPUT DATA KEJUARAAN</h3>
+          <button type="button" id="btn-close-modal" class="text-gray-400 hover:text-gray-500">✕</button>
+        </div>
+        
+        <div class="p-4 max-h-[75vh] overflow-y-auto space-y-5 pb-6">
+          
+          <div class="bg-white dark:bg-brand-card p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h4 class="text-sm font-bold text-gray-800 dark:text-white mb-4 uppercase tracking-wider">Informasi Umum</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nama Event</label>
+                <input type="text" class="w-full px-3 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-sm transition-all" placeholder="Contoh: KRAPSI 2026">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tingkat Kejuaraan</label>
+                <select class="w-full px-3 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-sm appearance-none">
+                  <option selected disabled>Pilih Tingkat</option>
+                  <option>Nasional</option>
+                  <option>Provinsi</option>
+                  <option>Kota/Kabupaten</option>
+                  <option>Antar Perkumpulan</option>
+                </select>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-3">
+                <div class="col-span-1">
+                  <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tgl Event</label>
+                  <input type="date" id="input-tanggal-event" class="w-full px-2 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-xs">
+                </div>
+                <div class="col-span-1">
+                  <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tahun Lahir</label>
+                  <input type="number" id="input-tahun-lahir" placeholder="Misal: 2010" class="w-full px-2 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-xs text-center">
+                </div>
+                <div class="col-span-1">
+                  <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Kategori KU</label>
+                  <input type="text" id="display-ku" readonly placeholder="Otomatis" class="w-full px-2 py-2 bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-[10px] font-bold text-brand-red cursor-not-allowed text-center">
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-brand-card p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h4 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Tabel Nomor Kejuaraan</h4>
+                <p class="text-[10px] text-gray-400 mt-0.5">Entry manual format 00:00:00:00</p>
+              </div>
+              <button type="button" id="btn-add-nomor" class="bg-brand-red hover:bg-red-600 text-white text-[10px] font-bold py-1.5 px-3 rounded-md transition-colors whitespace-nowrap">
+                + Tambah Nomor
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-12 gap-1 pb-2 mb-2 border-b border-gray-100 dark:border-gray-700 text-[9px] font-bold text-gray-400 uppercase">
+              <div class="col-span-5">Nomor Kejuaraan</div>
+              <div class="col-span-4 text-center">Time Record</div>
+              <div class="col-span-2 text-center">Rank</div>
+              <div class="col-span-1 text-center">Aksi</div>
+            </div>
+
+            <div id="container-nomor-lomba" class="space-y-3">
+              <div class="row-lomba grid grid-cols-12 gap-1 items-center">
+                <div class="col-span-5">
+                  <select class="w-full px-1 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs appearance-none focus:border-brand-red outline-none">
+                    <option selected disabled>Pilih Nomor</option>
+                    <option>50 M Gaya Bebas</option>
+                    <option>100 M Gaya Bebas</option>
+                    <option>50 M Punggung</option>
+                  </select>
+                </div>
+                <div class="col-span-4 relative flex items-center justify-center">
+                  <input type="text" placeholder="00:00:00:00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
+                  <button type="button" onclick="openStopwatch(this)" class="absolute right-1 text-brand-red hover:text-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </button>
+                </div>
+                <div class="col-span-2">
+                  <input type="number" placeholder="-" class="w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none">
+                </div>
+                <div class="col-span-1 flex justify-center">
+                  <button type="button" class="text-gray-400 hover:text-brand-red" onclick="this.closest('.row-lomba').remove()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-brand-card rounded-b-2xl">
+          <button class="w-full bg-brand-red hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-brand-red/30">
+            💾 Simpan Semua Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-stopwatch" class="hidden fixed inset-0 z-[70] bg-black/90 backdrop-blur-md flex items-center justify-center transition-opacity duration-300 opacity-0">
+    <div class="w-full max-w-sm p-8 flex flex-col items-center">
+      
+      <button type="button" onclick="closeStopwatch()" class="absolute top-6 right-6 text-gray-400 hover:text-white">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <h3 class="text-brand-red text-sm font-bold tracking-[0.3em] mb-4 uppercase">Live Timer</h3>
+      
+      <div id="sw-display" class="text-5xl sm:text-6xl font-mono font-bold text-white mb-10 tracking-wider tabular-nums">00:00:00:00</div>
+      
+      <div class="flex items-center justify-center gap-6 w-full">
+        <button id="sw-btn-reset" onclick="resetStopwatch()" class="w-16 h-16 rounded-full border-2 border-gray-600 text-gray-300 font-bold hover:bg-gray-800 transition-colors flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+        
+        <button id="sw-btn-start" onclick="toggleStopwatch()" class="w-24 h-24 rounded-full bg-brand-red text-white font-bold text-xl shadow-[0_0_30px_rgba(255,77,77,0.5)] hover:scale-105 transition-transform flex items-center justify-center">
+          START
+        </button>
+        
+        <button id="sw-btn-save" onclick="saveStopwatch()" class="w-16 h-16 rounded-full border-2 border-green-500 text-green-500 font-bold hover:bg-green-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed pointer-events-none">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

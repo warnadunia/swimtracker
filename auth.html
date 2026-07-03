@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="data:,">
+  <title>Login - Renang Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-gray-50 dark:bg-brand-dark text-gray-800 dark:text-gray-200 font-sans h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-white dark:bg-brand-card p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+    
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold uppercase tracking-wider text-brand-red">Renang Tracker</h1>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Catat dan pantau prestasi atlet</p>
+    </div>
+
+    <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg mb-6">
+      <button id="btn-tab-login" onclick="switchAuth('login')" class="w-1/2 py-2 text-sm font-semibold rounded-md bg-white dark:bg-brand-card shadow-sm text-brand-red transition-all">Login</button>
+      <button id="btn-tab-register" onclick="switchAuth('register')" class="w-1/2 py-2 text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all">Daftar</button>
+    </div>
+
+    <form id="form-login" class="space-y-4 block" onsubmit="event.preventDefault(); window.location.href='/index.html';">
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" required class="w-full px-4 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-red outline-none transition-all text-sm" placeholder="nama@email.com">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input type="password" required class="w-full px-4 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-red outline-none transition-all text-sm" placeholder="••••••••">
+      </div>
+      <button type="submit" class="w-full bg-brand-red hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors mt-2">
+        Masuk
+      </button>
+    </form>
+
+    <form id="form-register" class="space-y-4 hidden" onsubmit="event.preventDefault(); alert('Pendaftaran berhasil! Silakan login.'); switchAuth('login');">
+      <div>
+        <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
+        <input type="text" required class="w-full px-4 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-red outline-none transition-all text-sm" placeholder="Nama Atlet / Pelatih">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" required class="w-full px-4 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-red outline-none transition-all text-sm" placeholder="nama@email.com">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input type="password" required class="w-full px-4 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-red outline-none transition-all text-sm" placeholder="Minimal 6 karakter">
+      </div>
+      <button type="submit" class="w-full bg-brand-red hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors mt-2">
+        Buat Akun
+      </button>
+    </form>
+
+  </div>
+
+  <script>
+    // Logic Toggle Login / Register
+    function switchAuth(type) {
+      const formLogin = document.getElementById('form-login');
+      const formRegister = document.getElementById('form-register');
+      const btnLogin = document.getElementById('btn-tab-login');
+      const btnRegister = document.getElementById('btn-tab-register');
+
+      if (type === 'login') {
+        formLogin.classList.remove('hidden'); formLogin.classList.add('block');
+        formRegister.classList.remove('block'); formRegister.classList.add('hidden');
+        
+        btnLogin.className = "w-1/2 py-2 text-sm font-semibold rounded-md bg-white dark:bg-brand-card shadow-sm text-brand-red transition-all";
+        btnRegister.className = "w-1/2 py-2 text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all";
+      } else {
+        formRegister.classList.remove('hidden'); formRegister.classList.add('block');
+        formLogin.classList.remove('block'); formLogin.classList.add('hidden');
+        
+        btnRegister.className = "w-1/2 py-2 text-sm font-semibold rounded-md bg-white dark:bg-brand-card shadow-sm text-brand-red transition-all";
+        btnLogin.className = "w-1/2 py-2 text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all";
+      }
+    }
+  </script>
+</body>
+</html>
