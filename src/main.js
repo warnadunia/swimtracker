@@ -4,6 +4,12 @@ import Chart from 'chart.js/auto';
 import { supabase } from './supabase';
 import { initDashboardProfile } from './profile';
 
+import headerHTML from '../header.html?raw';
+import dashboardHTML from '../dashboard.html?raw';
+import progressHTML from '../progress.html?raw';
+import navHTML from '../bottomnav.html?raw';
+import modalHTML from '../input.html?raw';
+
 document.addEventListener('DOMContentLoaded', async () => {
   // ==========================================
   // 1. CEK SESI
@@ -17,26 +23,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = session.user;
 
   // ==========================================
-  // 2. INJEKSI KOMPONEN HTML
+  // 2. INJEKSI KOMPONEN HTML (Tanpa Fetch Jaringan)
   // ==========================================
   try {
-    const [header, dashboard, progress, nav, modal] = await Promise.all([
-      fetch('/header.html').then(res => res.text()),
-      fetch('/dashboard.html').then(res => res.text()),
-      fetch('/progress.html').then(res => res.text()),
-      fetch('/bottomnav.html').then(res => res.text()),
-      fetch('/input.html').then(res => res.text())
-    ]);
-
-document.getElementById('header-container').innerHTML = header;
-  
-  // Pisahkan container-nya biar gak numpuk
-  document.getElementById('main-container').innerHTML = `
-    <div id="wrapper-dashboard">${dashboard}</div>
-    <div id="wrapper-progress">${progress}</div>
-  `;
-  document.getElementById('nav-container').innerHTML = nav;
-  document.getElementById('modal-container').innerHTML = modal;
+    // Langsung suntikkan string HTML yang udah di-import Vite di atas
+    document.getElementById('header-container').innerHTML = headerHTML;
+    
+    // Pisahkan container-nya biar gak numpuk
+    document.getElementById('main-container').innerHTML = `
+      <div id="wrapper-dashboard">${dashboardHTML}</div>
+      <div id="wrapper-progress">${progressHTML}</div>
+    `;
+    
+    document.getElementById('nav-container').innerHTML = navHTML;
+    document.getElementById('modal-container').innerHTML = modalHTML;
+    
   } catch (error) {
     console.error("Gagal memuat komponen HTML:", error);
   }
