@@ -1,0 +1,21 @@
+{
+  "name": "Swim Tracker PSSC",
+  "short_name": "SwimTrack",
+  "description": "Aplikasi rekor renang atlet PSSC Jogja",
+  "start_url": "/app.html",
+  "display": "standalone",
+  "background_color": "#1f1a24",
+  "theme_color": "#ff4d4d",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -26,3 +26,6 @@
   -webkit-mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
   mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
 }
+
+.toast-enter { transform: translateX(100%); opacity: 0; }
+.toast-active { transform: translateX(0); opacity: 1; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }

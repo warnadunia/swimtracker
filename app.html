@@ -4,6 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SwimTrack">
+  <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="data:,\">
   <title>Swim Tracker App</title>
   <link rel="stylesheet" href="/src/style.css">
@@ -18,11 +22,17 @@
 </head>
 
 <body class="bg-gray-50 dark:bg-brand-dark pb-24 text-gray-800 dark:text-gray-200">
+  <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
   <div id="header-container"></div>
   <main id="main-container" class="p-4 max-w-md mx-auto"></main>
   <div id="nav-container"></div>
   <div id="modal-container"></div>
   <script type="module" src="/src/main.js"></script>
+  </div>
+  <!-- Floating Fullscreen Button -->
+<button id="btn-fullscreen" class="fixed bottom-24 right-5 p-4 bg-gray-800 text-white rounded-full shadow-2xl z-[999] hover:bg-black transition-all">
+  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+</button>
 </body>
 
 </html>

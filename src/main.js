@@ -536,10 +536,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (resultsToInsert.length > 0) await supabase.from('event_results').insert(resultsToInsert);
         
-        alert(editId ? 'Data Kejuaraan Berhasil Diperbarui!' : 'Data Kejuaraan Berhasil Disimpan!');
+        showToast(editId ? 'Data Berhasil Diperbarui!' : 'Data Berhasil Disimpan!', 'success');
         window.location.reload();
       } catch (err) {
-        alert('Gagal menyimpan: ' + err.message);
+        showToast('Gagal: ' + err.message, 'error');
         btnSaveEvent.innerText = "Simpan Semua Data";
         btnSaveEvent.disabled = false;
       }
@@ -609,4 +609,48 @@ window.resetStopwatch = function() {
 window.saveStopwatch = function() {
   if (activeInputField) activeInputField.value = document.getElementById('sw-display').innerText;
   window.closeStopwatch(); window.resetStopwatch(); 
+};
+// Logic Fullscreen PWA
+const btnFS = document.getElementById('btn-fullscreen');
+if (btnFS) {
+  btnFS.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        showToast(`Gagal Fullscreen: ${err.message}`, 'error');
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  });
+}
+
+// Opsional: Ganti ikon kalau lagi fullscreen
+document.addEventListener('fullscreenchange', () => {
+  const icon = btnFS.querySelector('svg');
+  if (document.fullscreenElement) {
+    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'; // Ikon 'X' atau 'Minimize'
+  } else {
+    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>';
+  }
+});
+window.showToast = function(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  
+  const bgColor = type === 'success' ? 'bg-emerald-500' : 'bg-brand-red';
+  const icon = type === 'success' ? '' : '遵'; // Pakai SVG atau Icon
+
+  toast.className = `toast-enter ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 font-bold text-xs pointer-events-auto`;
+  toast.innerHTML = `<span>${icon}</span> ${message}`;
+  
+  container.appendChild(toast);
+  
+  // Trigger animasi
+  setTimeout(() => toast.classList.add('toast-active'), 10);
+  
+  // Hapus otomatis setelah 3 detik
+  setTimeout(() => {
+    toast.classList.remove('toast-active');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 };
