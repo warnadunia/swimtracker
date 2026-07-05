@@ -234,16 +234,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   const selectTahun = document.getElementById('grafik-year-filter');
+  const selectCompare = document.getElementById('grafik-compare-filter'); // Tambahan filter VS
 
   function initTabGrafik(styleName) {
     const tbody = document.getElementById('table-grafik-body');
     if (!tbody) return;
     
-    // Ambil semua data yang mengandung kata gaya tersebut (Bebas, Kupu, Ganti, dll)
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
     
     if (selectTahun) {
-      renderChartProgress(styleName, selectTahun.value);
+      renderChartProgress(styleName, selectTahun.value, selectCompare ? selectCompare.value : 'none');
     }
 
     // --- RENDER TABEL LISTING ---
@@ -257,7 +257,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     sortedStyleRecords.forEach(item => {
       let statusHtml = `<span class="text-[9px] font-bold text-gray-400 border border-gray-200 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 px-2 py-1 rounded-md uppercase">Belum Set</span>`;
-
       const jarakSingkat = item.category.replace(' Gaya ', ' ');
       const eventYear = new Date(item.events.event_date).getFullYear();
       
@@ -276,48 +275,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Event Listener Dropdown Tahun
-  if (selectTahun) {
-    selectTahun.addEventListener('change', () => {
-      const activePill = document.querySelector('.pill-gaya.bg-brand-red');
-      if (activePill) {
-        initTabGrafik(activePill.getAttribute('data-style'));
-      }
-    });
-  }
+  // Gabungkan Event Listener untuk kedua Dropdown
+  [selectTahun, selectCompare].forEach(el => {
+    if (el) {
+      el.addEventListener('change', () => {
+        const activePill = document.querySelector('.pill-gaya.bg-brand-red');
+        if (activePill) initTabGrafik(activePill.getAttribute('data-style'));
+      });
+    }
+  });
 
   function timeToSeconds(timeStr) {
     if (!timeStr) return 0;
     const parts = timeStr.split(/[:.]/);
-    if (parts.length === 4) {
-      return (parseInt(parts[0]||0) * 3600) + (parseInt(parts[1]||0) * 60) + parseInt(parts[2]||0) + (parseInt(parts[3]||0) / 100);
-    }
+    if (parts.length === 4) return (parseInt(parts[0]||0) * 3600) + (parseInt(parts[1]||0) * 60) + parseInt(parts[2]||0) + (parseInt(parts[3]||0) / 100);
     return 0;
   }
 
-  function renderChartProgress(styleName, targetYearStr) {
+  function renderChartProgress(styleName, targetYearStr, compareYearStr) {
     const ctx = document.getElementById('prestasiChart');
     if (!ctx) return; 
-    
-    if (!styleName) { 
-      if (window.myProgressChart) window.myProgressChart.destroy(); 
-      return; 
-    }
+    if (!styleName) { if (window.myProgressChart) window.myProgressChart.destroy(); return; }
 
     const targetYear = parseInt(targetYearStr) || new Date().getFullYear();
+    const compareYear = compareYearStr !== 'none' ? parseInt(compareYearStr) : null;
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()) && r.events);
 
-    const getMonthlyBest = (distancePrefix) => {
+    // Update fungsi getMonthlyBest untuk nerima argumen Tahun
+    const getMonthlyBest = (distancePrefix, yearParam) => {
       const monthly = new Array(12).fill(null);
       styleRecords.forEach(r => {
         if (r.category.startsWith(distancePrefix)) {
           const d = new Date(r.events.event_date);
-          if (d.getFullYear() === targetYear) {
+          if (d.getFullYear() === yearParam) {
             const monthIdx = d.getMonth();
             const secs = timeToSeconds(r.time_record);
-            if (monthly[monthIdx] === null || secs < monthly[monthIdx]) {
-              monthly[monthIdx] = secs;
-            }
+            if (monthly[monthIdx] === null || secs < monthly[monthIdx]) monthly[monthIdx] = secs;
           }
         }
       });
@@ -326,17 +319,63 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (window.myProgressChart) window.myProgressChart.destroy();
 
+    // Palet Warna: Solid (Tahun Utama) vs Faded/RGBA (Tahun Pembanding)
+    const colors = {
+      '25 M': { solid: '#d946ef', faded: 'rgba(217, 70, 239, 0.4)' },
+      '50 M': { solid: '#22c55e', faded: 'rgba(34, 197, 94, 0.4)' },
+      '100 M': { solid: '#eab308', faded: 'rgba(234, 179, 8, 0.4)' },
+      '200 M': { solid: '#06b6d4', faded: 'rgba(6, 182, 212, 0.4)' }
+    };
+
+    const datasetsToRender = [];
+    const distances = ['25 M', '50 M', '100 M', '200 M'];
+
+    distances.forEach(dist => {
+      // 1. Masukkan Garis Tahun Utama (Solid)
+      datasetsToRender.push({
+        label: `${dist} (${targetYear})`,
+        data: getMonthlyBest(dist, targetYear),
+        borderColor: colors[dist].solid,
+        borderWidth: 2,
+        pointBackgroundColor: colors[dist].solid,
+        pointRadius: 4,
+        tension: 0.3,
+        spanGaps: true
+      });
+
+      // 2. Masukkan Garis Tahun Pembanding (Opacity 40% + Dashed) JIKA AKTIF
+      if (compareYear) {
+        datasetsToRender.push({
+          label: `${dist} (${compareYear})`,
+          data: getMonthlyBest(dist, compareYear),
+          borderColor: colors[dist].faded,
+          borderWidth: 2,
+          borderDash: [5, 5],
+          pointBackgroundColor: colors[dist].faded,
+          pointRadius: 3,
+          tension: 0.3,
+          spanGaps: true
+        });
+      }
+    });
+
+    // 3. Masukkan Garis Target Coach
+    datasetsToRender.push({
+      label: 'Target Coach',
+      data: new Array(12).fill(null),
+      borderColor: '#9ca3af',
+      borderWidth: 2,
+      borderDash: [2, 2],
+      pointRadius: 0,
+      fill: false,
+      spanGaps: true
+    });
+
     window.myProgressChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'],
-        datasets: [
-          { label: '25 M', data: getMonthlyBest('25 M'), borderColor: '#d946ef', borderWidth: 2, pointBackgroundColor: '#d946ef', pointRadius: 4, tension: 0.3, spanGaps: true },
-          { label: '50 M', data: getMonthlyBest('50 M'), borderColor: '#22c55e', borderWidth: 2, pointBackgroundColor: '#22c55e', pointRadius: 4, tension: 0.3, spanGaps: true },
-          { label: '100 M', data: getMonthlyBest('100 M'), borderColor: '#eab308', borderWidth: 2, pointBackgroundColor: '#eab308', pointRadius: 4, tension: 0.3, spanGaps: true },
-          { label: '200 M', data: getMonthlyBest('200 M'), borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#06b6d4', pointRadius: 4, tension: 0.3, spanGaps: true },
-          { label: 'Target Coach', data: new Array(12).fill(null), borderColor: '#9ca3af', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, spanGaps: true }
-        ]
+        datasets: datasetsToRender
       },
       options: {
         responsive: true, 
