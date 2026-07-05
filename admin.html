@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><title>Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Panel - Swim Intelligence</title>
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="/src/style.css">
   <script>
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -11,25 +19,226 @@
     }
   </script>
 </head>
-<body class="bg-[#1a1620] text-gray-200 font-sans min-h-screen p-4">
-  <header class="max-w-4xl mx-auto flex justify-between items-center mb-6">
-    <h1 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Admin Control Panel</h1>
-    <a href="/app.html" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-700">🏠 Kembali ke App</a>
-  </header>
-  <main class="max-w-4xl mx-auto space-y-6">
-    <div class="bg-[#221c29] p-5 rounded-2xl border border-gray-800">
-      <h3 class="font-bold text-sm text-brand-red uppercase mb-4">👥 Daftar Atlet</h3>
-      <table class="w-full text-left text-xs"><tbody id="admin-atlet-list"></tbody></table>
-    </div>
-    <div class="bg-[#221c29] p-5 rounded-2xl border border-gray-800">
-      <h3 class="font-bold text-sm text-blue-500 uppercase mb-4">🏊 Manajemen Nomor Lomba</h3>
-      <div class="flex gap-2 mb-4">
-        <input type="text" id="admin-new-category" class="w-full px-3 py-2 bg-[#1a1620] border border-gray-700 rounded-lg text-sm" placeholder="cth: 25 M Gaya Bebas Papan">
-        <button id="btn-add-category" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">Tambah</button>
+<body class="bg-gray-50 dark:bg-[#120e16] text-gray-800 dark:text-gray-200 font-['Poppins',sans-serif] min-h-screen antialiased">
+
+  <!-- Wrapper Mobile-First (Max Width MD) -->
+  <div class="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-[#18131f] shadow-2xl relative border-x border-gray-100 dark:border-gray-900 pb-20">
+    
+    <!-- STICKY HEADER -->
+    <header class="sticky top-0 bg-white/90 dark:bg-[#18131f]/90 backdrop-blur-md z-40 flex justify-between items-center px-4 h-16 border-b border-gray-100 dark:border-gray-800/80 shadow-sm">
+      <div>
+        <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Control Panel</h1>
+        <p id="admin-page-title" class="text-sm font-bold text-gray-800 dark:text-white leading-none">Users Management</p>
       </div>
-      <table class="w-full text-left text-xs"><tbody id="admin-category-list"></tbody></table>
+      <a href="/app.html" class="flex items-center gap-1.5 bg-gray-100 dark:bg-[#251f2e] text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-200 dark:hover:bg-[#2e263a] transition-all">
+        <span>🏠</span> App
+      </a>
+    </header>
+
+    <!-- HORIZONTAL SLIDE SLIDER MENU -->
+    <div class="bg-gray-50/50 dark:bg-[#1f1927]/30 border-b border-gray-100 dark:border-gray-800/50 px-4 py-2.5 overflow-x-auto flex gap-2 scrollbar-none sticky top-16 z-30">
+      <button onclick="switchAdminTab('users')" id="tab-btn-users" class="admin-tab-btn whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-brand-red text-white">
+        👥 Users
+      </button>
+      <button onclick="switchAdminTab('nomor')" id="tab-btn-nomor" class="admin-tab-btn whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        🏊 Nomor Lomba
+      </button>
+      <button onclick="switchAdminTab('prestasi')" id="tab-btn-prestasi" class="admin-tab-btn whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        🏆 Prestasi Terbaru
+      </button>
     </div>
-  </main>
+
+    <!-- MAIN PANELS CONTAINER -->
+    <main class="flex-1 p-4 overflow-y-auto space-y-4">
+
+      <!-- ================= SECTION 1: USERS ================= -->
+      <section id="panel-users" class="admin-panel space-y-4">
+        <!-- Filter Role Segmented Controls -->
+        <div class="grid grid-cols-3 bg-gray-100 dark:bg-[#251f2e] p-1 rounded-xl text-center text-xs font-semibold">
+          <button onclick="filterUserRole('admin')" id="role-admin" class="role-filter-btn py-1.5 rounded-lg bg-white dark:bg-[#18131f] text-gray-800 dark:text-white shadow-sm font-bold">Admin</button>
+          <button onclick="filterUserRole('coach')" id="role-coach" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Coach</button>
+          <button onclick="filterUserRole('atlet')" id="role-atlet" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Atlet</button>
+        </div>
+
+        <!-- Listing Users Table -->
+        <div class="bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 p-3 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto w-full rounded-xl border border-gray-200/50 dark:border-gray-800">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-gray-100/80 dark:bg-[#251f2e] text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-200/50 dark:border-gray-800">
+                  <th class="px-3 py-2.5">Nama</th>
+                  <th class="px-3 py-2.5 text-center w-24">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-user-list" class="divide-y divide-gray-200/40 dark:divide-gray-800/50">
+                <!-- Rendered by JS -->
+                <!-- Contoh Struktur Row Aksi Slider/Menu Kecil:
+                <tr class="hover:bg-white dark:hover:bg-[#282033]">
+                  <td class="px-3 py-3 font-medium">Coach Yusuf</td>
+                  <td class="px-3 py-3">
+                    <div class="flex gap-1 justify-center">
+                      <button class="bg-gray-200 dark:bg-[#2a2235] p-1 rounded text-[10px] hover:text-blue-500" title="Edit">✏️</button>
+                      <button class="bg-gray-200 dark:bg-[#2a2235] p-1 rounded text-[10px] hover:text-yellow-500" title="Reset Password">🔑</button>
+                      <button class="bg-gray-200 dark:bg-[#2a2235] p-1 rounded text-[10px] hover:text-brand-red" title="Hapus">❌</button>
+                    </div>
+                  </td>
+                </tr>
+                -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= SECTION 2: NOMOR LOMBA ================= -->
+      <section id="panel-nomor" class="admin-panel hidden space-y-4">
+        <!-- Pills Filter Kategori Gaya -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <button onclick="filterGayaNomor('Bebas')" id="gaya-Bebas" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-sm">Bebas</button>
+          <button onclick="filterGayaNomor('Dada')" id="gaya-Dada" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Dada</button>
+          <button onclick="filterGayaNomor('Kupu')" id="gaya-Kupu" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Kupu</button>
+          <button onclick="filterGayaNomor('Punggung')" id="gaya-Punggung" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Punggung</button>
+          <button onclick="filterGayaNomor('Ganti')" id="gaya-Ganti" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Ganti</button>
+        </div>
+
+        <!-- Input Tambah Nomor Lomba -->
+        <div class="bg-gray-50 dark:bg-[#1f1927] p-3 rounded-2xl border border-gray-100 dark:border-gray-800/60 space-y-2">
+          <input type="text" id="admin-new-category" 
+                 class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-medium text-gray-800 dark:text-white focus:outline-none" 
+                 placeholder="Cth: 50 M Gaya Bebas Fin">
+          <button id="btn-add-category" class="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-bold active:scale-[0.99] transition-all">
+            ➕ Tambah Nomor Lomba
+          </button>
+        </div>
+
+        <!-- Listing Nomor Lomba -->
+        <div class="bg-gray-50 dark:bg-[#1f1927] p-3 rounded-2xl border border-gray-100 dark:border-gray-800/60 shadow-sm">
+          <div class="overflow-x-auto w-full rounded-xl border border-gray-200/50 dark:border-gray-800">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-gray-100/80 dark:bg-[#251f2e] text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-200/50 dark:border-gray-800">
+                  <th class="px-3 py-2.5">Kategori Jarak / Gaya</th>
+                  <th class="px-3 py-2.5 text-center w-16">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-category-list" class="divide-y divide-gray-200/40 dark:divide-gray-800/50">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= SECTION 3: PRESTASI TERBARU (NESTED DATA) ================= -->
+      <section id="panel-prestasi" class="admin-panel hidden space-y-4">
+        <div class="flex items-center justify-between px-1">
+          <p class="text-[10px] text-gray-400 font-medium">Daftar atlet peraih podium (Rank 1, 2, 3).</p>
+          
+          <select id="prestasi-year-filter" 
+                  class="text-xs bg-gray-100 dark:bg-[#251f2e] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 font-semibold text-gray-700 dark:text-gray-300 focus:outline-none">
+            <option value="ALL">Semua Tahun</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+          </select>
+        </div>
+        
+        <div id="admin-prestasi-container" class="space-y-3">
+          </div>
+      </section>
+
+<div id="modal-edit-user" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#1f1927] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800">
+          <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#18131f]/50">
+            <h3 class="font-bold text-gray-800 dark:text-white text-sm">Edit Data User</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-brand-red font-bold p-1">✖</button>
+          </div>
+          <div class="p-4 space-y-3">
+            <input type="hidden" id="edit-user-id">
+            
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Nama Lengkap</label>
+              <input type="text" id="edit-user-name" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+            
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Username</label>
+              <input type="text" id="edit-user-username" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Email</label>
+              <input type="email" id="edit-user-email" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="email@contoh.com">
+            </div>
+
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">No. WhatsApp</label>
+              <input type="text" id="edit-user-wa" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="Cth: 08123456789">
+            </div>
+
+            <button onclick="saveUserEdit()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-[0.98]">
+              Simpan Perubahan
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- JS CONTROLLER UNTUK SPA TAB ENGINE -->
+  <script>
+    function switchAdminTab(tabId) {
+      // 1. Hide all panels
+      document.querySelectorAll('.admin-panel').forEach(panel => panel.classList.add('hidden'));
+      // 2. Un-highlight all buttons
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-red', 'text-white');
+        btn.classList.add('text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-200');
+      });
+      
+      // 3. Show current panel
+      document.getElementById('panel-' + tabId).classList.remove('hidden');
+      // 4. Highlight current button
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      activeBtn.classList.add('bg-brand-red', 'text-white');
+      activeBtn.classList.remove('text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-200');
+
+      // 5. Dynamic Page Title
+      const titleEl = document.getElementById('admin-page-title');
+      if (tabId === 'users') titleEl.innerText = "Users Management";
+      if (tabId === 'nomor') titleEl.innerText = "Nomor Lomba Management";
+      if (tabId === 'prestasi') titleEl.innerText = "Daftar Prestasi";
+    }
+
+
+
+    function filterGayaNomor(gaya) {
+      document.querySelectorAll('.gaya-pill-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        btn.classList.add('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
+      });
+      const activeBtn = document.getElementById('gaya-' + gaya);
+      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+      activeBtn.classList.remove('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
+
+      // Hook filter ke nomor kategori (cth: window.renderCategoriesByStyle(gaya))
+    }
+
+    function toggleNestedRow(id) {
+      const target = document.getElementById('nested-' + id);
+      const arrow = document.getElementById('arrow-' + id);
+      if (target.classList.contains('hidden')) {
+        target.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        target.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+  </script>
+
   <script type="module" src="/src/admin.js"></script>
 </body>
 </html>

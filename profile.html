@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Swim Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</head>
+<body class="bg-gray-50 dark:bg-[#120e16] text-gray-800 dark:text-gray-200 font-['Poppins',sans-serif] min-h-screen antialiased">
+
+  <div class="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-[#18131f] shadow-2xl relative border-x border-gray-100 dark:border-gray-900 pb-10">
+    
+    <!-- HEADER -->
+    <header class="sticky top-0 bg-white/90 dark:bg-[#18131f]/90 backdrop-blur-md z-40 flex justify-between items-center px-4 h-16 border-b border-gray-100 dark:border-gray-800/80 shadow-sm">
+      <div>
+        <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">User Dashboard</h1>
+        <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">Pengaturan Akun</p>
+      </div>
+      <a href="/app.html" class="flex items-center gap-1.5 bg-gray-100 dark:bg-[#251f2e] text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-all">
+        <span>🏠</span> Kembali
+      </a>
+    </header>
+
+    <main class="flex-1 p-5 space-y-6">
+      
+      <!-- FOTO PROFILE -->
+      <div class="flex flex-col items-center justify-center pt-2">
+        <div class="relative group cursor-pointer">
+          <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100 dark:border-[#251f2e] shadow-lg bg-gray-200 dark:bg-gray-800">
+            <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=random" class="w-full h-full object-cover">
+          </div>
+          <label for="avatar-upload" class="absolute bottom-0 right-0 bg-brand-red text-white p-2 rounded-full shadow-md cursor-pointer hover:scale-105 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </label>
+          <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+        </div>
+        <p id="upload-status" class="text-[10px] mt-2 text-gray-400 font-medium"></p>
+      </div>
+
+      <!-- FORM DATA -->
+      <div class="space-y-4 bg-gray-50 dark:bg-[#1f1927] p-5 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-sm">
+        
+        <!-- BIODATA UTAMA -->
+        <div class="space-y-3 pb-4 border-b border-gray-200 dark:border-gray-800">
+          <h3 class="text-xs font-bold text-brand-red uppercase tracking-wider mb-2">Biodata Utama</h3>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nama Lengkap</label>
+            <input type="text" id="prof-fullname" class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Tahun Lahir</label>
+              <input type="number" id="prof-birth" class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Role Akun</label>
+              <input type="text" id="prof-role" disabled class="w-full px-3 py-2 bg-gray-100 dark:bg-[#251f2e] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-bold text-gray-500 cursor-not-allowed">
+            </div>
+          </div>
+        </div>
+
+        <!-- KONTAK & LOGIN -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">Kontak & Login</h3>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Username</label>
+            <input type="text" id="prof-username" class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Email Aktif</label>
+            <input type="email" id="prof-email" class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">No. WhatsApp</label>
+            <input type="text" id="prof-wa" class="w-full px-3 py-2 bg-white dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-medium text-gray-800 dark:text-white focus:outline-none focus:border-blue-500 transition-colors">
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-save" class="w-full bg-brand-red hover:bg-red-600 text-white py-3 rounded-2xl text-sm font-bold transition-all shadow-lg active:scale-[0.98]">
+        Simpan Perubahan
+      </button>
+
+    </main>
+  </div>
+
+  <script type="module" src="/src/profile.js"></script>
+</body>
+</html>

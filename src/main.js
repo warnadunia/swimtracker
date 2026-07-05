@@ -2,6 +2,7 @@ import './style.css';
 import 'preline';
 import Chart from 'chart.js/auto';
 import { supabase } from './supabase';
+import { initDashboardProfile } from './profile';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ==========================================
@@ -80,70 +81,14 @@ document.getElementById('header-container').innerHTML = header;
   window.switchTab('tab-history');
 
   // ==========================================
-  // 4. SETUP PROFIL, ADMIN & KALKULASI KU
+  // 4. SETUP PROFIL, ADMIN & KALKULASI KU (Modular)
   // ==========================================
-  const fullName = user.user_metadata.full_name || 'Atlet';
-  const tabHistoryH2 = document.querySelector('#tab-history h2');
-  const tabHistoryImg = document.querySelector('#tab-history img');
-  if (tabHistoryH2) tabHistoryH2.innerText = fullName;
-  if (tabHistoryImg) tabHistoryImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=ff4d4d&color=fff&bold=true`;
-
   window.masterCategories = [];
   const { data: categories } = await supabase.from('master_categories').select('*').order('name');
   if (categories) window.masterCategories = categories;
 
-  const { data: profile } = await supabase.from('profiles').select('role, birth_year').eq('id', user.id).single();
-  
-  if (profile && profile.role === 'admin') {
-    const adminGear = document.getElementById('admin-gear');
-    if (adminGear) adminGear.classList.remove('hidden');
-  }
-
-  // --- LOGIKA KU DASHBOARD & MODAL ---
-  if (profile && profile.birth_year) {
-    window.atletBirthYear = profile.birth_year;
-    
-    // 1. Nembak KU ke Dashboard (Tahun Ini - Tahun Lahir)
-    const currentYear = new Date().getFullYear();
-    const ageDash = currentYear - window.atletBirthYear;
-    let kuDash = ageDash <= 9 ? "KU 5 (<= 9 Thn)" : ageDash <= 11 ? "KU 4 (10-11 Thn)" : ageDash <= 13 ? "KU 3 (12-13 Thn)" : ageDash <= 15 ? "KU 2 (14-15 Thn)" : ageDash <= 18 ? "KU 1 (16-18 Thn)" : "Senior (> 18 Thn)";
-    
-    const dashKuEl = document.getElementById('dashboard-ku-text');
-    if (dashKuEl) dashKuEl.innerText = kuDash;
-  }
-
-  // 2. Fungsi Hitung KU buat Modal
-  window.calculateKU = function() {
-    const tglEvent = document.getElementById('input-tanggal-event');
-    const thnLahirInput = document.getElementById('input-tahun-lahir');
-    const displayKu = document.getElementById('display-ku');
-
-    if (!window.atletBirthYear) return;
-    
-    // Langsung tembak tahun lahir ke form modal!
-    if (thnLahirInput) thnLahirInput.value = window.atletBirthYear;
-
-    // Kalau Tgl Event belum dipilih, kasih tau user
-    if (!tglEvent || !tglEvent.value) {
-        if (displayKu) displayKu.value = "Pilih Tgl Event";
-        return;
-    }
-    
-    // Hitung kalau Tgl Event udah dipilih
-    const ageModal = new Date(tglEvent.value).getFullYear() - window.atletBirthYear;
-    let kuModal = ageModal <= 9 ? "KU 5" : ageModal <= 11 ? "KU 4" : ageModal <= 13 ? "KU 3" : ageModal <= 15 ? "KU 2" : ageModal <= 18 ? "KU 1" : "Senior";
-    
-    if (displayKu) displayKu.value = kuModal;
-  };
-
-  // 3. Pasang Trigger & Panggil sekali di awal biar modal siap
-  const inputTglEvent = document.getElementById('input-tanggal-event');
-  if (inputTglEvent) {
-      inputTglEvent.addEventListener('change', window.calculateKU);
-  }
-  
-  // Eksekusi fungsi biar form tahun lahir langsung keisi walau belum buka modal
-  window.calculateKU();
+  // Jalankan modul profile
+  await initDashboardProfile(user.id);
 
   // ==========================================
   // 5. EVENT DELEGATION
@@ -365,8 +310,11 @@ document.getElementById('header-container').innerHTML = header;
 
   function timeToSeconds(timeStr) {
     if (!timeStr) return 0;
-    const parts = timeStr.split(':');
-    if (parts.length === 4) return (parseInt(parts[0]||0) * 3600) + (parseInt(parts[1]||0) * 60) + parseInt(parts[2]||0) + (parseInt(parts[3]||0) / 100);
+    // Pakai Regex biar bisa misahin string berdasarkan titik dua (:) ATAU titik (.)
+    const parts = timeStr.split(/[:.]/);
+    if (parts.length === 4) {
+      return (parseInt(parts[0]||0) * 3600) + (parseInt(parts[1]||0) * 60) + parseInt(parts[2]||0) + (parseInt(parts[3]||0) / 100);
+    }
     return 0;
   }
 
@@ -528,7 +476,7 @@ document.getElementById('header-container').innerHTML = header;
               })()}
           </div>
           <div class="col-span-4 relative flex items-center justify-center">
-            <input type="text" value="${res.time_record}" placeholder="00:00:00:00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
+            <input type="text" value="${res.time_record}" placeholder="00:00:00.00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
             <button type="button" onclick="openStopwatch(this)" class="absolute right-1 text-brand-red hover:text-red-700">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
@@ -563,7 +511,7 @@ document.getElementById('header-container').innerHTML = header;
         return `<div class="col-span-5"><select class="input-kategori w-full px-2 py-1.5 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none appearance-none cursor-pointer">${opts}</select></div>`;
       })()} 
       <div class="col-span-4 relative flex items-center justify-center">
-        <input type="text" placeholder="00:00:00:00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
+        <input type="text" placeholder="00:00:00.00" class="time-input w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs font-mono focus:border-brand-red outline-none pr-5">
         <button type="button" onclick="openStopwatch(this)" class="absolute right-1 text-brand-red hover:text-red-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>
       </div>
       <div class="col-span-2"><input type="number" placeholder="-" class="w-full px-1 py-1.5 text-center bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded text-[10px] sm:text-xs focus:border-brand-red outline-none"></div>
@@ -604,9 +552,9 @@ document.getElementById('header-container').innerHTML = header;
           const category = row.querySelector('.input-kategori').value.trim();
           const timeRecord = row.querySelector('.time-input').value.trim();
           const rank = row.querySelector('input[type="number"]').value;
-          if (category !== '' && timeRecord && timeRecord !== '00:00:00:00') {
-            resultsToInsert.push({ event_id: activeEventId, user_id: user.id, category, time_record: timeRecord, rank: rank ? parseInt(rank) : null });
-          }
+          if (category !== '' && timeRecord && timeRecord !== '00:00:00.00') {
+  resultsToInsert.push({ event_id: activeEventId, user_id: user.id, category, time_record: timeRecord, rank: rank ? parseInt(rank) : null });
+}
         });
 
         if (resultsToInsert.length > 0) await supabase.from('event_results').insert(resultsToInsert);
@@ -627,8 +575,16 @@ document.getElementById('header-container').innerHTML = header;
 // ==========================================
 document.addEventListener('input', (e) => {
   if (e.target.classList.contains('time-input')) {
-    let val = e.target.value.replace(/\D/g, ''); 
-    e.target.value = (val.match(/.{1,2}/g)?.join(':') || '').substring(0, 11);
+    let val = e.target.value.replace(/\D/g, ''); // Hapus semua selain angka
+    if (val.length > 8) val = val.substring(0, 8); // Batasi maksimal 8 angka
+    
+    let formatted = '';
+    if (val.length > 0) formatted += val.substring(0, 2);
+    if (val.length > 2) formatted += ':' + val.substring(2, 4);
+    if (val.length > 4) formatted += ':' + val.substring(4, 6);
+    if (val.length > 6) formatted += '.' + val.substring(6, 8); // Bagian akhir pakai titik
+    
+    e.target.value = formatted;
   }
 });
 
@@ -652,7 +608,8 @@ window.closeStopwatch = function() {
 };
 function updateDisplay() {
   const d = new Date(swElapsedTime + (Date.now() - swStartTime));
-  document.getElementById('sw-display').innerText = `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}:${String(Math.floor(d.getUTCMilliseconds()/10)).padStart(2,'0')}`;
+  // Perhatikan pemisah sebelum milliseconds (Math.floor...) sekarang pakai TITIK (.)
+  document.getElementById('sw-display').innerText = `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}.${String(Math.floor(d.getUTCMilliseconds()/10)).padStart(2,'0')}`;
 }
 window.toggleStopwatch = function() {
   const btnStart = document.getElementById('sw-btn-start'), btnSave = document.getElementById('sw-btn-save');
@@ -667,7 +624,8 @@ window.toggleStopwatch = function() {
   }
 };
 window.resetStopwatch = function() {
-  clearInterval(swInterval); swIsRunning = false; swElapsedTime = 0; document.getElementById('sw-display').innerText = "00:00:00:00";
+  clearInterval(swInterval); swIsRunning = false; swElapsedTime = 0; 
+  document.getElementById('sw-display').innerText = "00:00:00.00"; // Pakai titik
   const btnStart = document.getElementById('sw-btn-start'); btnStart.innerText = "START"; btnStart.className = "w-24 h-24 rounded-full bg-brand-red text-white font-bold text-xl flex items-center justify-center";
   document.getElementById('sw-btn-save').classList.add('opacity-50', 'pointer-events-none');
 };
