@@ -1,38 +1,37 @@
 <div id="tab-grafik" class="hidden w-full pb-24">
   
-  <!-- PILLS FILTER GAYA RENANG -->
   <div class="flex overflow-x-auto gap-3 pb-2 mb-4 hide-scrollbar">
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-brand-red text-white text-xs font-bold whitespace-nowrap shadow-md shadow-brand-red/40 transition-all" data-style="Bebas">Gaya Bebas</button>
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#1f1a24] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red transition-all" data-style="Kupu">Gaya Kupu</button>
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#1f1a24] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red transition-all" data-style="Punggung">Gaya Punggung</button>
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#1f1a24] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red transition-all" data-style="Dada">Gaya Dada</button>
+    <button class="pill-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#1f1a24] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red transition-all" data-style="Ganti">Gaya Ganti</button>
   </div>
 
-  <!-- CHART AREA -->
   <div class="bg-white dark:bg-[#1f1a24] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
     <div class="flex justify-between items-center mb-6">
       <h3 class="font-bold text-xs tracking-widest text-gray-800 dark:text-white uppercase">Tren Waktu (Detik)</h3>
       
-      <!-- HANYA ADA DROPDOWN TAHUN -->
       <select id="grafik-year-filter" class="appearance-none bg-gray-100 dark:bg-[#2b2532] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white text-[10px] font-bold rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer">
         <option value="2026">2026</option>
         <option value="2025">2025</option>
+        <option value="2024">2024</option>
       </select>
     </div>
     
     <div class="relative h-56 w-full">
-      <div id="label-limit-ku" class="absolute top-[35px] left-[10px] text-[9px] font-bold text-yellow-500 z-10 tracking-wider">LIMIT KU: 28.5s</div>
       <canvas id="prestasiChart"></canvas>
     </div>
     
-    <!-- Legend custom -->
-    <div class="flex justify-center gap-6 mt-4 text-[10px] font-medium text-gray-500 dark:text-gray-400">
-      <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-brand-red"></span> Tahun Berjalan</div>
-      <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-gray-400 dark:bg-gray-500"></span> Tahun Lalu</div>
+    <div class="flex flex-wrap justify-center gap-3 mt-4 text-[10px] font-bold text-gray-500 dark:text-gray-400">
+      <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#d946ef]"></span> 25 M</div>
+      <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#22c55e]"></span> 50 M</div>
+      <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#eab308]"></span> 100 M</div>
+      <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#06b6d4]"></span> 200 M</div>
+      <div class="flex items-center gap-1.5"><span class="w-4 h-0 border-t-2 border-dashed border-gray-400"></span> Target</div>
     </div>
   </div>
 
-  <!-- TABEL REKAP HASIL PERLOMBAAN -->
   <div class="bg-white dark:bg-[#1a1620] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden mb-6">
     <div class="p-4 border-b border-gray-100 dark:border-gray-800">
       <h3 class="font-bold text-xs tracking-widest text-gray-800 dark:text-white uppercase">Hasil Perlombaan</h3>
@@ -43,13 +42,12 @@
           <tr>
             <th class="px-4 py-3 font-bold">Jarak</th>
             <th class="px-4 py-3 font-bold text-center">Rekor Waktu</th>
-            <th class="px-4 py-3 font-bold text-center">Status KU</th>
+            <th class="px-4 py-3 font-bold text-center">Target Coach</th>
             <th class="px-4 py-3 font-bold">Event</th>
           </tr>
         </thead>
         <tbody id="table-grafik-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-          <!-- Render otomatis dari JS -->
-        </tbody>
+          </tbody>
       </table>
     </div>
   </div>

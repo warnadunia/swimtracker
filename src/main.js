@@ -233,25 +233,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
- 
-
-// ================== BATAS ATAS (Mulai Blok Dari Sini) ==================
-  // const selectJarak = document.getElementById('grafik-jarak-filter'); // HAPUS YG LAMA, GANTI INI
   const selectTahun = document.getElementById('grafik-year-filter');
 
   function initTabGrafik(styleName) {
     const tbody = document.getElementById('table-grafik-body');
     if (!tbody) return;
     
-    // Ambil data berdasarkan gaya (Bebas, Kupu, dll)
+    // Ambil semua data yang mengandung kata gaya tersebut (Bebas, Kupu, Ganti, dll)
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
     
-    // Ambil jarak pertama buat dirender di grafik
-    const uniqueDistances = [...new Set(styleRecords.map(item => item.category))];
-    const categoryToChart = uniqueDistances.length > 0 ? uniqueDistances[0] : '';
-    
     if (selectTahun) {
-      renderChartProgress(categoryToChart, selectTahun.value);
+      renderChartProgress(styleName, selectTahun.value);
     }
 
     // --- RENDER TABEL LISTING ---
@@ -264,42 +256,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     sortedStyleRecords.forEach(item => {
-      const secs = timeToSeconds(item.time_record);
-      let statusHtml = '';
-      
-      // Styling Badge Status KU
-      if (secs > 0 && secs <= 28.5) { 
-        // Lolos Limit (Hijau)
-        statusHtml = `<span class="text-[9px] font-bold text-emerald-500 border border-emerald-900 bg-emerald-900/30 px-3 py-1 rounded-full uppercase">Lolos Limit</span>`;
-      } else if (secs > 0) {
-        // Belum Lolos (Abu-abu)
-        const diff = (secs - 28.5).toFixed(2);
-        statusHtml = `<span class="text-[9px] font-bold text-gray-400 border border-gray-700 bg-gray-800 px-3 py-1 rounded-full">+${diff} s</span>`;
-      } else {
-        statusHtml = `-`;
-      }
+      let statusHtml = `<span class="text-[9px] font-bold text-gray-400 border border-gray-200 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 px-2 py-1 rounded-md uppercase">Belum Set</span>`;
 
       const jarakSingkat = item.category.replace(' Gaya ', ' ');
       const eventYear = new Date(item.events.event_date).getFullYear();
       
-      // Render Baris Tabel
       tbody.innerHTML += `
         <tr class="hover:bg-gray-50 dark:hover:bg-[#221c29] transition-colors">
           <td class="px-4 py-4 font-bold text-gray-800 dark:text-gray-100 text-xs">${jarakSingkat}</td>
           <td class="px-4 py-4 text-center">
-            <!-- Badge Waktu Merah -->
             <span class="font-mono font-bold text-brand-red border border-red-900/50 bg-red-900/20 px-3 py-1.5 rounded-md text-xs tracking-wider">${item.time_record}</span>
           </td>
           <td class="px-4 py-4 text-center">${statusHtml}</td>
           <td class="px-4 py-4 text-gray-500 dark:text-gray-400 leading-tight text-[10px]">
-            <div class="font-bold text-gray-300 truncate max-w-[90px]">${item.events.title}</div>
+            <div class="font-bold text-gray-300 truncate max-w-[120px]">${item.events.title}</div>
             <div>${eventYear}</div>
           </td>
         </tr>`;
     });
   }
 
-  // Event Listener Dropdown Tahun (Dropdown Jarak dihapus)
+  // Event Listener Dropdown Tahun
   if (selectTahun) {
     selectTahun.addEventListener('change', () => {
       const activePill = document.querySelector('.pill-gaya.bg-brand-red');
@@ -311,7 +288,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function timeToSeconds(timeStr) {
     if (!timeStr) return 0;
-    // Pakai Regex biar bisa misahin string berdasarkan titik dua (:) ATAU titik (.)
     const parts = timeStr.split(/[:.]/);
     if (parts.length === 4) {
       return (parseInt(parts[0]||0) * 3600) + (parseInt(parts[1]||0) * 60) + parseInt(parts[2]||0) + (parseInt(parts[3]||0) / 100);
@@ -319,96 +295,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     return 0;
   }
 
-  function renderChartProgress(specificCategory, targetYearStr) {
+  function renderChartProgress(styleName, targetYearStr) {
     const ctx = document.getElementById('prestasiChart');
-    
-    // BUG FIXED: Hapus pengecekan !window.Chart karena module vite gak nyimpen Chart di window global
     if (!ctx) return; 
     
-    if (!specificCategory) { 
+    if (!styleName) { 
       if (window.myProgressChart) window.myProgressChart.destroy(); 
       return; 
     }
 
-    // 1. Set Tahun Berjalan & Tahun Lalu
     const targetYear = parseInt(targetYearStr) || new Date().getFullYear();
-    const lastYear = targetYear - 1;
-    
-    const catRecords = window.globalResultsData.filter(r => r.category === specificCategory && r.events);
+    const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()) && r.events);
 
-    // Fungsi narik waktu tercepat tiap bulan
-    const getMonthlyBest = (year) => {
+    const getMonthlyBest = (distancePrefix) => {
       const monthly = new Array(12).fill(null);
-      catRecords.forEach(r => {
-        const d = new Date(r.events.event_date);
-        if (d.getFullYear() === year) {
-          const monthIdx = d.getMonth();
-          const secs = timeToSeconds(r.time_record);
-          // Ambil waktu paling kecil (tercepat) di bulan tersebut
-          if (monthly[monthIdx] === null || secs < monthly[monthIdx]) {
-            monthly[monthIdx] = secs;
+      styleRecords.forEach(r => {
+        if (r.category.startsWith(distancePrefix)) {
+          const d = new Date(r.events.event_date);
+          if (d.getFullYear() === targetYear) {
+            const monthIdx = d.getMonth();
+            const secs = timeToSeconds(r.time_record);
+            if (monthly[monthIdx] === null || secs < monthly[monthIdx]) {
+              monthly[monthIdx] = secs;
+            }
           }
         }
       });
       return monthly;
     };
 
-    // Bersihkan chart lama sebelum render baru
     if (window.myProgressChart) window.myProgressChart.destroy();
 
-    // 2. Render Chart Baru
     window.myProgressChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'],
         datasets: [
-          { 
-            label: `Tahun ${targetYear} (Berjalan)`, 
-            data: getMonthlyBest(targetYear), 
-            borderColor: '#ff4d4d', 
-            borderWidth: 3, 
-            pointBackgroundColor: '#ff4d4d', 
-            pointRadius: 5, 
-            tension: 0.3,
-            spanGaps: true // Biar garis grafiknya nyambung meski ada bulan yg kosong
-          },
-          { 
-            label: `Tahun ${lastYear} (Lalu)`, 
-            data: getMonthlyBest(lastYear), 
-            borderColor: '#6b7280', 
-            borderWidth: 2, 
-            pointBackgroundColor: '#6b7280', 
-            pointRadius: 3,
-            borderDash: [5, 5], // Garis putus-putus biar beda sama tahun berjalan
-            tension: 0.3,
-            spanGaps: true
-          },
-          { 
-            label: 'Limit KU', 
-            data: new Array(12).fill(28.5), // Boleh di-dinamiskan nanti kalau udah ada DB limit KU
-            borderColor: '#eab308', 
-            borderWidth: 2, 
-            borderDash: [2, 2], 
-            pointRadius: 0, 
-            fill: false 
-          }
+          { label: '25 M', data: getMonthlyBest('25 M'), borderColor: '#d946ef', borderWidth: 2, pointBackgroundColor: '#d946ef', pointRadius: 4, tension: 0.3, spanGaps: true },
+          { label: '50 M', data: getMonthlyBest('50 M'), borderColor: '#22c55e', borderWidth: 2, pointBackgroundColor: '#22c55e', pointRadius: 4, tension: 0.3, spanGaps: true },
+          { label: '100 M', data: getMonthlyBest('100 M'), borderColor: '#eab308', borderWidth: 2, pointBackgroundColor: '#eab308', pointRadius: 4, tension: 0.3, spanGaps: true },
+          { label: '200 M', data: getMonthlyBest('200 M'), borderColor: '#06b6d4', borderWidth: 2, pointBackgroundColor: '#06b6d4', pointRadius: 4, tension: 0.3, spanGaps: true },
+          { label: 'Target Coach', data: new Array(12).fill(null), borderColor: '#9ca3af', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, spanGaps: true }
         ]
       },
       options: {
         responsive: true, 
         maintainAspectRatio: false, 
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: false } }, 
         scales: { 
-          y: { 
-            reverse: true, // WAJIB! Biar waktu paling kecil (tercepat) posisinya di atas
-            grid: { color: 'rgba(75, 85, 99, 0.2)', drawBorder: false }, 
-            ticks: { color: '#9ca3af', stepSize: 2 } 
-          },
-          x: { 
-            grid: { display: false, drawBorder: false }, 
-            ticks: { color: '#9ca3af', font: { size: 10 } } 
-          }
+          y: { reverse: true, grid: { color: 'rgba(75, 85, 99, 0.2)', drawBorder: false }, ticks: { color: '#9ca3af' } },
+          x: { grid: { display: false, drawBorder: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
         }
       }
     });
