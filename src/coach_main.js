@@ -5,7 +5,9 @@ import navCoachHTML from '../coach_nav.html?raw';
 import dashCoachHTML from '../coach_dashboard.html?raw';
 import atletCoachHTML from '../coach_atlet.html?raw';
 import absenCoachHTML from '../coach_absen.html?raw'; 
-import manageCoachHTML from '../coach_manage.html?raw'; // Komponen Manajemen Pelatih
+import manageCoachHTML from '../coach_manage.html?raw';
+import trainingCoachHTML from '../coach_training.html?raw';
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
@@ -23,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('coach-main-container').innerHTML = `
     <div id="tab-coach-dashboard" class="coach-tab-content hidden">${dashCoachHTML}</div>
     <div id="tab-coach-atlet" class="coach-tab-content hidden">${atletCoachHTML}</div>
-    <div id="tab-coach-training" class="coach-tab-content hidden"><div class="p-6 text-center text-gray-400 font-bold">Halaman Training (Under Construction)</div></div>
+    <div id="tab-coach-training" class="coach-tab-content hidden">${trainingCoachHTML}</div>
     <div id="tab-coach-leaderboard" class="coach-tab-content hidden"><div class="p-6 text-center text-gray-400 font-bold">Halaman Leaderboard (Under Construction)</div></div>
     <div id="tab-coach-absen" class="coach-tab-content hidden">${absenCoachHTML}</div>
     <div id="tab-coach-manage" class="coach-tab-content hidden">${manageCoachHTML}</div>
@@ -64,6 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentMedalFilter = 'All';
   let currentManageFilter = 'All';
   let currentAbsenFilter = 'All';
+  let allTrainingData = [];
 
   // GLOBAL EVENT DELEGATION
   document.addEventListener('click', async (e) => {
@@ -140,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderAbsenClasses();
       renderManageCoaches();
       await loadMedals(document.getElementById('medal-year-filter').value);
+      await fetchTrainingData();
     } catch (err) { console.error(err); }
   }
 
@@ -352,3 +356,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await fetchMasterData();
 });
+
+// ==========================================
+  // 6. LOGIC HALAMAN TRAINING (TIME TRIAL)
+  // ==========================================
+  async function fetchTrainingData() {
+    try {
+      const { data, error } = await supabase
+        .from('time_trials_results')
+        .select('*, profiles(full_name, group_level)')
+        .order('created_at', { ascending: false })
+        .limit(100); // Ambil 100 record terbaru biar enteng
+      
+      if (error) throw error;
+      allTrainingData = data || [];
+      renderTrainingData();
+    } catch (err) {
+      console.error("Gagal load training:", err);
+    }
+  }
+
+  function renderTrainingData(searchQuery = '') {
+    const container = document.getElementById('container-training-records');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const filtered = allTrainingData.filter(item => {
+      const name = item.profiles?.full_name?.toLowerCase() || '';
+      const title = item.title_event?.toLowerCase() || '';
+      const query = searchQuery.toLowerCase();
+      return name.includes(query) || title.includes(query);
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="text-center py-6 text-xs text-gray-500 bg-gray-50 dark:bg-zinc-900 rounded-xl">Tidak ada data riwayat latihan.</div>`;
+      return;
+    }
+
+    filtered.forEach(r => {
+      // Format Tanggal
+      const dateObj = new Date(r.created_at);
+      const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      
+      container.innerHTML += `
+        <div class="bg-white dark:bg-[#221c29] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex justify-between items-center hover:border-brand-red/50 transition-colors">
+           <div class="flex-1 pr-2">
+             <div class="text-sm font-bold text-gray-800 dark:text-white mb-0.5 truncate">${r.profiles?.full_name || 'Anonim'}</div>
+             <div class="text-[10px] text-gray-500 truncate">${r.title_event} • ${r.distance}M (Pool ${r.pool_size}M)</div>
+             <div class="text-[10px] text-brand-red/80 font-bold mt-1 tracking-wider uppercase">${dateStr}</div>
+           </div>
+           <div class="text-base font-mono font-bold text-brand-red bg-red-900/10 px-3 py-1.5 rounded-xl border border-red-900/20 shadow-inner">
+             ${r.time_record}
+           </div>
+        </div>
+      `;
+    });
+  }
+  
+  // Event Listener untuk Search Box Training
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'search-training') {
+      renderTrainingData(e.target.value);
+    }
+  });

@@ -1,0 +1,41 @@
+<!-- ================= MAIN VIEW: LIST RANKING ================= -->
+<div id="lb-main-view" class="block pb-24">
+  <!-- PAGE TITLE -->
+  <div class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1620] sticky top-[68px] z-40">
+    <h2 class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Leaderboard</h2>
+    <p class="text-[10px] text-gray-500 mt-0.5">Peringkat akumulasi prestasi atlet</p>
+  </div>
+
+  <div class="p-4 max-w-md mx-auto space-y-4">
+    <!-- Kontainer List Leaderboard -->
+    <div class="bg-white dark:bg-[#221c29] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-[#2b2532] border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+        <h5 class="text-xs font-bold text-gray-700 dark:text-zinc-200 uppercase tracking-wide">Peringkat Atlet (Poin)</h5>
+      </div>
+      <div id="container-lb-list" class="divide-y divide-gray-100 dark:divide-gray-800/60 p-2">
+        <div class="text-center py-6 text-xs text-gray-400">Memuat klasemen...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DETAIL VIEW: SUB PAGE ================= -->
+<div id="lb-detail-view" class="hidden pb-24">
+  <!-- SUB PAGE HEADER DENGAN TOMBOL BACK -->
+  <div class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1620] sticky top-[68px] z-40 flex items-center gap-3">
+    <button onclick="window.closeLeaderboardDetail()" class="p-2 text-gray-500 hover:text-brand-red dark:text-gray-400 bg-gray-50 dark:bg-zinc-800/50 rounded-full active:scale-95 transition-transform border border-gray-200 dark:border-gray-700">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    </button>
+    <div>
+      <h2 id="lb-detail-name" class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Nama Atlet</h2>
+      <p class="text-[10px] text-gray-500 mt-0.5">Detail Rekam Jejak Prestasi</p>
+    </div>
+  </div>
+
+  <div class="p-4 max-w-md mx-auto space-y-4">
+    <!-- Kontainer Detail Prestasi -->
+    <div id="container-lb-detail-list" class="space-y-3">
+       <!-- Dirender via JS -->
+    </div>
+  </div>
+</div>
