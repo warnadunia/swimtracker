@@ -95,6 +95,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5. EVENT DELEGATION
   // ==========================================
   document.addEventListener('click', async (e) => {
+    if (e.target.closest('#fullscreen-toggle')) {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
     if (e.target.closest('#theme-toggle')) {
       const isDark = document.documentElement.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');

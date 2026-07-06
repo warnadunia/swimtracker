@@ -3,18 +3,29 @@
   <!-- PAGE TITLE -->
   <div class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1620] sticky top-[68px] z-40">
     <h2 class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Leaderboard</h2>
-    <p class="text-[10px] text-gray-500 mt-0.5">Peringkat akumulasi prestasi atlet</p>
+    <p class="text-[10px] text-gray-500 mt-0.5">Peringkat prestasi & time trial</p>
+    
+    <!-- Tab Toggle -->
+    <div class="flex p-1 bg-gray-100 dark:bg-zinc-900 rounded-lg mt-3">
+      <button onclick="window.switchLbTab('medal')" id="btn-tab-medal" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-white dark:bg-zinc-800 shadow-sm text-brand-red transition-all">Poin Medali</button>
+      <button onclick="window.switchLbTab('tt')" id="btn-tab-tt" class="flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all">Time Trial</button>
+    </div>
   </div>
 
   <div class="p-4 max-w-md mx-auto space-y-4">
-    <!-- Kontainer List Leaderboard -->
-    <div class="bg-white dark:bg-[#221c29] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+    <!-- Kontainer List Poin Medali -->
+    <div id="lb-medal-content" class="bg-white dark:bg-[#221c29] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden block">
       <div class="px-4 py-3 bg-gray-50 dark:bg-[#2b2532] border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
         <h5 class="text-xs font-bold text-gray-700 dark:text-zinc-200 uppercase tracking-wide">Peringkat Atlet (Poin)</h5>
       </div>
       <div id="container-lb-list" class="divide-y divide-gray-100 dark:divide-gray-800/60 p-2">
         <div class="text-center py-6 text-xs text-gray-400">Memuat klasemen...</div>
       </div>
+    </div>
+    
+    <!-- Kontainer List Time Trial (Kelas) -->
+    <div id="lb-tt-content" class="hidden space-y-4">
+      <div id="container-lb-tt-classes"></div>
     </div>
   </div>
 </div>
@@ -26,14 +37,14 @@
     <button onclick="window.closeLeaderboardDetail()" class="p-2 text-gray-500 hover:text-brand-red dark:text-gray-400 bg-gray-50 dark:bg-zinc-800/50 rounded-full active:scale-95 transition-transform border border-gray-200 dark:border-gray-700">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
     </button>
-    <div>
-      <h2 id="lb-detail-name" class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Nama Atlet</h2>
-      <p class="text-[10px] text-gray-500 mt-0.5">Detail Rekam Jejak Prestasi</p>
+    <div class="flex-1">
+      <h2 id="lb-detail-name" class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white truncate">Detail</h2>
+      <p id="lb-detail-desc" class="text-[10px] text-gray-500 mt-0.5 truncate">Detail Rekam Jejak</p>
     </div>
   </div>
 
   <div class="p-4 max-w-md mx-auto space-y-4">
-    <!-- Kontainer Detail Prestasi -->
+    <!-- Kontainer Detail Prestasi / Leaderboard TT -->
     <div id="container-lb-detail-list" class="space-y-3">
        <!-- Dirender via JS -->
     </div>
