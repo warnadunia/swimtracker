@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Coach App - PSSC</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</head>
+<body class="bg-gray-50 dark:bg-[#1a1620] text-gray-800 dark:text-white min-h-screen">
+
+  <!-- TEMPAT INJECT HALAMAN (DASHBOARD, ATLET, DLL) -->
+  <div id="coach-main-container" class="pb-24"></div>
+
+  <!-- TEMPAT INJECT BOTTOM NAV -->
+  <div id="coach-nav-container"></div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+  <script type="module" src="/src/coach_main.js"></script>
+</body>
+</html>

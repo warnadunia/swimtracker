@@ -1,0 +1,30 @@
+<div class="fixed bottom-0 left-0 right-0 p-2 bg-white/95 dark:bg-[#1a1620]/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 max-w-md mx-auto z-[100]">
+  <div class="flex justify-around items-center">
+    
+    <button onclick="window.switchCoachTab('tab-coach-dashboard')" class="nav-coach-btn text-brand-red flex flex-col items-center gap-1 p-1 w-14 transition-colors">
+      <span class="text-xl">📊</span>
+      <span class="text-[8px] font-bold uppercase tracking-wide">Dash</span>
+    </button>
+    
+    <button onclick="window.switchCoachTab('tab-coach-atlet')" class="nav-coach-btn text-gray-400 hover:text-brand-red flex flex-col items-center gap-1 p-1 w-14 transition-colors">
+      <span class="text-xl">🏊‍♂️</span>
+      <span class="text-[8px] font-bold uppercase tracking-wide">Athletes</span>
+    </button>
+    
+    <button onclick="window.switchCoachTab('tab-coach-training')" class="nav-coach-btn text-gray-400 hover:text-brand-red flex flex-col items-center gap-1 p-1 w-14 transition-colors">
+      <span class="text-xl">⏱️</span>
+      <span class="text-[8px] font-bold uppercase tracking-wide">Training</span>
+    </button>
+    
+    <button onclick="window.switchCoachTab('tab-coach-leaderboard')" class="nav-coach-btn text-gray-400 hover:text-brand-red flex flex-col items-center gap-1 p-1 w-14 transition-colors">
+      <span class="text-xl">🏆</span>
+      <span class="text-[8px] font-bold uppercase tracking-wide">Leader</span>
+    </button>
+    
+    <button id="nav-headcoach-only" onclick="window.switchCoachTab('tab-coach-manage')" class="nav-coach-btn hidden flex-col items-center gap-1 p-1 w-14 transition-colors text-gray-400 hover:text-brand-red">
+      <span class="text-xl">👑</span>
+      <span class="text-[8px] font-bold uppercase tracking-wide">Coach</span>
+    </button>
+
+  </div>
+</div>

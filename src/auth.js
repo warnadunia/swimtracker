@@ -1,11 +1,35 @@
 import './style.css';
 import { supabase } from './supabase';
 
+// FUNGSI PINTU PUTAR (ROUTING BERDASARKAN ROLE)
+async function redirectBasedOnRole(userId) {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (error || !profile) throw error;
+
+    if (profile.role === 'head_coach' || profile.role === 'coach') {
+      window.location.replace('/coach_app.html');
+    } else if (profile.role === 'admin') {
+      window.location.replace('/admin.html');
+    } else {
+      window.location.replace('/app.html');
+    }
+  } catch (err) {
+    console.error("Gagal cek profil:", err);
+    window.location.replace('/app.html'); 
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-  // Cek apakah sudah login, jika ya, langsung lempar ke app.html
+  // 1. CEK SESI (Kalau belum logout, otomatis dilempar ke dalam)
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    window.location.replace('/app.html');
+    await redirectBasedOnRole(session.user.id);
     return;
   }
 
@@ -29,7 +53,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const password = document.getElementById('reg-password').value;
       const birthYear = document.getElementById('reg-year').value.trim();
 
-      // Buat fake email dari username agar diterima Supabase
       const fakeEmail = rawUsername.replace(/\s+/g, '') + '@swimapp.local';
 
       const { data, error } = await supabase.auth.signUp({
@@ -83,7 +106,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (error) {
         alert('Login gagal: Username atau Password salah!');
       } else {
-        window.location.href = '/app.html';
+        // SETELAH LOGIN SUKSES, CEK ROLE-NYA!
+        await redirectBasedOnRole(data.user.id);
       }
     });
   }

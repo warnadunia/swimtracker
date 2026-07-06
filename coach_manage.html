@@ -1,0 +1,49 @@
+<div class="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1620] sticky top-0 z-40">
+  <h2 class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Manajemen Pelatih</h2>
+</div>
+
+<div class="p-4 max-w-md mx-auto space-y-5">
+  <div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg shadow-emerald-600/20 flex justify-between items-center">
+    <div>
+      <h4 class="text-xs font-bold uppercase tracking-wider opacity-80">Total Pelatih</h4>
+      <div class="text-3xl font-bold mt-1" id="stat-total-coach">0</div>
+    </div>
+    <span class="text-4xl opacity-50">👑</span>
+  </div>
+
+  <div class="bg-white dark:bg-[#221c29] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+    <div class="px-4 py-3 bg-gray-50 dark:bg-[#2b2532] border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+      <h5 class="text-xs font-bold text-gray-700 dark:text-zinc-200 uppercase tracking-wide">Daftar Coach Aktif</h5>
+    </div>
+    <div id="container-manage-coaches" class="divide-y divide-gray-100 dark:divide-gray-800/60 p-2">
+      <div class="text-center py-6 text-xs text-gray-400">Memuat data pelatih...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GANTI TUGAS KELAS COACH -->
+<div id="modal-edit-coach" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
+  <div class="w-full max-w-md bg-white dark:bg-[#1a1620] border border-gray-200 dark:border-gray-700 shadow-xl rounded-t-3xl sm:rounded-2xl transform transition-transform translate-y-full duration-300" id="modal-edit-coach-inner">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+      <h3 class="font-bold text-sm uppercase tracking-wider text-gray-800 dark:text-white">Set Tugas Kelas</h3>
+      <button type="button" id="btn-close-modal-coach" class="text-gray-400 hover:text-brand-red p-1">✕</button>
+    </div>
+    
+    <div class="p-6 pb-24 sm:pb-6 space-y-4">
+      <div class="text-center mb-6">
+        <div id="edit-coach-name" class="font-bold text-lg text-emerald-500">Nama Coach</div>
+        <div class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Ditugaskan Pegang Kelas:</div>
+      </div>
+      <input type="hidden" id="edit-coach-id">
+      <select id="select-coach-class" class="w-full p-4 bg-gray-50 dark:bg-[#221c29] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-800 dark:text-white focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+        <option value="Head Coach (Semua)">Head Coach (Semua)</option>
+        <option value="LHTS">LHTS</option>
+        <option value="Basic 1">Basic 1</option>
+        <option value="Basic 2">Basic 2</option>
+        <option value="ED">ED</option>
+        <option value="RJ">RJ</option>
+      </select>
+      <button id="btn-save-coach-class" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 mt-4">💾 SIMPAN TUGAS KELAS</button>
+    </div>
+  </div>
+</div>

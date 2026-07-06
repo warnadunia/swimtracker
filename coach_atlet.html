@@ -1,0 +1,57 @@
+<div class="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1620] sticky top-0 z-40">
+  <h2 class="text-base font-bold uppercase tracking-wider text-gray-800 dark:text-white">Daftar & Kelas Atlet</h2>
+</div>
+
+<div class="p-4 max-w-md mx-auto space-y-5">
+  
+  <!-- STATISTIK ATLET -->
+  <div class="bg-brand-red text-white p-4 rounded-2xl shadow-lg shadow-brand-red/20 flex justify-between items-center">
+    <div>
+      <h4 class="text-xs font-bold uppercase tracking-wider opacity-80">Total Atlet Aktif</h4>
+      <div class="text-3xl font-bold mt-1" id="stat-total-atlet">0</div>
+    </div>
+  </div>
+
+  <!-- KELOMPOK KELAS & DAFTAR -->
+  <div class="space-y-4">
+    <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+      <button class="pill-manage px-4 py-2 rounded-xl bg-brand-red text-white text-xs font-bold whitespace-nowrap shadow-md shadow-brand-red/30 transition-all" data-class="All">All</button>
+      <button class="pill-manage px-4 py-2 rounded-xl bg-white dark:bg-[#221c29] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-800 transition-all" data-class="LHTS">LHTS</button>
+      <button class="pill-manage px-4 py-2 rounded-xl bg-white dark:bg-[#221c29] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-800 transition-all" data-class="Basic 1">Basic 1</button>
+      <button class="pill-manage px-4 py-2 rounded-xl bg-white dark:bg-[#221c29] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-800 transition-all" data-class="Basic 2">Basic 2</button>
+      <button class="pill-manage px-4 py-2 rounded-xl bg-white dark:bg-[#221c29] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-800 transition-all" data-class="ED">ED</button>
+      <button class="pill-manage px-4 py-2 rounded-xl bg-white dark:bg-[#221c29] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-800 transition-all" data-class="RJ">RJ</button>
+    </div>
+    
+    <div id="container-manage-classes" class="space-y-4">
+      <div class="text-center py-6 text-xs text-gray-400">Memuat data atlet...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GANTI KELAS (Dipegang SPA JS) -->
+<div id="modal-edit-class" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
+  <div class="w-full max-w-md bg-white dark:bg-[#1a1620] border border-gray-200 dark:border-gray-700 shadow-xl rounded-t-3xl sm:rounded-2xl transform transition-transform translate-y-full duration-300" id="modal-edit-inner">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+      <h3 class="font-bold text-sm uppercase tracking-wider text-gray-800 dark:text-white">Set Kelompok Kelas</h3>
+      <button type="button" id="btn-close-modal-class" class="text-gray-400 hover:text-brand-red p-1">✕</button>
+    </div>
+    
+    <!-- FIX: Tambah pb-24 (Padding Bottom) biar tombol nggak ketutupan Nav Bar -->
+    <div class="p-6 pb-24 sm:pb-6 space-y-4">
+      <div class="text-center mb-6">
+        <div id="edit-atlet-name" class="font-bold text-lg text-brand-red">Nama Atlet</div>
+        <div class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Pindah Ke Kelas:</div>
+      </div>
+      <input type="hidden" id="edit-atlet-id">
+      <select id="select-new-class" class="w-full p-4 bg-gray-50 dark:bg-[#221c29] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-800 dark:text-white focus:border-brand-red outline-none appearance-none cursor-pointer">
+        <option value="LHTS">LHTS</option>
+        <option value="Basic 1">Basic 1</option>
+        <option value="Basic 2">Basic 2</option>
+        <option value="ED">ED</option>
+        <option value="RJ">RJ</option>
+      </select>
+      <button id="btn-save-class" class="w-full bg-brand-red text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 mt-4">💾 SIMPAN KELAS</button>
+    </div>
+  </div>
+</div>
