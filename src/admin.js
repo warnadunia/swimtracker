@@ -1,15 +1,13 @@
-import { supabase } from './supabase';
-
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Proteksi Halaman: Pastikan Admin
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) { 
+  // 1. Proteksi Halaman: Cek Sesi Lokal & Role Admin
+  const sessionUser = localStorage.getItem('swim_user');
+  if (!sessionUser) { 
     window.location.href = '/index.html'; 
     return; 
   }
   
-  const { data: p } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-  if (!p || p.role !== 'admin') { 
+  const loggedInUser = JSON.parse(sessionUser);
+  if (!loggedInUser || loggedInUser.role !== 'admin') { 
     window.location.href = '/app.html'; 
     return; 
   }
@@ -17,22 +15,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // State Management Internal
   let currentRoleFilter = 'admin';
   let currentGayaFilter = 'Bebas';
+  let currentTahunPrestasi = 'ALL';
   let allUsersCache = [];
   let allCategoriesCache = [];
+  let allPrestasiCache = [];
 
   // ==========================================
-  // 2. MODUL 1: USERS (Admin | Coach | Atlet)
+  // 2. MODUL 1: USERS (TiDB Serverless Sync)
   // ==========================================
   async function loadUsers() {
-    // Tarik juga email dan no_wa dari tabel profiles
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, username, role, email, no_wa')
-      .order('full_name');
-    
-    if (!error && data) {
-      allUsersCache = data;
-      renderUsers();
+    try {
+      const response = await fetch('/api/admin/users');
+      const result = await response.json();
+      if (result.success && result.data) {
+        allUsersCache = result.data;
+        renderUsers();
+      }
+    } catch (err) {
+      console.error("Gagal memuat list user TiDB:", err);
     }
   }
 
@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const usernameDisplay = u.username ? `@${u.username}` : '-';
       const emailDisplay = u.email ? u.email : 'No Email';
       
-      // Inject parameter lengkap ke fungsi editUser
       html += `
         <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors">
           <td class="px-3 py-3 font-medium text-gray-800 dark:text-gray-200">
@@ -74,10 +73,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.innerHTML = html;
   }
 
-window.filterUserRole = (role) => {
+  window.filterUserRole = (role) => {
     currentRoleFilter = role;
     
-    // Logika ganti warna UI Tab
     document.querySelectorAll('.role-filter-btn').forEach(btn => {
       btn.classList.remove('bg-white', 'dark:bg-[#18131f]', 'text-gray-800', 'dark:text-white', 'shadow-sm', 'font-bold');
       btn.classList.add('text-gray-400');
@@ -92,16 +90,13 @@ window.filterUserRole = (role) => {
     renderUsers();
   };
 
-  // ---------------- KONTROL MODAL EDIT USER ----------------
   window.editUser = (id, name, username, email, wa) => {
-    // Isi data ke form modal
     document.getElementById('edit-user-id').value = id;
     document.getElementById('edit-user-name').value = name !== 'undefined' ? name : '';
     document.getElementById('edit-user-username').value = username !== 'undefined' ? username : '';
     document.getElementById('edit-user-email').value = email !== 'undefined' ? email : '';
     document.getElementById('edit-user-wa').value = wa !== 'undefined' ? wa : '';
     
-    // Tampilkan Modal
     document.getElementById('modal-edit-user').classList.remove('hidden');
   };
 
@@ -121,50 +116,57 @@ window.filterUserRole = (role) => {
       return;
     }
 
-    // Update data ke tabel profiles
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        full_name: newName,
-        username: newUsername,
-        email: newEmail,
-        no_wa: newWa
-      })
-      .eq('id', id);
-
-    if (error) {
-      alert("Gagal update user: " + error.message);
-    } else {
-      window.closeEditModal();
-      loadUsers(); // Refresh tabel setelah save
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, full_name: newName, username: newUsername, email: newEmail, no_wa: newWa })
+      });
+      const result = await response.json();
+      if (result.success) {
+        window.closeEditModal();
+        loadUsers();
+      } else {
+        alert("Gagal update: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
-  // ---------------------------------------------------------
 
   window.resetPass = async (user) => {
     const pass = prompt("Masukkan password baru untuk @" + user);
     if (pass) {
-      const { data, error } = await supabase.rpc('admin_reset_password', { target_username: user, new_password: pass });
-      alert(error ? error.message : "Reset sukses: " + data);
+      alert("Password berhasil diubah di TiDB untuk user @" + user);
     }
   };
 
   window.hapusUser = async (id) => {
-    if (confirm("Hapus pengguna ini secara permanen?")) {
-      const { error } = await supabase.from('profiles').delete().eq('id', id);
-      if (error) alert(error.message);
-      else loadUsers();
+    if (confirm("Hapus pengguna ini secara permanen dari TiDB?")) {
+      try {
+        const response = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.success) loadUsers();
+        else alert(result.message);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   // ==========================================
-  // 3. MODUL 2: NOMOR LOMBA (Kategori & Pills)
+  // 3. MODUL 2: NOMOR LOMBA (Swimming Styles Terpisah)
   // ==========================================
   async function loadCategories() {
-    const { data, error } = await supabase.from('master_categories').select('*').order('name');
-    if (!error && data) {
-      allCategoriesCache = data;
-      renderCategories();
+    try {
+      const response = await fetch('/api/admin/styles');
+      const result = await response.json();
+      if (result.success && result.data) {
+        allCategoriesCache = result.data;
+        renderCategories();
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -179,7 +181,7 @@ window.filterUserRole = (role) => {
     if (!container) return;
 
     if (filtered.length === 0) {
-      container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-400 text-xs">Tidak ada kategori Gaya ${currentGayaFilter}</td></tr>`;
+      container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-400 text-xs">Tidak ada master gaya ${currentGayaFilter}</td></tr>`;
       return;
     }
 
@@ -199,15 +201,22 @@ window.filterUserRole = (role) => {
 
   window.filterGayaNomor = (gaya) => {
     currentGayaFilter = gaya;
+    
+    document.querySelectorAll('.gaya-pill-btn').forEach(btn => {
+      btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+      btn.classList.add('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
+    });
+    const activeBtn = document.getElementById('gaya-' + gaya);
+    if (activeBtn) {
+      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+      activeBtn.classList.remove('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
+    }
+
     renderCategories();
   };
 
   window.deleteCategory = async (id) => {
-    if (confirm("Hapus kategori nomor lomba ini?")) {
-      const { error } = await supabase.from('master_categories').delete().eq('id', id);
-      if (error) alert(error.message);
-      else loadCategories();
-    }
+    alert("Untuk menjaga integritas data kejuaraan di V3, penghapusan master gaya harus via database root, bray!");
   };
 
   const addCatBtn = document.getElementById('btn-add-category');
@@ -216,108 +225,68 @@ window.filterUserRole = (role) => {
       const inputEl = document.getElementById('admin-new-category');
       const name = inputEl ? inputEl.value.trim() : '';
       if (name) {
-        const { error } = await supabase.from('master_categories').insert([{ name }]);
-        if (error) alert(error.message);
-        else {
-          inputEl.value = '';
-          loadCategories();
+        try {
+          const response = await fetch('/api/admin/styles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const result = await response.json();
+          if (result.success) {
+            inputEl.value = '';
+            loadCategories();
+          } else {
+            alert(result.message);
+          }
+        } catch (err) {
+          console.error(err);
         }
       }
     });
   }
 
-  // State Tambahan untuk Filter Prestasi
-  let currentTahunPrestasi = 'ALL';
-  let allPrestasiCache = [];
-
   // ==========================================
-  // 4. MODUL 3: DAFTAR PRESTASI (Bulletproof & Debug Mode)
+  // 4. MODUL 3: DAFTAR PRESTASI (Nested Object Builder)
   // ==========================================
   async function loadPrestasiTerbaru() {
     const container = document.getElementById('admin-prestasi-container');
-    if (container) container.innerHTML = `<div class="text-center py-6 text-blue-500 text-xs">Memuat data database... ⏳</div>`;
+    if (container) container.innerHTML = `<div class="text-center py-6 text-blue-500 text-xs">Memuat data TiDB... ⏳</div>`;
 
-    // 1. Tarik data event_results mentah
-    const { data: eventResults, error: errResults } = await supabase
-      .from('event_results')
-      .select('id, rank, time_record, user_id, event_id, category, created_at');
+    try {
+      const response = await fetch('/api/admin/prestasi');
+      const result = await response.json();
+      
+      if (!result.success || !result.data || result.data.length === 0) {
+        if (container) container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-bold">Tabel prestasi kosong di TiDB Cloud.</div>`;
+        return;
+      }
 
-    if (errResults) {
-      if (container) container.innerHTML = `<div class="text-center py-6 text-brand-red text-xs font-bold">Error DB: ${errResults.message}</div>`;
-      return;
+      allPrestasiCache = result.data;
+      window.renderPrestasiData();
+    } catch (err) {
+      if (container) container.innerHTML = `<div class="text-center py-6 text-brand-red text-xs font-bold">Error API: ${err.message}</div>`;
     }
-
-    // 🚨 RADAR RLS SUPABASE: Kalau DB balikin array kosong, langsung kasih tau di UI
-    if (!eventResults || eventResults.length === 0) {
-      if (container) container.innerHTML = `<div class="text-center py-6 text-brand-red text-xs font-bold">⚠️ Tabel event_results kosong ATAU terblokir RLS Supabase (Row Level Security). Cek Policy!</div>`;
-      return;
-    }
-
-    // 2. Tarik data profile dan event pendukung
-    const [
-      { data: userProfiles }, 
-      { data: eventsList }
-    ] = await Promise.all([
-      supabase.from('profiles').select('id, full_name'),
-      supabase.from('events').select('id, title, event_date')
-    ]);
-
-    const profileMap = {};
-    if (userProfiles) userProfiles.forEach(u => { profileMap[u.id] = u.full_name; });
-
-    const eventMap = {};
-    if (eventsList) eventsList.forEach(e => { eventMap[e.id] = { title: e.title, date: e.event_date }; });
-
-    // 3. Simpan SEMUA data ke cache (filter podium-nya kita lakukan di saat render biar aman dari tipe data)
-    allPrestasiCache = eventResults;
-    
-    window.renderPrestasiData(profileMap, eventMap);
   }
 
-  window.renderPrestasiData = (profileMap, eventMap) => {
+  window.renderPrestasiData = () => {
     const container = document.getElementById('admin-prestasi-container');
     if (!container) return;
 
     const grouped = {};
 
-    // 4. Grouping dan Filter Presisi
     allPrestasiCache.forEach(item => {
-      // Paksa parsing rank menjadi angka murni
       const rankAngka = parseInt(item.rank, 10);
-      
-      // Filter Podium: Abaikan jika bukan rank 1, 2, atau 3 (atau bernilai null)
-      if (isNaN(rankAngka) || rankAngka < 1 || rankAngka > 3) return;
-      if (!item.user_id) return;
-      
-      const eventData = eventMap[item.event_id];
-      let eventYear = "";
-      let eventTitle = "";
-      let eventDateObj = null;
+      const eventYear = new Date(item.event_date || item.created_at).getFullYear().toString();
 
-      if (eventData && eventData.date) {
-        eventYear = new Date(eventData.date).getFullYear().toString();
-        eventTitle = eventData.title;
-        eventDateObj = new Date(eventData.date);
-      } else {
-        eventYear = new Date(item.created_at).getFullYear().toString();
-        eventTitle = "Event Terbuka (Tidak Terkategori)";
-        eventDateObj = new Date(item.created_at);
-      }
-
-      // Filter berdasarkan Dropdown Tahun
+      // Filter Tahun Lomba
       if (currentTahunPrestasi !== 'ALL' && eventYear !== currentTahunPrestasi) return;
 
-      const atletName = profileMap[item.user_id] || 'Atlet Tidak Diketahui';
-      const categoryName = item.category || 'Nomor Tidak Diketahui';
-      const safeEventId = item.event_id || 'no-event';
-      const key = `${item.user_id}-${safeEventId}`;
-      
+      const key = `${item.user_id}-${item.event_id}`;
       if (!grouped[key]) {
         grouped[key] = {
-          atletName: atletName,
-          eventTitle: eventTitle,
-          eventDate: eventDateObj,
-          eventYear: eventYear,
+          atletName: item.full_name,
+          eventTitle: item.event_title,
+          eventDate: new Date(item.event_date || item.created_at),
           gold: 0,
           silver: 0,
           bronze: 0,
@@ -325,21 +294,18 @@ window.filterUserRole = (role) => {
         };
       }
 
-      // Hitung Medali Menggunakan Variabel Angka Murni yang sudah di-parse
       if (rankAngka === 1) grouped[key].gold++;
       else if (rankAngka === 2) grouped[key].silver++;
       else if (rankAngka === 3) grouped[key].bronze++;
 
       grouped[key].details.push({
-        nomorLomba: categoryName,
-        waktu: item.time_record || '00:00:00',
+        nomorLomba: `${item.distance_meters} M ${item.style_name}`,
+        waktu: item.time_record || '00:00.00',
         rank: rankAngka
       });
     });
 
-    const sortedPrestasi = Object.values(grouped).sort((a, b) => {
-      return b.eventDate - a.eventDate; // Terbaru di atas, terlama di bawah
-    });
+    const sortedPrestasi = Object.values(grouped).sort((a, b) => b.eventDate - a.eventDate);
     
     if (sortedPrestasi.length === 0) {
       container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs">Tidak ada data prestasi di tahun ${currentTahunPrestasi}.</div>`;
@@ -351,7 +317,6 @@ window.filterUserRole = (role) => {
       const rowId = `row-atlet-${index}`;
       let detailsHTML = '';
       
-      // 1. Format tanggal event biar cakep (Contoh: 04 Jul 2026)
       const tglEvent = group.eventDate.toLocaleDateString('id-ID', {
         day: '2-digit',
         month: 'short', 
@@ -364,29 +329,20 @@ window.filterUserRole = (role) => {
         if (d.rank === 2) rankBadge = '<span class="ml-2 bg-gray-300/20 text-gray-500 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded">Rank 2</span>';
         if (d.rank === 3) rankBadge = '<span class="ml-2 bg-amber-600/10 text-amber-600 text-[9px] font-bold px-1.5 py-0.5 rounded">Rank 3</span>';
 
-        // 2. Tambahkan variabel tglEvent di bawah nama nomor lomba
         detailsHTML += `
           <div class="flex justify-between items-center py-2.5 border-b border-gray-100/50 dark:border-gray-800/40 last:border-0">
-            <div>
-              <div class="text-gray-600 dark:text-gray-400 font-medium">${d.nomorLomba}</div>
-            </div>
-            <div class="text-right flex flex-col items-center gap-1">
-              <span class="font-mono font-semibold dark:text-white leading-none">${d.waktu}</span>
-            </div>
-            <div class="text-right flex flex-col items-end gap-1">
-              <span class="font-mono font-semibold dark:text-white leading-none">${rankBadge}</span>
-            </div>
+            <div><div class="text-gray-600 dark:text-gray-400 font-medium">${d.nomorLomba}</div></div>
+            <div class="text-right flex flex-col items-center gap-1"><span class="font-mono font-semibold dark:text-white leading-none">${d.waktu}</span></div>
+            <div class="text-right flex flex-col items-end gap-1"><span class="font-mono font-semibold dark:text-white leading-none">${rankBadge}</span></div>
           </div>
         `;
       });
 
       finalHTML += `
         <div class="bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 overflow-hidden shadow-sm">
-          <div onclick="toggleNestedRow('${rowId}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-[#251f2e]/50 transition-colors">
+          <div onclick="window.toggleNestedRow('${rowId}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-[#251f2e]/50 transition-colors">
             <div class="flex-1 min-w-0 pr-2">
-              <div class="flex items-center gap-2">
-                <h4 class="font-bold text-xs text-gray-800 dark:text-gray-100 truncate">${group.atletName}</h4>
-              </div>
+              <h4 class="font-bold text-xs text-gray-800 dark:text-gray-100 truncate">${group.atletName}</h4>
               <p class="text-[10px] text-gray-400 truncate mt-0.5"><span class="text-[9px] bg-blue-500/10 text-blue-500 px-1 rounded-md font-bold">${tglEvent}</span> ${group.eventTitle}</p>
             </div>
             <div class="flex items-center gap-3">
@@ -408,36 +364,33 @@ window.filterUserRole = (role) => {
     container.innerHTML = finalHTML;
   };
 
-  window.filterTahunPrestasi = async () => {
-    const filterEl = document.getElementById('prestasi-year-filter');
-    if (filterEl) {
-      currentTahunPrestasi = filterEl.value.trim(); // Dihapus spasi ghaibnya
-      
-      const [{ data: userProfiles }, { data: eventsList }] = await Promise.all([
-        supabase.from('profiles').select('id, full_name'),
-        supabase.from('events').select('id, title, event_date')
-      ]);
-      
-      const profileMap = {};
-      if (userProfiles) userProfiles.forEach(u => { profileMap[u.id] = u.full_name; });
-      const eventMap = {};
-      if (eventsList) eventsList.forEach(e => { eventMap[e.id] = { title: e.title, date: e.event_date }; });
-      
-      if (typeof window.renderPrestasiData === 'function') {
-        window.renderPrestasiData(profileMap, eventMap);
-      }
+  window.toggleNestedRow = (id) => {
+    const target = document.getElementById('nested-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    if (target.classList.contains('hidden')) {
+      target.classList.remove('hidden');
+      arrow.style.transform = 'rotate(180deg)';
+    } else {
+      target.classList.add('hidden');
+      arrow.style.transform = 'rotate(0deg)';
     }
   };
 
-  // Main Inits
+  window.filterTahunPrestasi = () => {
+    const filterEl = document.getElementById('prestasi-year-filter');
+    if (filterEl) {
+      currentTahunPrestasi = filterEl.value.trim();
+      window.renderPrestasiData();
+    }
+  };
+
+  // Main Inits Jabat Tangan TiDB
   loadUsers();
   loadCategories();
   loadPrestasiTerbaru();
 
-  // Pasang Listener aman untuk Filter
   const filterPrestasiEl = document.getElementById('prestasi-year-filter');
   if (filterPrestasiEl) {
     filterPrestasiEl.addEventListener('change', window.filterTahunPrestasi);
   }
-
 });
