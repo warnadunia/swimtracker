@@ -1,12 +1,10 @@
-import { supabase } from './supabase';
-
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. PROTEKSI AKSES & CEK ROLE PELATIH
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) return window.location.replace('/index.html'); 
+  const sessionUser = localStorage.getItem('swim_user');
+  if (!sessionUser) return window.location.replace('/index.html');
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!profile || (profile.role !== 'head_coach' && profile.role !== 'coach')) {
+  const profile = JSON.parse(sessionUser);
+  if (!profile || (profile.role !== 'head_coach' && profile.role !== 'coach' && profile.role !== 'admin')) {
     return window.location.replace('/app.html');
   }
 
@@ -22,38 +20,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // Ambil data atlet dari tabel profiles
-      const { data: athletes, error: errAthletes } = await supabase
-        .from('profiles')
-        .select('id, full_name, group_level, birth_year') 
-        .eq('role', 'atlet')
-        .order('full_name', { ascending: true });
-
-      if (errAthletes) throw errAthletes;
-      masterAthletes = athletes || [];
+      // Ambil data atlet via Serverless API TiDB
+      const response = await fetch('/api/coach/athletes');
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+      
+      masterAthletes = result.data || [];
 
       // Update stat card total atlet
       const statTotal = document.getElementById('stat-total-atlet');
       if (statTotal) statTotal.innerText = masterAthletes.length;
 
-      // Ambil absensi hari ini
-      const { data: attendance, error: errAttendance } = await supabase
-        .from('daily_attendance')
-        .select('profile_id, is_present')
-        .eq('attendance_date', todayStr);
-
-      if (errAttendance) throw errAttendance;
+      // Ambil absensi hari ini dari TiDB
+      const attResponse = await fetch(`/api/coach/attendance?date=${todayStr}`);
+      const attResult = await attResponse.json();
+      if (!attResult.success) throw new Error(attResult.error);
 
       masterAttendanceToday = {};
-      (attendance || []).forEach(row => {
-        masterAttendanceToday[row.profile_id] = row.is_present;
+      (attResult.data || []).forEach(row => {
+        // Jika di database statusnya 'hadir', maka true, selain itu false bray
+        masterAttendanceToday[row.athlete_id] = row.status === 'hadir';
       });
 
       renderFilteredClasses();
 
     } catch (err) {
       console.error(err);
-      if (window.showToast) window.showToast('Gagal memuat data absensi', 'error');
+      if (window.showToast) window.showToast('Gagal memuat data absensi bray', 'error');
     }
   }
 
@@ -94,7 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
 
       athletesInClass.forEach(atlet => {
-        const isPresent = masterAttendanceToday[atlet.id] !== false; 
+        // Di TiDB default-nya dianggap hadir jika belum terekam bray
+        const isPresent = masterAttendanceToday[atlet.athlete_id] !== false; 
         const currentYear = new Date().getFullYear();
         const age = atlet.birth_year ? currentYear - atlet.birth_year : '?';
 
@@ -106,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             
             <label class="relative inline-flex items-center cursor-pointer select-none">
-              <input type="checkbox" class="sr-only peer attendance-toggle" data-id="${atlet.id}" ${isPresent ? 'checked' : ''}>
+              <input type="checkbox" class="sr-only peer attendance-toggle" data-id="${atlet.athlete_id}" ${isPresent ? 'checked' : ''}>
               <div class="w-11 h-6 bg-gray-200 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
               <span class="ml-2 text-[10px] font-bold tracking-wider uppercase min-w-[36px] text-right ${isPresent ? 'text-emerald-500' : 'text-gray-400'} label-status">${isPresent ? 'Hadir' : 'Absen'}</span>
             </label>
@@ -121,14 +115,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelectorAll('.attendance-toggle').forEach(toggle => {
       toggle.addEventListener('change', async (e) => {
-        const profileId = e.target.getAttribute('data-id');
+        const athleteId = e.target.getAttribute('data-id');
         const isPresent = e.target.checked;
-        await saveAttendance(profileId, isPresent, e.target);
+        await saveAttendance(athleteId, isPresent, e.target);
       });
     });
   }
 
-  async function saveAttendance(profileId, isPresent, element) {
+  async function saveAttendance(athleteId, isPresent, element) {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       const labelSpan = element.parentElement.querySelector('.label-status');
@@ -138,20 +132,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         labelSpan.className = `ml-2 text-[10px] font-bold tracking-wider uppercase min-w-[36px] text-right label-status ${isPresent ? 'text-emerald-500' : 'text-gray-400'}`;
       }
 
-      const { error } = await supabase
-        .from('daily_attendance')
-        .upsert({
-          profile_id: profileId,
-          attendance_date: todayStr,
-          is_present: isPresent
-        }, { onConflict: 'profile_id, attendance_date' });
+      // Kirim data array presensi ke Serverless API TiDB bray
+      const response = await fetch('/api/coach/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: todayStr,
+          attendance_list: [{
+            athlete_id: athleteId,
+            status: isPresent ? 'hadir' : 'absen',
+            notes: ''
+          }]
+        })
+      });
 
-      if (error) throw error;
-      masterAttendanceToday[profileId] = isPresent;
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+      masterAttendanceToday[athleteId] = isPresent;
 
     } catch (err) {
       console.error(err);
-      if (window.showToast) window.showToast('Gagal update absensi', 'error');
+      if (window.showToast) window.showToast('Gagal update absensi bray', 'error');
       element.checked = !isPresent;
       renderFilteredClasses();
     }
@@ -171,6 +172,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Eksekusi tarikan data awal
   fetchAbsensiData();
 });

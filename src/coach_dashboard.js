@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. PROTEKSI AKSES LOGOUT/THEME
   document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -7,46 +5,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   });
 
-  document.getElementById('btn-logout').addEventListener('click', async () => {
+  document.getElementById('btn-logout').addEventListener('click', () => {
     if (confirm("Keluar dari akun Coach?")) {
-      await supabase.auth.signOut();
+      localStorage.removeItem('swim_user');
       window.location.replace('/index.html');
     }
   });
 
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) return window.location.replace('/index.html'); 
+  const sessionUser = localStorage.getItem('swim_user');
+  if (!sessionUser) return window.location.replace('/index.html');
 
-  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single();
-  if (!profile || (profile.role !== 'head_coach' && profile.role !== 'coach')) {
+  const profile = JSON.parse(sessionUser);
+  if (!profile || (profile.role !== 'head_coach' && profile.role !== 'coach' && profile.role !== 'admin')) {
     return window.location.replace('/app.html');
   }
 
   document.getElementById('coach-name').innerText = profile.full_name;
   document.getElementById('coach-name').nextElementSibling.innerText = profile.role === 'head_coach' ? 'Head Coach PSSC' : 'Coach PSSC';
 
-  // 2. LOGIKA DATA MEDALI & ATLET BERPRESTASI
   let allMedalsData = [];
   let masterAthletes = {};
   let currentClassFilter = 'All';
 
   async function loadMedals(year) {
     try {
-      // Ambil data user/atlet buat mapping nama & kelas
-      const { data: athletes } = await supabase.from('profiles').select('id, full_name, group_level').eq('role', 'atlet');
+      // Ambil atlet via TiDB API bray
+      const athResponse = await fetch('/api/coach/athletes');
+      const athResult = await athResponse.json();
       masterAthletes = {};
-      (athletes || []).forEach(a => masterAthletes[a.id] = a);
+      (athResult.data || []).forEach(a => masterAthletes[a.id] = a);
 
-      // Ambil data juara (Rank 1,2,3) beserta info event-nya
-      const { data: results, error } = await supabase
-        .from('event_results')
-        .select('rank, profile_id, category, events(title, event_date)')
-        .lte('rank', 3);
-      
-      if (error) throw error;
+      // Ambil data prestasi juara 1, 2, 3 via endpoint admin yang sudah map-join
+      const response = await fetch('/api/admin/prestasi');
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
 
-      // Filter berdasarkan tahun terpilih
-      allMedalsData = (results || []).filter(r => r.events && r.events.event_date.startsWith(year));
+      // Filter berdasarkan tahun kompetisi
+      allMedalsData = (result.data || []).filter(r => r.event_date && r.event_date.startsWith(year));
       
       renderMedalStats();
       renderMedalistTable();
@@ -71,29 +66,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('medalist-container');
     container.innerHTML = '';
 
-    // Filter data berdasarkan kelas terpilih
     const filteredResults = allMedalsData.filter(r => {
-      const atlet = masterAthletes[r.profile_id];
+      const atlet = masterAthletes[r.user_id];
       if (!atlet) return false;
       if (currentClassFilter === 'All') return true;
       return atlet.group_level === currentClassFilter;
     });
 
     if (filteredResults.length === 0) {
-      container.innerHTML = `<div class="p-4 text-center text-xs text-gray-500">Belum ada medali di kelas ini.</div>`;
+      container.innerHTML = `<div class="p-4 text-center text-xs text-gray-500">Belum ada medali di kelas ini bray.</div>`;
       return;
     }
 
     filteredResults.forEach(r => {
-      const atlet = masterAthletes[r.profile_id];
+      const atlet = masterAthletes[r.user_id];
       const medalIcon = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : '🥉';
       const medalColor = r.rank === 1 ? 'text-yellow-600 dark:text-yellow-500' : r.rank === 2 ? 'text-gray-500' : 'text-amber-700 dark:text-amber-600';
       
       container.innerHTML += `
         <div class="p-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-zinc-900/50 transition-colors">
           <div>
-            <div class="text-xs font-bold text-gray-800 dark:text-white">${atlet.full_name}</div>
-            <div class="text-[9px] text-gray-400 mt-0.5 truncate max-w-[180px]">${r.category} • ${r.events.title}</div>
+            <div class="text-xs font-bold text-gray-800 dark:text-white">${atlet ? atlet.full_name : 'Anonim'}</div>
+            <div class="text-[9px] text-gray-400 mt-0.5 truncate max-w-[180px]">${r.distance_meters}M ${r.style_name} • ${r.event_title}</div>
           </div>
           <div class="flex items-center gap-1 bg-gray-50 dark:bg-zinc-800 px-2 py-1 rounded border border-gray-200 dark:border-zinc-700">
             <span>${medalIcon}</span>
@@ -104,7 +98,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // EVENT LISTENERS
   document.getElementById('medal-year-filter').addEventListener('change', (e) => loadMedals(e.target.value));
 
   const pills = document.querySelectorAll('.pill-kelas');
@@ -122,6 +115,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Eksekusi awal
   loadMedals('2026');
 });
