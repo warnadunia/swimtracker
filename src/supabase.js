@@ -1,36 +1,36 @@
 // src/supabase.js
-// SINKRONISASI SESI LOCALSTORAGE BIAR GAK INFINITE REDIRECT bray
+// SINKRONISASI STRUKTUR DATA NESTED SUPABASE AUTH SDK bray
 
 console.warn("⚠️ Menyinkronkan sesi lama dengan session TiDB...");
 
-// Ambil user dari localStorage yang di-set oleh auth.js baru
 const getLocalSession = () => {
   const swimUser = localStorage.getItem('swim_user');
   if (swimUser) {
     const user = JSON.parse(swimUser);
-    // Kembalikan struktur object tiruan yang mirip dengan Supabase Auth Session
+    // Kita bungkus di dalam properti data murni biar destructuring { data: { session } } tidak crash!
     return {
-      session: {
-        user: {
-          id: user.id,
-          email: user.email,
-          user_metadata: {
-            full_name: user.full_name
+      data: {
+        session: {
+          user: {
+            id: user.id,
+            email: user.email,
+            user_metadata: {
+              full_name: user.full_name
+            }
           }
         }
       },
       error: null
     };
   }
-  return { session: null, error: null };
+  return { data: { session: null }, error: null };
 };
 
 export const supabase = {
   auth: {
-    // SEKARANG DIA BACA LOCALSTORAGE, JADI ENYAHLAH DISOKTIK!
     getSession: async () => getLocalSession(),
-    signUp: async () => ({ data: {}, error: new Error("Gunakan API TiDB /api/auth/register bray!") }),
-    signInWithPassword: async () => ({ data: {}, error: new Error("Gunakan API TiDB /api/auth/login bray!") }),
+    signUp: async () => ({ data: {}, error: new Error("Gunakan API TiDB bray!") }),
+    signInWithPassword: async () => ({ data: {}, error: new Error("Gunakan API TiDB bray!") }),
     signOut: async () => {
       localStorage.removeItem('swim_user');
       window.location.href = '/index.html';
@@ -39,7 +39,6 @@ export const supabase = {
   from: () => ({
     select: () => ({
       eq: () => ({
-        // Fallback untuk script lama yang nge-query profile berdasarkan user id setelah login
         single: async () => {
           const swimUser = localStorage.getItem('swim_user');
           return { data: swimUser ? JSON.parse(swimUser) : null, error: null };
