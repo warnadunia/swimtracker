@@ -8,6 +8,8 @@ import manageCoachHTML from '../coach_manage.html?raw';
 import trainingCoachHTML from '../coach_training.html?raw';
 import leaderboardCoachHTML from '../coach_leaderboard.html?raw';
 
+import { initProfileModal, initDashboardProfile } from './profile_modal.js';
+
 let masterAthletesList = [];
 let masterCoachesList = [];
 let masterAthletes = {};
@@ -393,4 +395,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.addEventListener('input', (e) => { if (e.target.id === 'search-training') renderTrainingData(e.target.value); });
   await fetchMasterData();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  initProfileModal(); // Pasang Satpam PopUp-nya bray!
+  initDashboardProfile(); // Hitung KU & sapa nama user di dashboard
 });

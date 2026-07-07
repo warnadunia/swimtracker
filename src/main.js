@@ -10,6 +10,9 @@ import progressHTML from '../progress.html?raw';
 import navHTML from '../bottomnav.html?raw';
 import modalHTML from '../input.html?raw';
 
+import { initProfileModal, initDashboardProfile } from './profile_modal.js';
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   // ==========================================
   // 1. CEK SESI
@@ -661,3 +664,8 @@ window.showToast = function(message, type = 'success') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  initProfileModal(); // Pasang Satpam PopUp-nya bray!
+  initDashboardProfile(); // Hitung KU & sapa nama user di dashboard
+});
