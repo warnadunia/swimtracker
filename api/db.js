@@ -1,25 +1,37 @@
 import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-// Gunakan global variable agar koneksi di-reuse saat serverless function hangat (warm start)
 let pool;
+
+// Fungsi pembantu buat ngebersihin sisa-sisa tanda petik dari env
+const cleanEnv = (val) => {
+  if (!val) return val;
+  return val.replace(/^['"]|['"]$/g, '');
+};
 
 export async function getDB() {
   if (!pool) {
+    const host = cleanEnv(process.env.TIDB_HOST || process.env.DB_HOST);
+    const user = cleanEnv(process.env.TIDB_USER || process.env.DB_USERNAME);
+    const password = cleanEnv(process.env.TIDB_PASSWORD || process.env.DB_PASSWORD);
+    const database = cleanEnv(process.env.TIDB_DATABASE || process.env.DB_DATABASE);
+    const port = cleanEnv(process.env.TIDB_PORT || process.env.DB_PORT || '4000');
+
+    if (!host) {
+      throw new Error("Missing Database Host Environment Variable!");
+    }
+
     pool = mysql.createPool({
-      host: process.env.TIDB_HOST,
-      user: process.env.TIDB_USER,
-      password: process.env.TIDB_PASSWORD,
-      database: process.env.TIDB_DATABASE,
-      port: process.env.TIDB_PORT || 4000,
+      host: host,
+      user: user,
+      password: password,
+      database: database,
+      port: parseInt(port),
       ssl: {
         minVersion: 'TLSv1.2',
         rejectUnauthorized: true
       },
       waitForConnections: true,
-      connectionLimit: 5, // Kecilkan limit karena ini serverless
+      connectionLimit: 5, 
       queueLimit: 0
     });
   }
