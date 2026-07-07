@@ -10,8 +10,9 @@ const cleanEnv = (val) => {
 
 export async function getDB() {
   if (!pool) {
+    // Ambil host, user, password, database, dan port dengan fallback yang lengkap bray
     const host = cleanEnv(process.env.TIDB_HOST || process.env.DB_HOST);
-    const user = cleanEnv(process.env.TIDB_USER || process.env.DB_USERNAME);
+    const user = cleanEnv(process.env.TIDB_USER || process.env.TIDB_USERNAME || process.env.DB_USERNAME);
     const password = cleanEnv(process.env.TIDB_PASSWORD || process.env.DB_PASSWORD);
     const database = cleanEnv(process.env.TIDB_DATABASE || process.env.DB_DATABASE);
     const port = cleanEnv(process.env.TIDB_PORT || process.env.DB_PORT || '4000');
