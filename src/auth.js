@@ -1,13 +1,15 @@
 import './style.css';
 
-// FUNGSI PINTU PUTAR (ROUTING BERDASARKAN ROLE)
+//src/auth.js - UPDATE PINTU PUTAR RBAC V3
 function redirectBasedOnRole(role) {
-  if (role === 'head_coach' || role === 'coach') {
-    window.location.replace('/coach_app.html');
-  } else if (role === 'admin') {
+  if (role === 'admin') {
     window.location.replace('/admin.html');
+  } else if (role === 'head_coach' || role === 'coach') {
+    window.location.replace('/coach_app.html');
+  } else if (role === 'parents') {
+    window.location.replace('/parents_dashboard.html'); // Jalur khusus untuk Orang Tua bray!
   } else {
-    window.location.replace('/app.html');
+    window.location.replace('/app.html'); // Default Atlet
   }
 }
 

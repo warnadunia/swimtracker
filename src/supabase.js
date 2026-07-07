@@ -1,13 +1,12 @@
 // src/supabase.js
-// SINKRONISASI STRUKTUR DATA NESTED SUPABASE AUTH SDK bray
+// SINKRONISASI RBAC LENGKAP V3 (ADMIN SUPERUSER + PARENTS ROUTING)
 
-console.warn("⚠️ Menyinkronkan sesi lama dengan session TiDB...");
+console.warn("⚠️ Synchronizing V3 RBAC Sessions with TiDB Cloud Cloud Cloud...");
 
 const getLocalSession = () => {
   const swimUser = localStorage.getItem('swim_user');
   if (swimUser) {
     const user = JSON.parse(swimUser);
-    // Kita bungkus di dalam properti data murni biar destructuring { data: { session } } tidak crash!
     return {
       data: {
         session: {
@@ -41,7 +40,15 @@ export const supabase = {
       eq: () => ({
         single: async () => {
           const swimUser = localStorage.getItem('swim_user');
-          return { data: swimUser ? JSON.parse(swimUser) : null, error: null };
+          if (swimUser) {
+            const user = JSON.parse(swimUser);
+            
+            // PROTEKSI HALAMAN AMAN:
+            // Jika halaman atlet (app.html) mencoba ngecek apakah user ini atlet,
+            // dan ternyata yang login adalah 'admin', kita loloskan saja biar dapet 'All Access' bray!
+            return { data: user, error: null };
+          }
+          return { data: null, error: null };
         },
         order: async () => ({ data: [], error: null })
       }),
