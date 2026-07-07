@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const ttConfig = { title, distance: parseInt(targetDist), pool: parseInt(poolSize), sets: parseInt(sets), athletes: selectedAthletes };
       localStorage.setItem('active_tt_config', JSON.stringify(ttConfig));
-      window.location.href = '/coach_tt_stopwatch.html';
+      window.location.href = '/coach_stopwatch_tt.html';
     });
   }
 });
