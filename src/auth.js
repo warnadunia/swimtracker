@@ -1,35 +1,22 @@
 import './style.css';
-import { supabase } from './supabase';
 
 // FUNGSI PINTU PUTAR (ROUTING BERDASARKAN ROLE)
-async function redirectBasedOnRole(userId) {
-  try {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    if (error || !profile) throw error;
-
-    if (profile.role === 'head_coach' || profile.role === 'coach') {
-      window.location.replace('/coach_app.html');
-    } else if (profile.role === 'admin') {
-      window.location.replace('/admin.html');
-    } else {
-      window.location.replace('/app.html');
-    }
-  } catch (err) {
-    console.error("Gagal cek profil:", err);
-    window.location.replace('/app.html'); 
+function redirectBasedOnRole(role) {
+  if (role === 'head_coach' || role === 'coach') {
+    window.location.replace('/coach_app.html');
+  } else if (role === 'admin') {
+    window.location.replace('/admin.html');
+  } else {
+    window.location.replace('/app.html');
   }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // 1. CEK SESI (Kalau belum logout, otomatis dilempar ke dalam)
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await redirectBasedOnRole(session.user.id);
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. CEK SESI VIA LOCALSTORAGE (Pengganti Supabase Session)
+  const sessionUser = localStorage.getItem('swim_user');
+  if (sessionUser) {
+    const user = JSON.parse(sessionUser);
+    redirectBasedOnRole(user.role);
     return;
   }
 
@@ -37,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const formRegister = document.getElementById('form-register');
 
   // ==========================================
-  // LOGIC REGISTER (USERNAME HACK)
+  // LOGIC REGISTER (TI-DB SERVERLESS API)
   // ==========================================
   if (formRegister) {
     formRegister.addEventListener('submit', async (e) => {
@@ -50,37 +37,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const name = document.getElementById('reg-name').value.trim();
       const rawUsername = document.getElementById('reg-username').value.trim().toLowerCase();
-      const password = document.getElementById('reg-password').value;
+      const password = document.getElementById('reg-password').value; // Untuk kembangan auth real nanti bray
       const birthYear = document.getElementById('reg-year').value.trim();
 
-      const fakeEmail = rawUsername.replace(/\s+/g, '') + '@swimapp.local';
+      // Generate UUID v4 murni di client-side untuk ID user baru
+      const generatedId = crypto.randomUUID(); 
 
-      const { data, error } = await supabase.auth.signUp({
-        email: fakeEmail,
-        password: password,
-        options: {
-          data: {
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: generatedId,
+            username: rawUsername,
             full_name: name,
-            birth_year: parseInt(birthYear)
-          }
+            birth_year: parseInt(birthYear),
+            password: password,
+            role: 'atlet' // Default signup awal
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('Pendaftaran berhasil ke TiDB! Silakan Login.');
+          e.target.reset(); 
+          window.switchAuth('login');
+        } else {
+          alert('Gagal mendaftar: ' + (result.error || result.message));
         }
-      });
-
-      btnSubmit.innerText = originalText;
-      btnSubmit.disabled = false;
-
-      if (error) {
-        alert('Gagal mendaftar: ' + error.message);
-      } else {
-        alert('Pendaftaran berhasil! Silakan Login.');
-        e.target.reset(); 
-        window.switchAuth('login');
+      } catch (err) {
+        console.error("Register Error:", err);
+        alert('Terjadi kesalahan jaringan/server.');
+      } finally {
+        btnSubmit.innerText = originalText;
+        btnSubmit.disabled = false;
       }
     });
   }
 
   // ==========================================
-  // LOGIC LOGIN (USERNAME HACK)
+  // LOGIC LOGIN (TI-DB SERVERLESS API)
   // ==========================================
   if (formLogin) {
     formLogin.addEventListener('submit', async (e) => {
@@ -93,21 +90,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const rawUsername = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
-      const fakeEmail = rawUsername.replace(/\s+/g, '') + '@swimapp.local';
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: fakeEmail,
-        password: password
-      });
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: rawUsername,
+            password: password
+          })
+        });
 
-      btnSubmit.innerText = originalText;
-      btnSubmit.disabled = false;
+        const result = await response.json();
 
-      if (error) {
-        alert('Login gagal: Username atau Password salah!');
-      } else {
-        // SETELAH LOGIN SUKSES, CEK ROLE-NYA!
-        await redirectBasedOnRole(data.user.id);
+        if (result.success) {
+          // Simpan session user (termasuk id, full_name, role) ke localStorage
+          localStorage.setItem('swim_user', JSON.stringify(result.user));
+          
+          // Langsung lempar berdasarkan role yang dikembalikan dari API TiDB
+          redirectBasedOnRole(result.user.role);
+        } else {
+          alert('Login gagal: ' + (result.message || 'Username atau Password salah!'));
+        }
+      } catch (err) {
+        console.error("Login Error:", err);
+        alert('Terjadi kesalahan jaringan/server.');
+      } finally {
+        btnSubmit.innerText = originalText;
+        btnSubmit.disabled = false;
       }
     });
   }
