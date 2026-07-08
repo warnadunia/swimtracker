@@ -184,6 +184,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+
+// ---------------------------------------------------------
+  // KONTROL MODAL TAMBAH USER BARU (ADD NEW USER) BRAY!
+  // ---------------------------------------------------------
+  window.openAddUserModal = () => {
+    // Bersihkan form sisa ketikan sebelumnya bray
+    document.getElementById('add-user-name').value = '';
+    document.getElementById('add-user-username').value = '';
+    document.getElementById('add-user-pass').value = '';
+    document.getElementById('add-user-email').value = '';
+    document.getElementById('add-user-role').value = 'atlet';
+    
+    document.getElementById('modal-add-user').classList.remove('hidden');
+  };
+
+  window.closeAddUserModal = () => {
+    document.getElementById('modal-add-user').classList.add('hidden');
+  };
+
+  window.saveNewUser = async () => {
+    const fullName = document.getElementById('add-user-name').value.trim();
+    const username = document.getElementById('add-user-username').value.trim();
+    const password = document.getElementById('add-user-pass').value.trim();
+    const email = document.getElementById('add-user-email').value.trim();
+    const role = document.getElementById('add-user-role').value;
+
+    if (!fullName || !username || !password) {
+      alert("Nama, Username, dan Password wajib diisi bray!");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/add-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName, username, email, password, role })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        alert("✅ " + result.message);
+        window.closeAddUserModal();
+        loadUsers(); // Refresh listing biar user baru langsung nangkring di tabel bray!
+      } else {
+        alert("⚠️ Gagal: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Jaringan sibuk bray, gagal jabat tangan ke backend.");
+    }
+  };
+
   // ==========================================
   // 3. MODUL 2: NOMOR LOMBA (Swimming Styles Terpisah)
   // ==========================================
