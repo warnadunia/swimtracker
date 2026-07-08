@@ -2,7 +2,7 @@ import './style.css';
 import 'preline';
 import Chart from 'chart.js/auto';
 import { supabase } from './supabase';
-import { initDashboardProfile } from './profile';
+// import { initDashboardProfile } from './profile';
 
 import headerHTML from '../header.html?raw';
 import dashboardHTML from '../dashboard.html?raw';
