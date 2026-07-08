@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </td>
           <td class="px-3 py-3">
             <div class="flex gap-1.5 justify-center">
-              <button onclick="window.editUser('${u.id}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-blue-500 transition-colors" title="Edit">✏️</button>
+              <button onclick="window.editUser('${u.id}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}', '${u.role}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-blue-500 transition-colors" title="Edit">✏️</button>
               <button onclick="window.resetPass('${u.username}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-yellow-600 transition-colors" title="Reset Password">🔑</button>
               <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-brand-red transition-colors" title="Hapus">❌</button>
             </div>
@@ -90,49 +90,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderUsers();
   };
 
-  window.editUser = (id, name, username, email, wa) => {
-    document.getElementById('edit-user-id').value = id;
-    document.getElementById('edit-user-name').value = name !== 'undefined' ? name : '';
-    document.getElementById('edit-user-username').value = username !== 'undefined' ? username : '';
-    document.getElementById('edit-user-email').value = email !== 'undefined' ? email : '';
-    document.getElementById('edit-user-wa').value = wa !== 'undefined' ? wa : '';
-    
-    document.getElementById('modal-edit-user').classList.remove('hidden');
-  };
-
-  window.closeEditModal = () => {
-    document.getElementById('modal-edit-user').classList.add('hidden');
-  };
+  window.editUser = (id, name, username, email, wa, role) => {
+  // Isi data ke form modal
+  document.getElementById('edit-user-id').value = id;
+  document.getElementById('edit-user-name').value = name !== 'undefined' ? name : '';
+  document.getElementById('edit-user-username').value = username !== 'undefined' ? username : '';
+  document.getElementById('edit-user-email').value = email !== 'undefined' ? email : '';
+  document.getElementById('edit-user-wa').value = wa !== 'undefined' ? wa : '';
+  
+  // Set value dropdown role sesuai data aslinya di TiDB bray
+  if (role && role !== 'undefined') {
+    document.getElementById('edit-user-role').value = role;
+  }
+  
+  // Tampilkan Modal
+  document.getElementById('modal-edit-user').classList.remove('hidden');
+};
 
   window.saveUserEdit = async () => {
-    const id = document.getElementById('edit-user-id').value;
-    const newName = document.getElementById('edit-user-name').value.trim();
-    const newUsername = document.getElementById('edit-user-username').value.trim();
-    const newEmail = document.getElementById('edit-user-email').value.trim();
-    const newWa = document.getElementById('edit-user-wa').value.trim();
+  const id = document.getElementById('edit-user-id').value;
+  const newName = document.getElementById('edit-user-name').value.trim();
+  const newUsername = document.getElementById('edit-user-username').value.trim();
+  const newEmail = document.getElementById('edit-user-email').value.trim();
+  const newWa = document.getElementById('edit-user-wa').value.trim();
+  const newRole = document.getElementById('edit-user-role').value; // <-- Ambil nilai role baru!
 
-    if (!newName) {
-      alert("Nama lengkap tidak boleh kosong!");
-      return;
-    }
+  if (!newName) {
+    alert("Nama lengkap tidak boleh kosong!");
+    return;
+  }
 
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, full_name: newName, username: newUsername, email: newEmail, no_wa: newWa })
-      });
-      const result = await response.json();
-      if (result.success) {
-        window.closeEditModal();
-        loadUsers();
-      } else {
-        alert("Gagal update: " + result.message);
-      }
-    } catch (err) {
-      console.error(err);
+  try {
+    const response = await fetch('/api/admin/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        id, 
+        full_name: newName, 
+        username: newUsername, 
+        email: newEmail, 
+        no_wa: newWa,
+        role: newRole // <-- Kirim data ke serverless bray!
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      window.closeEditModal();
+      loadUsers(); // Refresh data tabel biar laporannya sinkron!
+    } else {
+      alert("Gagal update: " + result.message);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   window.resetPass = async (user) => {
     const pass = prompt("Masukkan password baru untuk @" + user);
