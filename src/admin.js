@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // State Management Internal
-  let currentRoleFilter = 'admin';
   let currentGayaFilter = 'Bebas';
   let currentTahunPrestasi = 'ALL';
   let allUsersCache = [];
