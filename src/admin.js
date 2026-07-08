@@ -30,14 +30,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const result = await response.json();
       if (result.success && result.data) {
         allUsersCache = result.data;
-        renderUsers();
+        window.renderUsers(); // Panggil via window bray
       }
     } catch (err) {
       console.error("Gagal memuat list user TiDB:", err);
     }
   }
 
-  function renderUsers() {
+  // 🚨 KITA DAFTARKAN SEBAGAI WINDOW GLOBAL BIAR TOMBOL SILANG KELAR ERRORNYA BRAY 🚨
+  window.renderUsers = function() {
     const filtered = allUsersCache.filter(u => {
       if (currentRoleFilter === 'all') return true;
       return u.role === currentRoleFilter;
@@ -55,7 +56,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtered.forEach(u => {
       const usernameDisplay = u.username ? u.username : (u.email ? u.email.split('@')[0] : 'user');
 
-      // HTML Row: Username | Role (Dinamis) | Pass (Reset) | Delete (Trash)
+      let roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 dark:bg-zinc-800 text-gray-500">atlet</span>';
+      if (u.role === 'admin') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 text-brand-red uppercase">admin</span>';
+      if (u.role === 'head_coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/10 text-blue-500 uppercase">head_coach</span>';
+      if (u.role === 'coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500/10 text-sky-500 uppercase">coach</span>';
+      if (u.role === 'parents') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 uppercase">parents</span>';
+
       html += `
         <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors" id="user-row-${u.id}">
           <td class="px-3 py-3 font-medium text-gray-800 dark:text-gray-200">
@@ -73,21 +79,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           </td>
           
           <td class="px-3 py-3 text-center">
-            <button onclick="window.resetPass('${usernameDisplay}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-yellow-500 active:scale-90 transition-all" title="Reset Password">
-              🔑
-            </button>
+            <button onclick="window.resetPass('${usernameDisplay}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-yellow-500 active:scale-90 transition-all">🔑</button>
           </td>
           
           <td class="px-3 py-3 text-center">
-            <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-brand-red active:scale-90 transition-all" title="Hapus User">
-              ❌
-            </button>
+            <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-brand-red active:scale-90 transition-all">❌</button>
           </td>
         </tr>
       `;
     });
     container.innerHTML = html;
-  }
+  };
 
   // --- FUNGSI BARU: PEMICU DROPDOWN INLINE ROLE bray ---
   window.startInlineEditRole = (id, currentRole, fullName, username, email, wa) => {

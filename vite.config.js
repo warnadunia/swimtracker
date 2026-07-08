@@ -13,7 +13,7 @@ export default defineConfig({
         // HANYA MASUKKAN HALAMAN UTAMA (FULL HTML) DI SINI
         main: resolve(__dirname, 'index.html'),
         app: resolve(__dirname, 'app.html'),
-        // profile: resolve(__dirname, 'profile.html'),
+        parents_dashboard: resolve(__dirname, 'parents_dashboard.html'),
         admin: resolve(__dirname, 'admin.html'),
         coach_app: resolve(__dirname, 'coach_app.html'),
         coach_setup_tt: resolve(__dirname, 'coach_setup_tt.html'),
