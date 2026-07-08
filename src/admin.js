@@ -21,8 +21,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allPrestasiCache = [];
 
   // ==========================================
-  // 2. MODUL 1: USERS (TiDB Serverless Sync)
+  // 2. MODUL 1: USERS (Clean Client-Side Table Engine)
   // ==========================================
+  // HAPUS deklarasi lama di baris 16 bray, cukup pakai satu ini saja di bawah:
+  let currentRoleFilter = 'all'; 
+
   async function loadUsers() {
     try {
       const response = await fetch('/api/admin/users');
@@ -37,35 +40,52 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderUsers() {
-    const filtered = allUsersCache.filter(u => u.role === currentRoleFilter);
+    const filtered = allUsersCache.filter(u => {
+      if (currentRoleFilter === 'all') return true;
+      return u.role === currentRoleFilter;
+    });
+
     const container = document.getElementById('admin-user-list');
     if (!container) return;
     
     if (filtered.length === 0) {
-      container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-400 text-xs">Tidak ada data user (${currentRoleFilter})</td></tr>`;
+      container.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-400 text-xs">Tidak ada data user (${currentRoleFilter})</td></tr>`;
       return;
     }
 
     let html = '';
     filtered.forEach(u => {
-      const usernameDisplay = u.username ? `@${u.username}` : '-';
-      const emailDisplay = u.email ? u.email : 'No Email';
-      
+      // Tentukan badge visual untuk Role biar gampang dibaca bray
+      let roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 dark:bg-zinc-800 text-gray-500">atlet</span>';
+      if (u.role === 'admin') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 text-brand-red uppercase">admin</span>';
+      if (u.role === 'head_coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/10 text-blue-500 uppercase">head_coach</span>';
+      if (u.role === 'coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500/10 text-sky-500 uppercase">coach</span>';
+      if (u.role === 'parents') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 uppercase">parents</span>';
+
+      const usernameDisplay = u.username ? u.username : (u.email ? u.email.split('@')[0] : 'user');
+
+      // HTML Row mengikuti format layout mintaan lu: Username | Role | Pass | Delete bray!
       html += `
         <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors">
           <td class="px-3 py-3 font-medium text-gray-800 dark:text-gray-200">
-            <div>${u.full_name}</div>
-            <div class="text-[10px] text-gray-400 font-normal flex flex-col mt-0.5">
-              <span>${usernameDisplay} | ${emailDisplay}</span>
-              ${u.no_wa ? `<span class="text-green-600 dark:text-green-500">WA: ${u.no_wa}</span>` : ''}
-            </div>
+            <span class="font-semibold">${usernameDisplay}</span>
+            <div class="text-[9px] text-gray-400 font-normal truncate max-w-[120px]">${u.full_name}</div>
           </td>
-          <td class="px-3 py-3">
-            <div class="flex gap-1.5 justify-center">
-              <button onclick="window.editUser('${u.id}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}', '${u.role}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-blue-500 transition-colors" title="Edit">✏️</button>
-              <button onclick="window.resetPass('${u.username}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-yellow-600 transition-colors" title="Reset Password">🔑</button>
-              <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-1.5 rounded-lg text-[11px] hover:text-brand-red transition-colors" title="Hapus">❌</button>
-            </div>
+          
+          <td class="px-3 py-3 text-left">
+            ${roleBadge}
+          </td>
+          
+          <td class="px-3 py-3 text-center">
+            <button onclick="window.resetPass('${usernameDisplay}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-yellow-500 active:scale-90 transition-all" title="Reset Password">
+              🔑
+            </button>
+          </td>
+          
+          <td class="px-3 py-3 text-center">
+            <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-brand-red active:scale-90 transition-all" title="Hapus User">
+              ❌
+            </button>
           </td>
         </tr>
       `;
