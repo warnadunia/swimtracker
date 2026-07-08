@@ -50,11 +50,6 @@
 
     <!-- MAIN PANELS CONTAINER -->
     <main class="flex-1 p-4 overflow-y-auto space-y-4">
-      <div class="flex justify-end mt-2">
-        <button onclick="window.openAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
-          ➕ Tambah User Baru
-        </button>
-      </div>
       <!-- ================= SECTION 1: USERS ================= -->
       <section id="panel-users" class="admin-panel space-y-4">
         <!-- Filter Role Segmented Controls -->
@@ -64,7 +59,11 @@
         <button onclick="filterUserRole('coach')" id="role-coach" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Coach</button>
         <button onclick="filterUserRole('atlet')" id="role-atlet" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Atlet</button>
       </div>
-
+      <div class="flex justify-end mt-2">
+        <button onclick="window.openAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
+          ➕ Tambah User Baru
+        </button>
+      </div>
         <!-- Listing Users Table -->
         <div class="bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 p-3 shadow-sm overflow-hidden">
           <div class="overflow-x-auto w-full rounded-xl border border-gray-200/50 dark:border-gray-800">
@@ -155,7 +154,7 @@
           </div>
       </section>
 
-<div id="modal-edit-user" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+<div class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-[#1f1927] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800">
           <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#18131f]/50">
             <h3 class="font-bold text-gray-800 dark:text-white text-sm">Edit Data User</h3>

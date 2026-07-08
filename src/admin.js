@@ -20,9 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allPrestasiCache = [];
 
   // ==========================================
-  // 2. MODUL 1: USERS (Clean Client-Side Table Engine)
+  // 2. MODUL 1: USERS (Inline Role Editor Engine)
   // ==========================================
-  // HAPUS deklarasi lama di baris 16 bray, cukup pakai satu ini saja di bawah:
   let currentRoleFilter = 'all'; 
 
   async function loadUsers() {
@@ -54,25 +53,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let html = '';
     filtered.forEach(u => {
-      // Tentukan badge visual untuk Role biar gampang dibaca bray
-      let roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 dark:bg-zinc-800 text-gray-500">atlet</span>';
-      if (u.role === 'admin') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 text-brand-red uppercase">admin</span>';
-      if (u.role === 'head_coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/10 text-blue-500 uppercase">head_coach</span>';
-      if (u.role === 'coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-500/10 text-sky-500 uppercase">coach</span>';
-      if (u.role === 'parents') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 uppercase">parents</span>';
-
       const usernameDisplay = u.username ? u.username : (u.email ? u.email.split('@')[0] : 'user');
 
-      // HTML Row mengikuti format layout mintaan lu: Username | Role | Pass | Delete bray!
+      // HTML Row: Username | Role (Dinamis) | Pass (Reset) | Delete (Trash)
       html += `
-        <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors">
+        <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors" id="user-row-${u.id}">
           <td class="px-3 py-3 font-medium text-gray-800 dark:text-gray-200">
             <span class="font-semibold">${usernameDisplay}</span>
             <div class="text-[9px] text-gray-400 font-normal truncate max-w-[120px]">${u.full_name}</div>
           </td>
           
-          <td class="px-3 py-3 text-left">
-            ${roleBadge}
+          <td class="px-3 py-3 text-left vertical-middle" id="role-cell-${u.id}">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold dark:text-zinc-300">${u.role}</span>
+              <button onclick="window.startInlineEditRole('${u.id}', '${u.role}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}')" class="text-[10px] text-blue-500 hover:underline font-bold" title="Ubah Role">
+                [edit]
+              </button>
+            </div>
           </td>
           
           <td class="px-3 py-3 text-center">
@@ -91,6 +88,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     container.innerHTML = html;
   }
+
+  // --- FUNGSI BARU: PEMICU DROPDOWN INLINE ROLE bray ---
+  window.startInlineEditRole = (id, currentRole, fullName, username, email, wa) => {
+    const cell = document.getElementById(`role-cell-${id}`);
+    if (!cell) return;
+
+    // Suntik select option langsung di tempat teks role lamanya bray
+    cell.innerHTML = `
+      <div class="flex items-center gap-1">
+        <select id="inline-select-${id}" class="text-xs bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 font-semibold text-gray-800 dark:text-white focus:outline-none">
+          <option value="atlet" ${currentRole === 'atlet' ? 'selected' : ''}>atlet</option>
+          <option value="coach" ${currentRole === 'coach' ? 'selected' : ''}>coach</option>
+          <option value="head_coach" ${currentRole === 'head_coach' ? 'selected' : ''}>head_coach</option>
+          <option value="parents" ${currentRole === 'parents' ? 'selected' : ''}>parents</option>
+          <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>admin</option>
+        </select>
+        <button onclick="window.saveInlineRole('${id}', '${fullName}', '${username}', '${email}', '${wa}')" class="p-1 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold">✓</button>
+        <button onclick="window.renderUsers()" class="p-1 text-xs bg-gray-200 dark:bg-zinc-800 text-gray-400 rounded-lg font-bold">✕</button>
+      </div>
+    `;
+  };
+
+  // --- FUNGSI BARU: SIMPAN PERUBAHAN ROLE INLINE KE TiDB VIA API ---
+  window.saveInlineRole = async (id, fullName, username, email, wa) => {
+    const newRole = document.getElementById(`inline-select-${id}`).value;
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          full_name: fullName,
+          username: username,
+          email: email,
+          no_wa: wa,
+          role: newRole // Kirim mutasi role baru bray
+        })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        // Update cache lokal biar gak perlu reload page murni bray
+        const targetUser = allUsersCache.find(u => u.id === id);
+        if (targetUser) targetUser.role = newRole;
+        renderUsers();
+      } else {
+        alert("Gagal mutasi role: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   window.filterUserRole = (role) => {
     currentRoleFilter = role;
