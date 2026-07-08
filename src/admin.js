@@ -527,4 +527,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (filterPrestasiEl) {
     filterPrestasiEl.addEventListener('change', window.filterTahunPrestasi);
   }
+
+  // =========================================================
+  // 5. MODUL ADOPSI HEADER: THEME TOGGLE & LOGOUT ADMIN bray
+  // =========================================================
+  const themeToggleBtn = document.getElementById('admin-theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+  }
+
+  const logoutBtn = document.getElementById('admin-btn-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      if (confirm("Keluar dari Control Panel Admin, bray?")) {
+        localStorage.removeItem('swim_user');
+        window.location.replace('/index.html');
+      }
+    });
+  }
+  
 });

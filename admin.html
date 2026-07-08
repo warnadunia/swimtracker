@@ -30,8 +30,15 @@
         <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Admin Panel</h1>
         <p id="admin-page-title" class="text-sm font-bold text-gray-800 dark:text-white leading-none">Users Control</p>
       </div>
+      <div class="flex items-center gap-1.5">
+    <button id="admin-theme-toggle" class="p-2 text-xs bg-gray-50 dark:bg-[#251f2e] text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-100 dark:hover:bg-[#2e263a] transition-all">
+      🌓
+    </button>
+    <button id="admin-btn-logout" class="bg-gray-100 dark:bg-[#251f2e] text-gray-600 dark:text-gray-400 p-2 rounded-full text-xs font-bold hover:text-brand-red dark:hover:text-brand-red transition-all" title="Keluar Sistem">
+      🚪
+    </button>
+  </div>
     </header>
-       <!-- Tambahkan menu ini di jajaran link navigasi admin.html lu bray -->
     <div class="flex gap-2 p-2 bg-gray-50 dark:bg-[#1f1927] rounded-xl border border-gray-100 dark:border-gray-800 mt-2">
       <a href="/coach_app.html" class="flex-1 text-center text-[10px] bg-blue-600/10 text-blue-500 py-1 rounded-lg font-bold hover:bg-blue-600/20 transition-colors">Panel Coach</a>
       <a href="/parents_dashboard.html" class="flex-1 text-center text-[10px] bg-emerald-600/10 text-emerald-500 py-1 rounded-lg font-bold hover:bg-emerald-700/20 transition-colors">Panel Parents</a>
@@ -62,13 +69,13 @@
         <button onclick="filterUserRole('coach')" id="role-coach" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Coach</button>
         <button onclick="filterUserRole('atlet')" id="role-atlet" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Atlet</button>
       </div>
-        <!-- Listing Users Table -->
-        <div class="w-full bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 p-3 shadow-sm overflow-hidden">
-          <div class="flex justify-center mt-2">
+      <div class="flex justify-center mt-2">
         <button onclick="window.openAddUserModal()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
           ➕ Tambah User Baru
         </button>
       </div>
+        <!-- Listing Users Table -->
+        <div class="w-full bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 p-3 shadow-sm overflow-hidden">
           <div class="overflow-x-auto w-full rounded-xl border border-gray-200/50 dark:border-gray-800">
             <table class="w-full text-left text-xs border-collapse">
               <thead>
