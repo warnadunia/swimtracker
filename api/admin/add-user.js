@@ -18,22 +18,16 @@ export default async function handler(req, res) {
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // Cek duplikat username murni
     const [existing] = await connection.query('SELECT id FROM profiles WHERE username = ?', [username.trim()]);
     if (existing.length > 0) {
-      return res.status(400).json({ success: false, message: 'Username ini sudah terpakai bray, cari yang lain!' });
+      return res.status(400).json({ success: false, message: 'Username sudah terpakai bray!' });
     }
 
-    // 🚨 KUNCINYA DI SINI BRAY: Gunakan cara destructuring module murni Node.js agar anti-crash 500
-    const userId = crypto.randomBytes(16).toString("hex"); // Alternatif UUID paling aman di semua versi Node.js Vercel
+    // 🚨 SOLUSI MUTLAK: Gunakan randomUUID murni dari sub-modul crypto bray
+    const userId = crypto.randomUUID ? crypto.randomUUID() : crypto.webcrypto.randomUUID();
 
-    // Insert data master login akun bray
-    await connection.query(
-      'INSERT INTO users (id, password_hash) VALUES (?, ?)',
-      [userId, password]
-    );
+    await connection.query('INSERT INTO users (id, password_hash) VALUES (?, ?)', [userId, password]);
 
-    // Insert data biodata profiles
     await connection.query(
       `INSERT INTO profiles (id, full_name, username, email, role, group_level) 
        VALUES (?, ?, ?, ?, ?, 'Basic 1')`,

@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 🚨 KITA DAFTARKAN SEBAGAI WINDOW GLOBAL BIAR TOMBOL SILANG KELAR ERRORNYA BRAY 🚨
+  // --- KITA MODIFIKASI SEDIKIT FUNGSI RENDERUSERS SEBELUMNYA BRAY ---
   window.renderUsers = function() {
     const filtered = allUsersCache.filter(u => {
       if (currentRoleFilter === 'all') return true;
@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtered.forEach(u => {
       const usernameDisplay = u.username ? u.username : (u.email ? u.email.split('@')[0] : 'user');
 
+      // Taktik Jitu: Jika dia role parents, kasih tombol shortcut [children] di bawah nama lengkapnya bray!
+      const parentSetupLink = u.role === 'parents' 
+        ? `<button onclick="window.openMappingModal('${u.id}', '${u.full_name}')" class="text-[9px] text-emerald-500 font-bold hover:underline block mt-0.5">[children setup]</button>` 
+        : '';
+
       let roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 dark:bg-zinc-800 text-gray-500">atlet</span>';
       if (u.role === 'admin') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 text-brand-red uppercase">admin</span>';
       if (u.role === 'head_coach') roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/10 text-blue-500 uppercase">head_coach</span>';
@@ -67,28 +72,91 @@ document.addEventListener('DOMContentLoaded', async () => {
           <td class="px-3 py-3 font-medium text-gray-800 dark:text-gray-200">
             <span class="font-semibold">${usernameDisplay}</span>
             <div class="text-[9px] text-gray-400 font-normal truncate max-w-[120px]">${u.full_name}</div>
+            ${parentSetupLink}
           </td>
-          
           <td class="px-3 py-3 text-left vertical-middle" id="role-cell-${u.id}">
             <div class="flex items-center gap-1.5">
               <span class="text-xs font-semibold dark:text-zinc-300">${u.role}</span>
-              <button onclick="window.startInlineEditRole('${u.id}', '${u.role}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}')" class="text-[10px] text-blue-500 hover:underline font-bold" title="Ubah Role">
-                [edit]
-              </button>
+              <button onclick="window.startInlineEditRole('${u.id}', '${u.role}', '${u.full_name}', '${u.username || ''}', '${u.email || ''}', '${u.no_wa || ''}')" class="text-[10px] text-blue-500 hover:underline font-bold">[edit]</button>
             </div>
           </td>
-          
-          <td class="px-3 py-3 text-center">
-            <button onclick="window.resetPass('${usernameDisplay}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-yellow-500 active:scale-90 transition-all">🔑</button>
-          </td>
-          
-          <td class="px-3 py-3 text-center">
-            <button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-brand-red active:scale-90 transition-all">❌</button>
-          </td>
+          <td class="px-3 py-3 text-center"><button onclick="window.resetPass('${usernameDisplay}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-yellow-500 transition-all">🔑</button></td>
+          <td class="px-3 py-3 text-center"><button onclick="window.hapusUser('${u.id}')" class="bg-gray-100 dark:bg-[#2a2235] p-2 rounded-xl text-xs hover:text-brand-red transition-all">❌</button></td>
         </tr>
       `;
     });
     container.innerHTML = html;
+  };
+
+  // =========================================================
+  // LOGIKA PENGATURAN KONEKSI MULTI-ATHLETE ANAK ORANG TUA bray
+  // =========================================================
+  window.openMappingModal = async (parentId, parentName) => {
+    document.getElementById('mapping-parent-id').value = parentId;
+    document.getElementById('mapping-parent-name').innerText = `Parent: ${parentName}`;
+    
+    // Clear list view bray
+    const listContainer = document.getElementById('mapping-children-list');
+    listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Memuat relasi anak...</div>';
+
+    // 1. Ambil list anak aktif saat ini via API
+    try {
+      const response = await fetch(`/api/admin/parent-mapping?parent_id=${parentId}`);
+      const result = await response.json();
+      
+      if (result.success && result.data.length > 0) {
+        listContainer.innerHTML = result.data.map(child => `
+          <div class="flex justify-between items-center p-1.5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-lg mb-1">
+            <span class="font-bold text-gray-700 dark:text-gray-300">${child.full_name}</span>
+            <span class="text-[9px] bg-red-500/10 text-brand-red font-bold px-1.5 py-0.5 rounded">${child.group_level || 'Basic'}</span>
+          </div>
+        `).join('');
+      } else {
+        listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Belum terhubung dengan anak bray.</div>';
+      }
+
+      // 2. Isi Dropdown option khusus tipe user 'atlet' dari cache lokal bray
+      const selectAthlete = document.getElementById('mapping-select-athlete');
+      const athletesOnly = allUsersCache.filter(u => u.role === 'atlet');
+      
+      selectAthlete.innerHTML = athletesOnly.map(a => `
+        <option value="${a.id}">${a.full_name} (${a.group_level || 'Basic'})</option>
+      `).join('');
+
+      document.getElementById('modal-parent-mapping').classList.remove('hidden');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  window.closeMappingModal = () => {
+    document.getElementById('modal-parent-mapping').classList.add('hidden');
+  };
+
+  window.submitChildRelation = async () => {
+    const parentId = document.getElementById('mapping-parent-id').value;
+    const athleteId = document.getElementById('mapping-select-athlete').value;
+
+    if (!parentId || !athleteId) return;
+
+    try {
+      const response = await fetch('/api/admin/parent-mapping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parent_id: parentId, athlete_id: athleteId })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        if (window.showToast) window.showToast('Koneksi anak berhasil disahkan bray!', 'success');
+        // Refresh modal biar data anak barunya langsung ngetren tampil
+        window.openMappingModal(parentId, document.getElementById('mapping-parent-name').innerText.replace('Parent: ', ''));
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // --- FUNGSI BARU: PEMICU DROPDOWN INLINE ROLE bray ---
@@ -548,5 +616,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
-  
+
 });

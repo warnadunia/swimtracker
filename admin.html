@@ -258,6 +258,47 @@
   </div>
 </div>
 
+<!-- MODAL POPUP: KONEKSIKAN PARENTS & ATLETS BRAY -->
+<div id="modal-parent-mapping" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-[#1f1927] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800">
+    <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#18131f]/50">
+      <div>
+        <h3 class="font-bold text-gray-800 dark:text-white text-sm">Relasi Anak (Multi-Athlete)</h3>
+        <p id="mapping-parent-name" class="text-[10px] text-emerald-500 font-bold">Parent: Nama Orang Tua</p>
+      </div>
+      <button onclick="window.closeMappingModal()" class="text-gray-400 hover:text-brand-red font-bold p-1">✖</button>
+    </div>
+    
+    <div class="p-4 space-y-4">
+      <input type="hidden" id="mapping-parent-id">
+      
+      <!-- 1. List Anak yang sudah terkoneksi saat ini bray -->
+      <div>
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Daftar Anak Terhubung:</label>
+        <div id="mapping-children-list" class="space-y-1.5 max-h-24 overflow-y-auto bg-gray-50 dark:bg-[#140e16]/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800/60 text-xs">
+          <!-- Diisi via javascript bray -->
+        </div>
+      </div>
+
+      <hr class="border-gray-100 dark:border-gray-800">
+
+      <!-- 2. Form Tambah Anak (Jika lebih dari 1) -->
+      <div class="space-y-2">
+        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block">➕ Hubungkan Anak Baru</label>
+        <div class="flex gap-2">
+          <select id="mapping-select-athlete" class="flex-1 px-3 py-2 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-xs font-semibold text-gray-800 dark:text-white focus:outline-none">
+            <!-- Dropdown isi seluruh atlet di TiDB bray -->
+          </select>
+          <button onclick="window.submitChildRelation()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all">
+            Koneksikan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <!-- JS CONTROLLER UNTUK SPA TAB ENGINE -->
   <script>
     function switchAdminTab(tabId) {
