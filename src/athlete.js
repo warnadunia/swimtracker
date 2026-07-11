@@ -8,6 +8,7 @@ import Chart from 'chart.js/auto';
 import headerHTML from '../header.html?raw';
 import dashboardHTML from '../dashboard.html?raw';
 import progressHTML from '../progress.html?raw';
+import trainingHTML from '../training.html?raw';
 import navHTML from '../bottomnav.html?raw'; 
 
 import { initProfileModal, initDashboardProfile } from './profile_modal.js';
@@ -29,26 +30,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Injeksi 3 Modul Utama Wadah Konten
     document.getElementById('main-container').innerHTML = `
       <div id="wrapper-dashboard" class="tab-content-atlet hidden">${dashboardHTML}</div>
-      <div id="wrapper-training" class="tab-content-atlet hidden space-y-4">
-        <!-- RENDER DINAMIS MENU TRAINING DI SINI BRAY -->
-        <div class="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-4 text-xs text-blue-600 dark:text-blue-400 font-bold mb-2">🏊‍♂️ MENU TRAINING & DRYLAND</div>
-        <div class="bg-white dark:bg-[#1f1927] border dark:border-gray-800 p-4 rounded-2xl shadow-sm">
-          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">⏱️ Catatan Waktu Time Trial</h4>
-          <div id="training-tt-list" class="space-y-2 divide-y divide-gray-100 dark:divide-gray-800"></div>
-        </div>
-        <div class="bg-white dark:bg-[#1f1927] border dark:border-gray-800 p-4 rounded-2xl shadow-sm">
-          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🏋️ Tugas Latihan & Dryland</h4>
-          <div id="training-dryland-list" class="space-y-2 text-xs"></div>
-        </div>
-      </div>
+      <div id="wrapper-training" class="tab-content-atlet hidden">${trainingHTML}</div>
       <div id="wrapper-progress" class="tab-content-atlet hidden">${progressHTML}</div>
     `;
     
     document.getElementById('nav-container').innerHTML = navHTML;
     
-    // Cabut tombol input kejuaraan murni dari UI Atlet bray
-    const addBtn = document.getElementById('btn-open-modal');
-    if (addBtn) addBtn.remove();
+    // Sembunyikan tombol input kejuaraan murni dari UI Atlet bray
+    const addBtn = document.getElementById('container-btn-input-kejuaraan');
+    if(addBtn) addBtn.remove();
 
   } catch (error) {
     console.error("Gagal memuat komponen HTML:", error);
@@ -58,30 +48,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 3. SWITCH TAB ENGINE KHUSUS 3 UTAMA MENU ATLET BRAY
   window.switchTab = function(tabId) {
-    // Sembunyikan semua kontainer pembungkus
     document.querySelectorAll('.tab-content-atlet').forEach(el => el.classList.add('hidden'));
     
-    // Tampilkan target tab yang dipilih
-    let targetId = 'wrapper-dashboard';
-    if (tabId === 'tab-history') targetId = 'wrapper-dashboard';
-    if (tabId === 'tab-training') targetId = 'wrapper-training'; // Target Menu Baru!
-    if (tabId === 'tab-grafik') targetId = 'wrapper-progress';
+    // Map internal id in HTML structure
+    if (tabId === 'tab-history') document.getElementById('wrapper-dashboard').classList.remove('hidden');
+    else if (tabId === 'tab-training') document.getElementById('wrapper-training').classList.remove('hidden');
+    else if (tabId === 'tab-grafik') document.getElementById('wrapper-progress').classList.remove('hidden');
 
-    const targetEl = document.getElementById(targetId);
-    if (targetEl) targetEl.classList.remove('hidden');
-
-    // Reset warna dan status aktif tombol bottom nav bray
     const btns = document.querySelectorAll('.nav-tab-btn');
     btns.forEach(btn => {
       btn.classList.remove('text-brand-red');
       btn.classList.add('text-gray-400');
     });
-    
-    // Warnai merah tombol aktif saat ini
+
     const activeBtn = document.querySelector(`[onclick="window.switchTab('${tabId}')"]`) || document.querySelector(`[onclick="switchTab('${tabId}')"]`);
     if (activeBtn) {
       activeBtn.classList.remove('text-gray-400');
       activeBtn.classList.add('text-brand-red');
+    }
+  };
+
+  window.switchTrainingTab = function(subId) {
+    document.getElementById('training-tt-view').classList.add('hidden');
+    document.getElementById('training-hw-view').classList.add('hidden');
+    
+    document.getElementById('btn-tt').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+    document.getElementById('btn-tt').classList.add('text-gray-500', 'dark:text-gray-400');
+    
+    document.getElementById('btn-hw').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+    document.getElementById('btn-hw').classList.add('text-gray-500', 'dark:text-gray-400');
+
+    if (subId === 'tt') {
+      document.getElementById('training-tt-view').classList.remove('hidden');
+      document.getElementById('btn-tt').classList.add('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+      document.getElementById('btn-tt').classList.remove('text-gray-500', 'dark:text-gray-400');
+    } else {
+      document.getElementById('training-hw-view').classList.remove('hidden');
+      document.getElementById('btn-hw').classList.add('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+      document.getElementById('btn-hw').classList.remove('text-gray-500', 'dark:text-gray-400');
     }
   };
   window.switchTab('tab-history'); // Default awal masuk ke Dashboard bray
@@ -159,21 +163,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderTrainingModule(trials, drylands) {
-    const ttContainer = document.getElementById('training-tt-list');
-    const dryContainer = document.getElementById('training-dryland-list');
+    const ttContainer = document.getElementById('tt-list-container');
+    
+    // Simpan trials di window object untuk filter chart
+    window.globalTimeTrials = trials || [];
 
-    // [A] Render Catatan Waktu Time Trial dari Pelatih bray
     if (ttContainer) {
       if (!trials || trials.length === 0) {
-        ttContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada evaluasi latihan dari Coach bray.</div>`;
+        ttContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada data Time Trial.</div>`;
       } else {
         ttContainer.innerHTML = trials.map(t => {
           const tglStr = new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
           return `
-            <div class="flex justify-between items-center py-2.5 first:pt-0 last:pb-0">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#221c29]">
               <div>
-                <div class="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase">${t.title_event}</div>
-                <div class="text-[9px] text-gray-400 mt-0.5">${t.distance}M • Kolam ${t.pool_size}M • ${tglStr}</div>
+                <div class="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase">${t.style_name} ${t.distance}M</div>
+                <div class="text-[9px] text-gray-400 mt-0.5">${t.title_event} • ${tglStr}</div>
               </div>
               <span class="text-xs font-mono font-bold text-brand-red bg-brand-red/10 px-2 py-0.5 rounded-lg">${t.time_record}</span>
             </div>`;
@@ -181,7 +186,67 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // [B] Render Tugas Mandiri Dryland bray
+    // Render TT Chart Default
+    initTTChart('all');
+  }
+
+  function initTTChart(styleFilter) {
+    const ctx = document.getElementById('ttChart');
+    if (!ctx) return;
+    
+    if (window.myTTChart) {
+      window.myTTChart.destroy();
+    }
+
+    let filtered = window.globalTimeTrials || [];
+    if (styleFilter !== 'all') {
+      filtered = filtered.filter(t => t.style_name.toLowerCase().includes(styleFilter.toLowerCase()));
+    }
+
+    if (filtered.length === 0) return;
+
+    // Sort ascending by date
+    filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    
+    const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+    
+    // Parse time to seconds
+    const dataPoints = filtered.map(t => {
+      const p = t.time_record.split(/[:.]/);
+      return p.length === 4 ? (parseInt(p[0])*3600)+(parseInt(p[1])*60)+parseInt(p[2])+(parseInt(p[3])/100) : 0;
+    });
+
+    window.myTTChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Waktu (Detik)',
+          data: dataPoints,
+          borderColor: '#ff4d4d',
+          backgroundColor: 'rgba(255, 77, 77, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // Bind filter dropdown for TT
+  const ttFilter = document.getElementById('tt-style-filter');
+  if (ttFilter) {
+    ttFilter.addEventListener('change', (e) => {
+      initTTChart(e.target.value);
+    });
+  }
+
+    const dryContainer = document.getElementById('training-dryland-list');
     if (dryContainer) {
       if (!drylands || drylands.length === 0) {
         dryContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada target tugas dryland fisik minggu ini.</div>`;

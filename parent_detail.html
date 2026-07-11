@@ -28,23 +28,7 @@
   <!-- Kontainer Konten (Dashboard & Progress dari app.html) -->
   <main id="main-container" class="p-4 max-w-md mx-auto"></main>
 
-  <!-- Bottom Nav Khusus Parents + FAB Tengah -->
-  <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 dark:bg-[#18131f]/90 backdrop-blur-md border-t border-gray-100 dark:border-gray-800/80 h-16 flex items-center justify-around px-2 z-40 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
-    <button onclick="window.switchTab('tab-history')" class="nav-tab-btn flex flex-col items-center justify-center text-brand-red flex-1 transition-colors">
-      <span class="text-xl mb-0.5">📊</span><span class="text-[9px] font-bold tracking-wider uppercase">Dashboard</span>
-    </button>
-    
-    <!-- TOMBOL FAB TENGAH (MANGGIL MODAL MULTI-ROW) -->
-    <div class="relative -top-5 px-2">
-      <button id="btn-open-modal" class="bg-gradient-to-tr from-brand-red to-rose-500 text-white w-14 h-14 rounded-full shadow-lg shadow-brand-red/40 flex items-center justify-center text-2xl active:scale-95 transition-transform border-4 border-gray-50 dark:border-brand-dark">
-        ➕
-      </button>
-    </div>
-
-    <button onclick="window.switchTab('tab-grafik')" class="nav-tab-btn flex flex-col items-center justify-center text-gray-400 flex-1 transition-colors">
-      <span class="text-xl mb-0.5">📈</span><span class="text-[9px] font-bold tracking-wider uppercase">Progress</span>
-    </button>
-  </div>
+  <div id="nav-container"></div>
 
   <!-- Tempat Modal Multi-Row Di-render oleh JS -->
   <div id="modal-container"></div>

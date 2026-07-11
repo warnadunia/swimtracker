@@ -5,6 +5,8 @@ import './style.css';
 import Chart from 'chart.js/auto';
 import dashboardHTML from '../dashboard.html?raw';
 import progressHTML from '../progress.html?raw';
+import trainingHTML from '../training.html?raw';
+import navHTML from '../bottomnav.html?raw';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const sessionUser = localStorage.getItem('swim_user');
@@ -29,13 +31,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   });
 
-  // 1. INJEKSI KONTEN TAB UTAMA
+  // 1. INJEKSI KONTEN TAB UTAMA & NAV
   document.getElementById('main-container').innerHTML = `
     <div id="wrapper-dashboard">${dashboardHTML}</div>
+    <div id="wrapper-training" class="hidden relative">${trainingHTML}</div>
     <div id="wrapper-progress" class="hidden relative">
       ${progressHTML}
     </div>
   `;
+  document.getElementById('nav-container').innerHTML = navHTML;
+
+  // Show Input Data Kejuaraan only for Parents
+  const btnContainer = document.getElementById('container-btn-input-kejuaraan');
+  if (btnContainer) {
+    btnContainer.classList.remove('hidden');
+    document.getElementById('btn-input-kejuaraan').addEventListener('click', () => {
+      // Sama seperti btn-open-modal lama
+      isEditMode = false;
+      currentEditEventId = null;
+      document.getElementById('input-event-name').value = '';
+      document.getElementById('input-event-level').value = 'Lokal';
+      document.getElementById('input-tanggal-event').value = '';
+      document.getElementById('container-nomor-lomba').innerHTML = '';
+      document.getElementById('btn-add-nomor').click(); 
+      document.getElementById('btn-save-event').innerText = "Simpan Semua Data";
+      window.openModal('modal-input', 'modal-inner');
+    });
+  }
 
   // Attach dynamic biodata href
   const btnEditProfile = document.getElementById('btn-edit-profile');
@@ -169,13 +191,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ==========================================
   window.switchTab = function(tabId) {
     document.getElementById('wrapper-dashboard').classList.add('hidden');
+    document.getElementById('wrapper-training').classList.add('hidden');
     document.getElementById('wrapper-progress').classList.add('hidden');
     if (tabId === 'tab-history') document.getElementById('wrapper-dashboard').classList.remove('hidden');
+    if (tabId === 'tab-training') document.getElementById('wrapper-training').classList.remove('hidden');
     if (tabId === 'tab-grafik') document.getElementById('wrapper-progress').classList.remove('hidden');
     const btns = document.querySelectorAll('.nav-tab-btn');
     btns.forEach(btn => { btn.classList.remove('text-brand-red'); btn.classList.add('text-gray-400'); });
     const activeBtn = document.querySelector(`[onclick="window.switchTab('${tabId}')"]`);
     if (activeBtn) { activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('text-brand-red'); }
+  };
+
+  window.switchTrainingTab = function(subId) {
+    document.getElementById('training-tt-view').classList.add('hidden');
+    document.getElementById('training-hw-view').classList.add('hidden');
+    
+    document.getElementById('btn-tt').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+    document.getElementById('btn-tt').classList.add('text-gray-500', 'dark:text-gray-400');
+    
+    document.getElementById('btn-hw').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+    document.getElementById('btn-hw').classList.add('text-gray-500', 'dark:text-gray-400');
+
+    if (subId === 'tt') {
+      document.getElementById('training-tt-view').classList.remove('hidden');
+      document.getElementById('btn-tt').classList.add('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+      document.getElementById('btn-tt').classList.remove('text-gray-500', 'dark:text-gray-400');
+    } else {
+      document.getElementById('training-hw-view').classList.remove('hidden');
+      document.getElementById('btn-hw').classList.add('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
+      document.getElementById('btn-hw').classList.remove('text-gray-500', 'dark:text-gray-400');
+    }
   };
 
   window.openModal = (bgId, innerId) => {
@@ -269,6 +314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         initRadarChart(window.globalResultsData);
         renderHistoryList();
+        renderTrainingModule(result.time_trials, result.dryland_tasks);
         initTabGrafik('Bebas');
       }
     } catch (err) { console.error(err); }
@@ -363,24 +409,32 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${lapsHtml}
         </div>
       `;
-      }).join('');
+              <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">${res.category}</span>
+              ${res.laps && res.laps.length > 0 ? `<button onclick="window.toggleSplit('${res.result_id}')" class="text-gray-400 hover:text-brand-red p-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>` : ''}
+            </div>
+            <div class="text-right">
+              <span class="font-mono font-bold text-brand-red text-sm bg-brand-red/5 px-1.5 rounded">${res.time_record}</span>
+              <span class="text-[10px] text-gray-400 ml-1">Rank ${res.rank || '-'}</span>
+            </div>
+          </div>
+          <div id="split-${res.result_id}" class="hidden pl-2 pr-2 py-2 mb-2 bg-gray-50 dark:bg-[#140e16] rounded-lg mt-1 border border-gray-100 dark:border-gray-800 shadow-inner">
+            ${(res.laps || []).map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('')}
+          </div>
+        `).join('');
+      } else {
+        resultsHtml = `<div class="text-[10px] text-gray-400 italic text-center py-2">Belum ada hasil perlombaan / nomor lomba kosong.</div>`;
+      }
 
       htmlString += `
-      <div class="bg-white dark:bg-[#1f1927] rounded-xl border dark:border-gray-800 shadow-sm mb-3 overflow-hidden">
-        <div class="p-4 flex justify-between items-center bg-gray-50/50 dark:bg-[#221c29]/50 hover:bg-gray-50 dark:hover:bg-[#251f2e] transition-colors border-b dark:border-gray-800">
-          <div class="cursor-pointer flex-1" onclick="const body = this.parentElement.nextElementSibling; body.classList.toggle('hidden'); const svg = this.parentElement.querySelector('.chevron-icon'); svg.classList.toggle('rotate-180');">
-            <h4 class="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-wide">${ev.title}</h4>
-            <p class="text-[10px] text-gray-500 mt-0.5">${ev.level} • ${dateStr}</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="window.editEvent('${ev.event_id}')" class="text-blue-500 hover:text-blue-600 bg-blue-500/10 p-1.5 rounded-lg transition-colors" title="Edit Data Lomba">
+        <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm mb-3">
+          <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">
+            <div>
+              <h4 class="font-bold text-xs tracking-wide text-gray-800 dark:text-white uppercase">${ev.title}</h4>
+              <p class="text-[9px] font-semibold text-brand-red mt-0.5">${ev.level} • ${dateStr}</p>
+            </div>
+            <button onclick="window.editEvent('${ev.event_id}')" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-400 hover:text-brand-red transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             </button>
-            <svg class="chevron-icon w-5 h-5 text-gray-400 transition-transform duration-200 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </div>
-        <div class="p-3 hidden bg-white dark:bg-[#1f1927]">
-          ${resultsHtml || '<div class="text-center py-4 text-[10px] text-gray-400">Belum ada data nomor lomba</div>'}
         </div>
       </div>`;
     });
@@ -440,6 +494,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+
+  function renderTrainingModule(trials, drylands) {
+    const ttContainer = document.getElementById('tt-list-container');
+    window.globalTimeTrials = trials || [];
+    if (ttContainer) {
+      if (!trials || trials.length === 0) {
+        ttContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada data Time Trial.</div>`;
+      } else {
+        ttContainer.innerHTML = trials.map(t => {
+          const tglStr = new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+          return `
+            <div class="flex justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#221c29]">
+              <div>
+                <div class="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase">${t.style_name} ${t.distance}M</div>
+                <div class="text-[9px] text-gray-400 mt-0.5">${t.title_event} • ${tglStr}</div>
+              </div>
+              <span class="text-xs font-mono font-bold text-brand-red bg-brand-red/10 px-2 py-0.5 rounded-lg">${t.time_record}</span>
+            </div>`;
+        }).join('');
+      }
+    }
+    initTTChart('all');
+  }
+
+  function initTTChart(styleFilter) {
+    const ctx = document.getElementById('ttChart');
+    if (!ctx) return;
+    if (window.myTTChart) window.myTTChart.destroy();
+    let filtered = window.globalTimeTrials || [];
+    if (styleFilter !== 'all') filtered = filtered.filter(t => t.style_name.toLowerCase().includes(styleFilter.toLowerCase()));
+    if (filtered.length === 0) return;
+    filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+    const dataPoints = filtered.map(t => {
+      const p = t.time_record.split(/[:.]/);
+      return p.length === 4 ? (parseInt(p[0])*3600)+(parseInt(p[1])*60)+parseInt(p[2])+(parseInt(p[3])/100) : 0;
+    });
+    window.myTTChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Waktu (Detik)', data: dataPoints, borderColor: '#ff4d4d', backgroundColor: 'rgba(255, 77, 77, 0.1)', borderWidth: 2, tension: 0.3, fill: true
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  const ttFilter = document.getElementById('tt-style-filter');
+  if (ttFilter) {
+    ttFilter.addEventListener('change', (e) => initTTChart(e.target.value));
+  }
 
   // ==========================================
   // ENGINE LOGIC MULTI-LAP STOPWATCH LIVE PARENTS
