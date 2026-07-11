@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const todayStr = new Date().toISOString().split('T')[0];
 
     // Ambil hanya profil yang diabsen HADIR hari ini dari TiDB
-    const attResponse = await fetch(`/api/coach/attendance?date=${todayStr}`);
+    const attResponse = await fetch(`/api/coach?action=attendance&date=${todayStr}`);
     const attResult = await attResponse.json();
     if (!attResult.success) throw new Error(attResult.error);
 
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return; 
     }
 
-    const athResponse = await fetch('/api/coach/athletes');
+    const athResponse = await fetch('/api/coach?action=athletes');
     const athResult = await athResponse.json();
     const presentAthletes = (athResult.data || []).filter(a => presentIds.includes(a.id));
 

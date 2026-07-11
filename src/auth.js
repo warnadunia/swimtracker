@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const generatedId = crypto.randomUUID(); 
 
       try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch('/api/auth?action=register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password').value;
 
       try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/api/auth?action=login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

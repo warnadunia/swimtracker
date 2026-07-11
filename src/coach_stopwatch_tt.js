@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
           profile_id: split.user_id, title_event: ttConfig.title, distance: ttConfig.distance, pool_size: ttConfig.pool, time_record: split.time_string
         }));
 
-        const response = await fetch('/api/coach/time_trials', {
+        const response = await fetch('/api/coach?action=time_trials', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ inserts })
