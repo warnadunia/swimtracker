@@ -498,18 +498,56 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         ttContainer.innerHTML = trials.map(t => {
           const tglStr = new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+          let laps = [];
+          if (t.split_times_json) {
+            try { laps = typeof t.split_times_json === 'string' ? JSON.parse(t.split_times_json) : t.split_times_json; } catch(e){}
+          }
+          const hasLaps = laps.length > 0;
+          
+          let lapsHtml = '';
+          if (hasLaps) {
+            lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-800 space-y-1">` + 
+              laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') + 
+            `</div>`;
+          }
+
+          const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
+          const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'hidden';
+
           return `
-            <div class="flex justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#221c29]">
-              <div>
-                <div class="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase">${t.style_name} ${t.distance}M</div>
-                <div class="text-[9px] text-gray-400 mt-0.5">${t.title_event} • ${tglStr}</div>
+            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#221c29] transition-all">
+              <div class="flex justify-between items-center ${hasLaps ? 'cursor-pointer' : ''}" onclick="if(${hasLaps}) { const el = this.nextElementSibling; el.classList.toggle('hidden'); const svg = this.querySelector('svg'); svg.classList.toggle('rotate-180'); }">
+                <div class="flex items-center gap-2">
+                  <span class="${arrowClass}">${arrowIcon}</span>
+                  <div>
+                    <div class="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase">${t.style_name} ${t.distance}M</div>
+                    <div class="text-[9px] text-gray-400 mt-0.5">${t.title_event} • ${tglStr}</div>
+                  </div>
+                </div>
+                <span class="text-xs font-mono font-bold text-brand-red bg-brand-red/10 px-2 py-0.5 rounded-lg">${t.time_record}</span>
               </div>
-              <span class="text-xs font-mono font-bold text-brand-red bg-brand-red/10 px-2 py-0.5 rounded-lg">${t.time_record}</span>
+              ${lapsHtml}
             </div>`;
         }).join('');
       }
     }
     initTTChart('all');
+
+    const dryContainer = document.getElementById('training-dryland-list');
+    if (dryContainer) {
+      if (!drylands || drylands.length === 0) {
+        dryContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada target tugas dryland fisik minggu ini.</div>`;
+      } else {
+        dryContainer.innerHTML = drylands.map(d => `
+          <label class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#140e16] rounded-xl border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform">
+            <input type="checkbox" class="w-5 h-5 accent-brand-red rounded border-gray-300" ${d.status === 'completed' ? 'checked' : ''} onclick="return false;">
+            <div class="flex-1">
+              <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200">${d.task_name}</h4>
+              <p class="text-[10px] text-gray-500">Tanggal Tugas: ${d.date.split('T')[0]}</p>
+            </div>
+          </label>`).join('');
+      }
+    }
   }
 
   function initTTChart(styleFilter) {

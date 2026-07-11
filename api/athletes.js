@@ -28,14 +28,17 @@ export default async function handler(req, res) {
 
       // Ambil 10 rekam evaluasi Time Trial Latihan dari Pelatih bray
       const [timeTrials] = await db.query(
-        `SELECT t.title_event, t.distance_meters as distance, t.pool_size, t.time_record, t.created_at, s.name as style_name
+        `SELECT t.title_event, t.distance_meters as distance, t.pool_size, t.time_record, t.created_at, t.split_times_json, s.name as style_name
          FROM time_trials_results t
          JOIN swimming_styles s ON t.style_id = s.id
          WHERE t.athlete_id = ? 
          ORDER BY t.created_at DESC LIMIT 10`, [user_id]
       );
 
-      const drylandTasks = [];
+      const [drylandTasks] = await db.query(
+        `SELECT id, task_name, task_date as date, status FROM dryland_tasks WHERE athlete_id = ? ORDER BY task_date DESC LIMIT 5`, [user_id]
+      );
+
       const [profileRows] = await db.query(`SELECT full_name, group_level, birth_year FROM profiles WHERE id = ?`, [user_id]);
       const currentGroup = profileRows[0]?.group_level || 'Basic 1';
       const fullName = profileRows[0]?.full_name || '';
