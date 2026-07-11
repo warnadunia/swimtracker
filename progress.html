@@ -1,5 +1,27 @@
-<div id="tab-grafik" class="hidden w-full pb-24">
+<div id="tab-grafik" class="w-full pb-24">
   
+  <!-- CARD BIOMETRIK ANAK -->
+  <div class="bg-white dark:bg-[#1f1a24] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-4 relative overflow-hidden">
+    <div class="absolute top-0 right-0 bg-blue-600/10 text-blue-600 px-3 py-1 rounded-bl-xl text-[9px] font-bold tracking-wider">BIOMETRIK</div>
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-xs tracking-widest text-gray-800 dark:text-white uppercase flex items-center gap-1.5"><span class="text-sm">📏</span> Data Fisik</h3>
+      <button onclick="window.openBiometrikModal()" class="text-[9px] font-bold text-brand-red uppercase tracking-wider hover:underline">Update Data</button>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
+        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Tinggi</p>
+        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-height">--</span> <span class="text-[9px] text-gray-400">cm</span></p>
+      </div>
+      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
+        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Berat</p>
+        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-weight">--</span> <span class="text-[9px] text-gray-400">kg</span></p>
+      </div>
+      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
+        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Arm Span</p>
+        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-arm">--</span> <span class="text-[9px] text-gray-400">cm</span></p>
+      </div>
+    </div>
+  </div>
   <div class="flex overflow-x-auto gap-3 pb-2 mb-4 hide-scrollbar">
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-brand-red text-white text-xs font-bold whitespace-nowrap shadow-md shadow-brand-red/40 transition-all" data-style="Bebas">Gaya Bebas</button>
     <button class="pill-gaya px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#1f1a24] text-gray-500 dark:text-gray-400 text-xs font-bold whitespace-nowrap border border-gray-200 dark:border-gray-700 hover:text-brand-red transition-all" data-style="Kupu">Gaya Kupu</button>

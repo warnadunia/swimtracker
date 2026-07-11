@@ -1,18 +1,16 @@
+// src/admin.js
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Proteksi Halaman: Cek Sesi Lokal & Role Admin
+  // 1. Proteksi Halaman Sesi Lokal
   const sessionUser = localStorage.getItem('swim_user');
-  if (!sessionUser) { 
-    window.location.href = '/index.html'; 
-    return; 
-  }
+  if (!sessionUser) return window.location.replace('/index.html');
   
   const loggedInUser = JSON.parse(sessionUser);
   if (!loggedInUser || loggedInUser.role !== 'admin') { 
-    window.location.href = '/app.html'; 
-    return; 
+    return window.location.replace('/app.html'); 
   }
 
-  // State Management Internal
+  // State Management Internal (Bebas Duplikat bray!)
+  let currentRoleFilter = 'all';
   let currentGayaFilter = 'Bebas';
   let currentTahunPrestasi = 'ALL';
   let allUsersCache = [];
@@ -20,27 +18,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allPrestasiCache = [];
 
   // ==========================================
-  // 2. MODUL 1: USERS (Inline Role Editor Engine)
+  // 2. MODUL 1: USERS (Client-Side Filter Engine)
   // ==========================================
-  let currentRoleFilter = 'all'; 
-
   async function loadUsers() {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await fetch('/api/admin?action=users'); // Mengarah ke router merger bray
       const result = await response.json();
       if (result.success && result.data) {
         allUsersCache = result.data;
-        window.renderUsers(); // Panggil via window bray
+        window.renderUsers();
       }
     } catch (err) {
       console.error("Gagal memuat list user TiDB:", err);
     }
   }
 
-  // --- KITA MODIFIKASI SEDIKIT FUNGSI RENDERUSERS SEBELUMNYA BRAY ---
   window.renderUsers = function() {
     const filtered = allUsersCache.filter(u => {
       if (currentRoleFilter === 'all') return true;
+      // Tambahan aman: kalau filter coach, munculkan juga head_coach
+      if (currentRoleFilter === 'coach' && u.role === 'head_coach') return true;
+      
+      // Filter default: otomatis bakal nangkep 'parents' dengan sempurna
       return u.role === currentRoleFilter;
     });
 
@@ -55,8 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let html = '';
     filtered.forEach(u => {
       const usernameDisplay = u.username ? u.username : (u.email ? u.email.split('@')[0] : 'user');
-
-      // Taktik Jitu: Jika dia role parents, kasih tombol shortcut [children] di bawah nama lengkapnya bray!
       const parentSetupLink = u.role === 'parents' 
         ? `<button onclick="window.openMappingModal('${u.id}', '${u.full_name}')" class="text-[9px] text-emerald-500 font-bold hover:underline block mt-0.5">[children setup]</button>` 
         : '';
@@ -88,83 +85,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.innerHTML = html;
   };
 
-  // =========================================================
-  // LOGIKA PENGATURAN KONEKSI MULTI-ATHLETE ANAK ORANG TUA bray
-  // =========================================================
-  window.openMappingModal = async (parentId, parentName) => {
-    document.getElementById('mapping-parent-id').value = parentId;
-    document.getElementById('mapping-parent-name').innerText = `Parent: ${parentName}`;
-    
-    // Clear list view bray
-    const listContainer = document.getElementById('mapping-children-list');
-    listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Memuat relasi anak...</div>';
-
-    // 1. Ambil list anak aktif saat ini via API
-    try {
-      const response = await fetch(`/api/admin/parent-mapping?parent_id=${parentId}`);
-      const result = await response.json();
-      
-      if (result.success && result.data.length > 0) {
-        listContainer.innerHTML = result.data.map(child => `
-          <div class="flex justify-between items-center p-1.5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-lg mb-1">
-            <span class="font-bold text-gray-700 dark:text-gray-300">${child.full_name}</span>
-            <span class="text-[9px] bg-red-500/10 text-brand-red font-bold px-1.5 py-0.5 rounded">${child.group_level || 'Basic'}</span>
-          </div>
-        `).join('');
-      } else {
-        listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Belum terhubung dengan anak bray.</div>';
-      }
-
-      // 2. Isi Dropdown option khusus tipe user 'atlet' dari cache lokal bray
-      const selectAthlete = document.getElementById('mapping-select-athlete');
-      const athletesOnly = allUsersCache.filter(u => u.role === 'atlet');
-      
-      selectAthlete.innerHTML = athletesOnly.map(a => `
-        <option value="${a.id}">${a.full_name} (${a.group_level || 'Basic'})</option>
-      `).join('');
-
-      document.getElementById('modal-parent-mapping').classList.remove('hidden');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  window.closeMappingModal = () => {
-    document.getElementById('modal-parent-mapping').classList.add('hidden');
-  };
-
-  window.submitChildRelation = async () => {
-    const parentId = document.getElementById('mapping-parent-id').value;
-    const athleteId = document.getElementById('mapping-select-athlete').value;
-
-    if (!parentId || !athleteId) return;
-
-    try {
-      const response = await fetch('/api/admin/parent-mapping', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parent_id: parentId, athlete_id: athleteId })
-      });
-      const result = await response.json();
-
-      if (result.success) {
-        if (window.showToast) window.showToast('Koneksi anak berhasil disahkan bray!', 'success');
-        // Refresh modal biar data anak barunya langsung ngetren tampil
-        window.openMappingModal(parentId, document.getElementById('mapping-parent-name').innerText.replace('Parent: ', ''));
-      } else {
-        alert(result.message);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // --- FUNGSI BARU: PEMICU DROPDOWN INLINE ROLE bray ---
   window.startInlineEditRole = (id, currentRole, fullName, username, email, wa) => {
     const cell = document.getElementById(`role-cell-${id}`);
     if (!cell) return;
-
-    // Suntik select option langsung di tempat teks role lamanya bray
     cell.innerHTML = `
       <div class="flex items-center gap-1">
         <select id="inline-select-${id}" class="text-xs bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 font-semibold text-gray-800 dark:text-white focus:outline-none">
@@ -174,154 +97,58 @@ document.addEventListener('DOMContentLoaded', async () => {
           <option value="parents" ${currentRole === 'parents' ? 'selected' : ''}>parents</option>
           <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>admin</option>
         </select>
-        <button onclick="window.saveInlineRole('${id}', '${fullName}', '${username}', '${email}', '${wa}')" class="p-1 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold">✓</button>
+        <button onclick="window.saveInlineRole('${id}', '${fullName}', '${username}', '${email}', '${wa}')" class="p-1 text-xs bg-emerald-600 text-white rounded-lg font-bold">✓</button>
         <button onclick="window.renderUsers()" class="p-1 text-xs bg-gray-200 dark:bg-zinc-800 text-gray-400 rounded-lg font-bold">✕</button>
       </div>
     `;
   };
 
-  // --- FUNGSI BARU: SIMPAN PERUBAHAN ROLE INLINE KE TiDB VIA API ---
   window.saveInlineRole = async (id, fullName, username, email, wa) => {
     const newRole = document.getElementById(`inline-select-${id}`).value;
-
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch('/api/admin', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id,
-          full_name: fullName,
-          username: username,
-          email: email,
-          no_wa: wa,
-          role: newRole // Kirim mutasi role baru bray
-        })
+        body: JSON.stringify({ id, full_name: fullName, username, email, no_wa: wa, role: newRole })
       });
       const result = await response.json();
-
       if (result.success) {
-        // Update cache lokal biar gak perlu reload page murni bray
         const targetUser = allUsersCache.find(u => u.id === id);
         if (targetUser) targetUser.role = newRole;
-        renderUsers();
-      } else {
-        alert("Gagal mutasi role: " + result.message);
+        window.renderUsers();
       }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   window.filterUserRole = (role) => {
     currentRoleFilter = role;
-    
     document.querySelectorAll('.role-filter-btn').forEach(btn => {
       btn.classList.remove('bg-white', 'dark:bg-[#18131f]', 'text-gray-800', 'dark:text-white', 'shadow-sm', 'font-bold');
       btn.classList.add('text-gray-400');
     });
-    
     const activeBtn = document.getElementById('role-' + role);
-    if (activeBtn) {
-      activeBtn.classList.add('bg-white', 'dark:bg-[#18131f]', 'text-gray-800', 'dark:text-white', 'shadow-sm', 'font-bold');
-      activeBtn.classList.remove('text-gray-400');
-    }
-
-    renderUsers();
-  };
-
-  window.editUser = (id, name, username, email, wa, role) => {
-  // Isi data ke form modal
-  document.getElementById('edit-user-id').value = id;
-  document.getElementById('edit-user-name').value = name !== 'undefined' ? name : '';
-  document.getElementById('edit-user-username').value = username !== 'undefined' ? username : '';
-  document.getElementById('edit-user-email').value = email !== 'undefined' ? email : '';
-  document.getElementById('edit-user-wa').value = wa !== 'undefined' ? wa : '';
-  
-  // Set value dropdown role sesuai data aslinya di TiDB bray
-  if (role && role !== 'undefined') {
-    document.getElementById('edit-user-role').value = role;
-  }
-  
-  // Tampilkan Modal
-  document.getElementById('modal-edit-user').classList.remove('hidden');
-};
-
-  window.saveUserEdit = async () => {
-  const id = document.getElementById('edit-user-id').value;
-  const newName = document.getElementById('edit-user-name').value.trim();
-  const newUsername = document.getElementById('edit-user-username').value.trim();
-  const newEmail = document.getElementById('edit-user-email').value.trim();
-  const newWa = document.getElementById('edit-user-wa').value.trim();
-  const newRole = document.getElementById('edit-user-role').value; // <-- Ambil nilai role baru!
-
-  if (!newName) {
-    alert("Nama lengkap tidak boleh kosong!");
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/admin/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        id, 
-        full_name: newName, 
-        username: newUsername, 
-        email: newEmail, 
-        no_wa: newWa,
-        role: newRole // <-- Kirim data ke serverless bray!
-      })
-    });
-    const result = await response.json();
-    if (result.success) {
-      window.closeEditModal();
-      loadUsers(); // Refresh data tabel biar laporannya sinkron!
-    } else {
-      alert("Gagal update: " + result.message);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-  window.resetPass = async (user) => {
-    const pass = prompt("Masukkan password baru untuk @" + user);
-    if (pass) {
-      alert("Password berhasil diubah di TiDB untuk user @" + user);
-    }
+    if (activeBtn) activeBtn.classList.add('bg-white', 'dark:bg-[#18131f]', 'text-gray-800', 'dark:text-white', 'shadow-sm', 'font-bold');
+    window.renderUsers();
   };
 
   window.hapusUser = async (id) => {
     if (confirm("Hapus pengguna ini secara permanen dari TiDB?")) {
       try {
-        const response = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
+        const response = await fetch(`/api/admin?id=${id}`, { method: 'DELETE' });
         const result = await response.json();
         if (result.success) loadUsers();
-        else alert(result.message);
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err); }
     }
   };
 
-
-// ---------------------------------------------------------
-  // KONTROL MODAL TAMBAH USER BARU (ADD NEW USER) BRAY!
-  // ---------------------------------------------------------
   window.openAddUserModal = () => {
-    // Bersihkan form sisa ketikan sebelumnya bray
     document.getElementById('add-user-name').value = '';
     document.getElementById('add-user-username').value = '';
     document.getElementById('add-user-pass').value = '';
     document.getElementById('add-user-email').value = '';
-    document.getElementById('add-user-role').value = 'atlet';
-    
     document.getElementById('modal-add-user').classList.remove('hidden');
   };
-
-  window.closeAddUserModal = () => {
-    document.getElementById('modal-add-user').classList.add('hidden');
-  };
+  window.closeAddUserModal = () => document.getElementById('modal-add-user').classList.add('hidden');
 
   window.saveNewUser = async () => {
     const fullName = document.getElementById('add-user-name').value.trim();
@@ -330,291 +157,234 @@ document.addEventListener('DOMContentLoaded', async () => {
     const email = document.getElementById('add-user-email').value.trim();
     const role = document.getElementById('add-user-role').value;
 
-    if (!fullName || !username || !password) {
-      alert("Nama, Username, dan Password wajib diisi bray!");
-      return;
-    }
-
     try {
-      const response = await fetch('/api/admin/add-user', {
+      const response = await fetch('/api/admin?action=add-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ full_name: fullName, username, email, password, role })
       });
       const result = await response.json();
-
       if (result.success) {
-        alert("✅ " + result.message);
         window.closeAddUserModal();
-        loadUsers(); // Refresh listing biar user baru langsung nangkring di tabel bray!
-      } else {
-        alert("⚠️ Gagal: " + result.message);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Jaringan sibuk bray, gagal jabat tangan ke backend.");
-    }
+        loadUsers();
+      } else { alert(result.message); }
+    } catch (err) { console.error(err); }
   };
 
-  // ==========================================
-  // 3. MODUL 2: NOMOR LOMBA (Swimming Styles Terpisah)
-  // ==========================================
-  async function loadCategories() {
+  // --- MODUL PARENT RELATION MAPPING ---
+  window.openMappingModal = async (parentId, parentName) => {
+    document.getElementById('mapping-parent-id').value = parentId;
+    document.getElementById('mapping-parent-name').innerText = `Parent: ${parentName}`;
+    const listContainer = document.getElementById('mapping-children-list');
+    listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Memuat relasi anak...</div>';
+
     try {
-      const response = await fetch('/api/admin/styles');
+      const response = await fetch(`/api/admin?action=parent-mapping&parent_id=${parentId}`);
       const result = await response.json();
-      if (result.success && result.data) {
-        allCategoriesCache = result.data;
-        renderCategories();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
+      if (result.success && result.data.length > 0) {
+        listContainer.innerHTML = result.data.map(child => `
+          <div class="flex justify-between items-center p-1.5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-lg mb-1">
+            <span class="font-bold text-gray-700 dark:text-gray-300">${child.full_name}</span>
+            <span class="text-[9px] bg-red-500/10 text-brand-red font-bold px-1.5 py-0.5 rounded">${child.group_level || 'Basic'}</span>
+          </div>`).join('');
+      } else { listContainer.innerHTML = '<div class="text-gray-400 text-center py-2">Belum ada relasi anak.</div>'; }
 
-  function renderCategories() {
-    const filtered = allCategoriesCache.filter(c => {
-      const lowerName = c.name.toLowerCase();
-      if (currentGayaFilter === 'Ganti') return lowerName.includes('ganti');
-      return lowerName.includes(currentGayaFilter.toLowerCase());
-    });
-
-    const container = document.getElementById('admin-category-list');
-    if (!container) return;
-
-    if (filtered.length === 0) {
-      container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-gray-400 text-xs">Tidak ada master gaya ${currentGayaFilter}</td></tr>`;
-      return;
-    }
-
-    let html = '';
-    filtered.forEach(i => {
-      html += `
-        <tr class="hover:bg-gray-100/30 dark:hover:bg-[#282033] transition-colors">
-          <td class="px-3 py-2.5 font-medium text-gray-800 dark:text-gray-200">${i.name}</td>
-          <td class="px-3 py-2.5 text-center">
-            <button onclick="window.deleteCategory('${i.id}')" class="text-brand-red font-semibold text-xs hover:underline">Hapus</button>
-          </td>
-        </tr>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  window.filterGayaNomor = (gaya) => {
-    currentGayaFilter = gaya;
-    
-    document.querySelectorAll('.gaya-pill-btn').forEach(btn => {
-      btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
-      btn.classList.add('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
-    });
-    const activeBtn = document.getElementById('gaya-' + gaya);
-    if (activeBtn) {
-      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
-      activeBtn.classList.remove('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
-    }
-
-    renderCategories();
+      const selectAthlete = document.getElementById('mapping-select-athlete');
+      selectAthlete.innerHTML = allUsersCache.filter(u => u.role === 'atlet').map(a => `<option value="${a.id}">${a.full_name}</option>`).join('');
+      document.getElementById('modal-parent-mapping').classList.remove('hidden');
+    } catch (err) { console.error(err); }
   };
+  window.closeMappingModal = () => document.getElementById('modal-parent-mapping').classList.add('hidden');
 
-  window.deleteCategory = async (id) => {
-    alert("Untuk menjaga integritas data kejuaraan di V3, penghapusan master gaya harus via database root, bray!");
+  window.submitChildRelation = async () => {
+    const parentId = document.getElementById('mapping-parent-id').value;
+    const athleteId = document.getElementById('mapping-select-athlete').value;
+    try {
+      const response = await fetch('/api/admin?action=connect-athlete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parent_id: parentId, athlete_id: athleteId })
+      });
+      const result = await response.json();
+      if (result.success) window.openMappingModal(parentId, document.getElementById('mapping-parent-name').innerText.replace('Parent: ', ''));
+      else alert(result.message);
+    } catch (err) { console.error(err); }
   };
-
-  const addCatBtn = document.getElementById('btn-add-category');
-  if (addCatBtn) {
-    addCatBtn.addEventListener('click', async () => {
-      const inputEl = document.getElementById('admin-new-category');
-      const name = inputEl ? inputEl.value.trim() : '';
-      if (name) {
-        try {
-          const response = await fetch('/api/admin/styles', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
-          });
-          const result = await response.json();
-          if (result.success) {
-            inputEl.value = '';
-            loadCategories();
-          } else {
-            alert(result.message);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    });
-  }
 
   // ==========================================
-  // 4. MODUL 3: DAFTAR PRESTASI (Nested Object Builder)
+  // 3. MODUL 2 & 3: MASTER DATA PRESTASI
   // ==========================================
   async function loadPrestasiTerbaru() {
-    const container = document.getElementById('admin-prestasi-container');
-    if (container) container.innerHTML = `<div class="text-center py-6 text-blue-500 text-xs">Memuat data TiDB... ⏳</div>`;
-
     try {
-      const response = await fetch('/api/admin/prestasi');
+      const response = await fetch('/api/admin?action=prestasi');
       const result = await response.json();
-      
-      if (!result.success || !result.data || result.data.length === 0) {
-        if (container) container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-bold">Tabel prestasi kosong di TiDB Cloud.</div>`;
-        return;
+      if (result.success && result.data) {
+        allPrestasiCache = result.data;
+        window.renderPrestasiData();
       }
-
-      allPrestasiCache = result.data;
-      window.renderPrestasiData();
-    } catch (err) {
-      if (container) container.innerHTML = `<div class="text-center py-6 text-brand-red text-xs font-bold">Error API: ${err.message}</div>`;
-    }
+    } catch (err) { console.error(err); }
   }
 
   window.renderPrestasiData = () => {
     const container = document.getElementById('admin-prestasi-container');
     if (!container) return;
-
     const grouped = {};
 
     allPrestasiCache.forEach(item => {
       const rankAngka = parseInt(item.rank, 10);
       const eventYear = new Date(item.event_date || item.created_at).getFullYear().toString();
-
-      // Filter Tahun Lomba
       if (currentTahunPrestasi !== 'ALL' && eventYear !== currentTahunPrestasi) return;
 
       const key = `${item.user_id}-${item.event_id}`;
       if (!grouped[key]) {
-        grouped[key] = {
-          atletName: item.full_name,
-          eventTitle: item.event_title,
-          eventDate: new Date(item.event_date || item.created_at),
-          gold: 0,
-          silver: 0,
-          bronze: 0,
-          details: []
-        };
+        grouped[key] = { atletName: item.full_name, eventTitle: item.event_title, eventDate: new Date(item.event_date || item.created_at), gold: 0, silver: 0, bronze: 0, details: [] };
       }
-
       if (rankAngka === 1) grouped[key].gold++;
       else if (rankAngka === 2) grouped[key].silver++;
       else if (rankAngka === 3) grouped[key].bronze++;
 
-      grouped[key].details.push({
-        nomorLomba: `${item.distance_meters} M ${item.style_name}`,
-        waktu: item.time_record || '00:00.00',
-        rank: rankAngka
-      });
+      grouped[key].details.push({ nomorLomba: `${item.distance_meters} M ${item.style_name}`, waktu: item.time_record || '00:00.00', rank: rankAngka });
     });
 
     const sortedPrestasi = Object.values(grouped).sort((a, b) => b.eventDate - a.eventDate);
-    
-    if (sortedPrestasi.length === 0) {
-      container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs">Tidak ada data prestasi di tahun ${currentTahunPrestasi}.</div>`;
-      return;
-    }
-
     let finalHTML = '';
     sortedPrestasi.forEach((group, index) => {
       const rowId = `row-atlet-${index}`;
       let detailsHTML = '';
-      
-      const tglEvent = group.eventDate.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'short', 
-        year: 'numeric'
-      });
-      
-      group.details.forEach(d => {
-        let rankBadge = '';
-        if (d.rank === 1) rankBadge = '<span class="ml-2 bg-yellow-500/10 text-yellow-600 text-[9px] font-bold px-1.5 py-0.5 rounded">Rank 1</span>';
-        if (d.rank === 2) rankBadge = '<span class="ml-2 bg-gray-300/20 text-gray-500 dark:text-gray-400 text-[9px] font-bold px-1.5 py-0.5 rounded">Rank 2</span>';
-        if (d.rank === 3) rankBadge = '<span class="ml-2 bg-amber-600/10 text-amber-600 text-[9px] font-bold px-1.5 py-0.5 rounded">Rank 3</span>';
+      const tglEvent = group.eventDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 
-        detailsHTML += `
-          <div class="flex justify-between items-center py-2.5 border-b border-gray-100/50 dark:border-gray-800/40 last:border-0">
-            <div><div class="text-gray-600 dark:text-gray-400 font-medium">${d.nomorLomba}</div></div>
-            <div class="text-right flex flex-col items-center gap-1"><span class="font-mono font-semibold dark:text-white leading-none">${d.waktu}</span></div>
-            <div class="text-right flex flex-col items-end gap-1"><span class="font-mono font-semibold dark:text-white leading-none">${rankBadge}</span></div>
-          </div>
-        `;
+      group.details.forEach(d => {
+        let rankBadge = d.rank === 1 ? '🥇 Rank 1' : d.rank === 2 ? '🥈 Rank 2' : '🥉 Rank 3';
+        detailsHTML += `<div class="flex justify-between py-2 border-b dark:border-gray-800"><div>${d.nomorLomba}</div><div class="font-mono font-bold">${d.waktu}</div><div>${rankBadge}</div></div>`;
       });
 
       finalHTML += `
-        <div class="bg-gray-50 dark:bg-[#1f1927] rounded-2xl border border-gray-100 dark:border-gray-800/60 overflow-hidden shadow-sm">
-          <div onclick="window.toggleNestedRow('${rowId}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-[#251f2e]/50 transition-colors">
-            <div class="flex-1 min-w-0 pr-2">
-              <h4 class="font-bold text-xs text-gray-800 dark:text-gray-100 truncate">${group.atletName}</h4>
-              <p class="text-[10px] text-gray-400 truncate mt-0.5"><span class="text-[9px] bg-blue-500/10 text-blue-500 px-1 rounded-md font-bold">${tglEvent}</span> ${group.eventTitle}</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="flex gap-1.5 text-[10px] font-bold">
-                <span class="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded" title="Emas">${group.gold}</span>
-                <span class="bg-gray-300/20 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded" title="Perak">${group.silver}</span>
-                <span class="bg-amber-600/10 text-amber-600 dark:text-amber-500 px-1.5 py-0.5 rounded" title="Perunggu">${group.bronze}</span>
-              </div>
-              <span id="arrow-${rowId}" class="text-xs text-gray-400 transition-transform duration-200">🔽</span>
-            </div>
+        <div class="bg-gray-50 dark:bg-[#1f1927] rounded-2xl border dark:border-gray-800 p-3 mb-2 shadow-sm">
+          <div onclick="window.toggleNestedRow('${rowId}')" class="flex justify-between items-center cursor-pointer">
+            <div><h4 class="font-bold text-xs">${group.atletName}</h4><p class="text-[10px] text-gray-400">${tglEvent} - ${group.eventTitle}</p></div>
+            <div class="flex gap-1 text-[10px] font-bold"><span class="bg-yellow-500/10 text-yellow-600 px-1.5 rounded">${group.gold}</span><span class="bg-gray-300/20 text-gray-500 px-1.5 rounded">${group.silver}</span><span class="bg-amber-600/10 text-amber-600 px-1.5 rounded">${group.bronze}</span></div>
           </div>
-          <div id="nested-${rowId}" class="hidden border-t border-gray-100 dark:border-gray-800/80 bg-white/50 dark:bg-[#16111c]/40 px-3.5 py-2 text-[11px]">
-            ${detailsHTML}
-          </div>
-        </div>
-      `;
+          <div id="nested-${rowId}" class="hidden mt-2 pt-2 border-t text-[11px]">${detailsHTML}</div>
+        </div>`;
     });
-    
     container.innerHTML = finalHTML;
   };
 
+// =======================================================
+  // ENGINE NOMOR LOMBA (STYLES) - FIX SINKRONISASI HTML BRAY!
+  // =======================================================
+  window.masterStyles = [];
+  window.currentStyleFilter = 'All';
+
+  // 1. Fungsi Tarik Data API
+  window.loadNomorLomba = async function() {
+    const container = document.getElementById('admin-category-list');
+    if (container) container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-xs text-gray-500">Loading data...</td></tr>`;
+    
+    try {
+      const res = await fetch('/api/admin?action=styles');
+      const data = await res.json();
+      if (data.success) {
+        window.masterStyles = data.data;
+        // Panggil render pake filter yang lagi aktif
+        window.renderCategoriesByStyle(window.currentStyleFilter); 
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  // 2. Fungsi Render & Filter (Akan dipanggil oleh onclick HTML)
+  window.renderCategoriesByStyle = function(gaya) {
+    window.currentStyleFilter = gaya;
+    const container = document.getElementById('admin-category-list');
+    if (!container) return;
+
+    // Filter array jika yang dipencet bukan 'All'
+    const filtered = window.currentStyleFilter === 'All'
+      ? window.masterStyles
+      : window.masterStyles.filter(s => s.name.toLowerCase().includes(window.currentStyleFilter.toLowerCase()));
+
+    if (!filtered || filtered.length === 0) {
+      container.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-xs text-gray-400">Tidak ada data untuk kategori ini.</td></tr>`;
+      return;
+    }
+
+    // Render ke struktur <tr><td> sesuai format table HTML lu bray
+    container.innerHTML = filtered.map(s => `
+      <tr class="hover:bg-gray-50 dark:hover:bg-[#282033] border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors">
+        <td class="px-3 py-3 font-medium text-xs text-gray-800 dark:text-gray-200">${s.name}</td>
+        <td class="px-3 py-3 text-center">
+          <div class="flex gap-2 justify-center">
+            <button onclick="window.editNomorLomba('${s.id}', '${s.name}')" class="bg-gray-200 dark:bg-[#2a2235] p-1.5 rounded text-[10px] hover:text-blue-500 font-bold transition-all" title="Edit">✏️</button>
+            <button onclick="window.hapusNomorLomba('${s.id}')" class="bg-gray-200 dark:bg-[#2a2235] p-1.5 rounded text-[10px] hover:text-brand-red font-bold transition-all" title="Hapus">❌</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  };
+
+  // 3. Eksekusi Tombol Tambah Nomor Lomba
+  document.getElementById('btn-add-category')?.addEventListener('click', async () => {
+    const input = document.getElementById('admin-new-category');
+    const name = input.value.trim();
+    if (!name) return alert("Isi dulu nama nomor lombanya bray!");
+
+    const btn = document.getElementById('btn-add-category');
+    btn.innerText = "⏳ Menyimpan..."; btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/admin?action=styles', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if (data.success) {
+        input.value = ''; 
+        window.loadNomorLomba(); // Reload List Otomatis
+      } else { alert(data.message || "Gagal menambah nomor lomba"); }
+    } catch (err) { console.error(err); } finally {
+      btn.innerText = "➕ Tambah Nomor Lomba"; btn.disabled = false;
+    }
+  });
+
+  // 4. Fungsi Edit Pakai Prompt Cepat
+  window.editNomorLomba = async function(id, oldName) {
+    const newName = prompt("Edit Nama Nomor Lomba:", oldName);
+    if (newName && newName.trim() !== "" && newName !== oldName) {
+      try {
+        const res = await fetch('/api/admin?action=styles', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, name: newName.trim() })
+        });
+        const data = await res.json();
+        if (data.success) window.loadNomorLomba();
+        else alert(data.message || "Gagal Edit");
+      } catch (err) { alert("Gagal edit bray!"); }
+    }
+  };
+
+  // 5. Fungsi Hapus Nomor Lomba
+  window.hapusNomorLomba = async function(id) {
+    if (confirm("Yakin mau hapus nomor lomba ini bray? (Nomor yang sudah direkam atlet akan memicu error jika dihapus)")) {
+      try {
+        const res = await fetch('/api/admin?action=styles', {
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) window.loadNomorLomba();
+        else alert(data.message || "Gagal! Nomor ini sedang dipakai atlet.");
+      } catch (err) { alert("Gagal hapus bray!"); }
+    }
+  };
+
+
   window.toggleNestedRow = (id) => {
     const target = document.getElementById('nested-' + id);
-    const arrow = document.getElementById('arrow-' + id);
-    if (target.classList.contains('hidden')) {
-      target.classList.remove('hidden');
-      arrow.style.transform = 'rotate(180deg)';
-    } else {
-      target.classList.add('hidden');
-      arrow.style.transform = 'rotate(0deg)';
-    }
+    if (target) target.classList.toggle('hidden');
   };
 
-  window.filterTahunPrestasi = () => {
-    const filterEl = document.getElementById('prestasi-year-filter');
-    if (filterEl) {
-      currentTahunPrestasi = filterEl.value.trim();
-      window.renderPrestasiData();
-    }
-  };
+  // Header System Trigger Control
+  document.getElementById('admin-theme-toggle')?.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+  document.getElementById('admin-btn-logout')?.addEventListener('click', () => { localStorage.removeItem('swim_user'); window.location.replace('/index.html'); });
 
-  // Main Inits Jabat Tangan TiDB
   loadUsers();
-  loadCategories();
   loadPrestasiTerbaru();
-
-  const filterPrestasiEl = document.getElementById('prestasi-year-filter');
-  if (filterPrestasiEl) {
-    filterPrestasiEl.addEventListener('change', window.filterTahunPrestasi);
-  }
-
-  // =========================================================
-  // 5. MODUL ADOPSI HEADER: THEME TOGGLE & LOGOUT ADMIN bray
-  // =========================================================
-  const themeToggleBtn = document.getElementById('admin-theme-toggle');
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
-  }
-
-  const logoutBtn = document.getElementById('admin-btn-logout');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      if (confirm("Keluar dari Control Panel Admin, bray?")) {
-        localStorage.removeItem('swim_user');
-        window.location.replace('/index.html');
-      }
-    });
-  }
-
+  window.loadNomorLomba();
 });

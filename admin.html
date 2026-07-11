@@ -63,11 +63,12 @@
       <!-- ================= SECTION 1: USERS ================= -->
       <section id="panel-users" class="admin-panel space-y-4">
         <!-- Filter Role Segmented Controls -->
-        <div class="grid grid-cols-4 bg-gray-100 dark:bg-[#251f2e] p-1 rounded-xl text-center text-xs font-semibold">
+        <div class="grid grid-cols-5 bg-gray-100 dark:bg-[#251f2e] p-1 rounded-xl text-center text-xs font-semibold">
         <button onclick="filterUserRole('all')" id="role-all" class="role-filter-btn py-1.5 rounded-lg bg-white dark:bg-[#18131f] text-gray-800 dark:text-white shadow-sm font-bold">All</button>
         <button onclick="filterUserRole('admin')" id="role-admin" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Admin</button>
         <button onclick="filterUserRole('coach')" id="role-coach" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Coach</button>
         <button onclick="filterUserRole('atlet')" id="role-atlet" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Atlet</button>
+        <button onclick="filterUserRole('parents')" id="role-parents" class="role-filter-btn py-1.5 rounded-lg text-gray-400">Parents</button>
       </div>
       <div class="flex justify-center mt-2">
         <button onclick="window.openAddUserModal()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
@@ -110,12 +111,13 @@
       <!-- ================= SECTION 2: NOMOR LOMBA ================= -->
       <section id="panel-nomor" class="admin-panel hidden space-y-4">
         <!-- Pills Filter Kategori Gaya -->
-        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <button onclick="filterGayaNomor('Bebas')" id="gaya-Bebas" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-sm">Bebas</button>
-          <button onclick="filterGayaNomor('Dada')" id="gaya-Dada" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Dada</button>
-          <button onclick="filterGayaNomor('Kupu')" id="gaya-Kupu" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Kupu</button>
-          <button onclick="filterGayaNomor('Punggung')" id="gaya-Punggung" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Punggung</button>
-          <button onclick="filterGayaNomor('Ganti')" id="gaya-Ganti" class="gaya-pill-btn px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Ganti</button>
+        <div class="grid grid-cols-6 bg-gray-100 dark:bg-[#251f2e] p-1 rounded-sm text-center text-sm font-semibold">
+          <button onclick="filterGayaNomor('All')" id="gaya-All" class="gaya-pill-btn px-3 py-1 rounded-sm text-xs font-semibold bg-blue-600 text-white shadow-sm">All</button>
+          <button onclick="filterGayaNomor('Bebas')" id="gaya-Bebas" class="gaya-pill-btn px-3 py-1 rounded-sm text-[12px] font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Bebas</button>
+          <button onclick="filterGayaNomor('Dada')" id="gaya-Dada" class="gaya-pill-btn px-3 py-1 rounded-sm text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Dada</button>
+          <button onclick="filterGayaNomor('Kupu')" id="gaya-Kupu" class="gaya-pill-btn px-3 py-1 rounded-sm text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Kupu</button>
+          <button onclick="filterGayaNomor('Punggung')" id="gaya-Punggung" class="gaya-pill-btn px-3 py-1 rounded-sm text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Punggung</button>
+          <button onclick="filterGayaNomor('Ganti')" id="gaya-Ganti" class="gaya-pill-btn px-3 py-1 rounded-sm text-xs font-semibold bg-gray-100 dark:bg-[#251f2e] text-gray-400">Ganti</button>
         </div>
 
         <!-- Input Tambah Nomor Lomba -->
@@ -335,7 +337,9 @@
       activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
       activeBtn.classList.remove('bg-gray-100', 'dark:bg-[#251f2e]', 'text-gray-400');
 
-      // Hook filter ke nomor kategori (cth: window.renderCategoriesByStyle(gaya))
+if (window.renderCategoriesByStyle) {
+        window.renderCategoriesByStyle(gaya);
+      }
     }
 
     function toggleNestedRow(id) {

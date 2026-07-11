@@ -25,3 +25,6 @@ dist-ssr
 .env
 .env.*
 isrgrootx1.pem
+
+.vercel
+.env*

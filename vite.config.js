@@ -14,6 +14,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         app: resolve(__dirname, 'app.html'),
         parents_dashboard: resolve(__dirname, 'parents_dashboard.html'),
+        biodata: resolve(__dirname, 'biodata.html'),
         admin: resolve(__dirname, 'admin.html'),
         coach_app: resolve(__dirname, 'coach_app.html'),
         coach_setup_tt: resolve(__dirname, 'coach_setup_tt.html'),
