@@ -381,46 +381,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     let htmlString = '';
     window.globalEventsData.forEach(ev => {
       const dateStr = new Date(ev.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-      let resultsHtml = (ev.event_results || []).map(res => {
-        const laps = res.laps || [];
-        const hasLaps = laps.length > 0;
-        const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'text-gray-200 pointer-events-none opacity-30';
-        const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
-        
-        let lapsHtml = '';
-        if (hasLaps) {
-          lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-700 space-y-1">` + 
-            laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') + 
-          `</div>`;
-        }
+      
+      let resultsHtml = '';
+      if (ev.event_results && ev.event_results.length > 0) {
+        resultsHtml = ev.event_results.map(res => {
+          const laps = res.laps || [];
+          const hasLaps = laps.length > 0;
+          const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'text-gray-200 pointer-events-none opacity-30';
+          const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
+          
+          let lapsHtml = '';
+          if (hasLaps) {
+            lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-700 space-y-1">` + 
+              laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') + 
+            `</div>`;
+          }
 
-        return `
-        <div class="bg-gray-50 dark:bg-[#251f2e] border dark:border-gray-700 rounded-lg p-2 mb-2 transition-all">
-          <div class="flex justify-between items-center ${hasLaps ? 'cursor-pointer' : ''}" onclick="if(${hasLaps}) { const el = this.nextElementSibling; el.classList.toggle('hidden'); const svg = this.querySelector('svg'); svg.classList.toggle('rotate-180'); }">
-            <div class="flex items-center gap-2">
-              <span class="${arrowClass}">${arrowIcon}</span>
-              <span class="text-gray-600 dark:text-gray-300 font-bold text-[10px] uppercase tracking-wider">${res.category}</span>
+          return `
+          <div class="bg-gray-50 dark:bg-[#251f2e] border dark:border-gray-700 rounded-lg p-2 mb-2 transition-all">
+            <div class="flex justify-between items-center ${hasLaps ? 'cursor-pointer' : ''}" onclick="if(${hasLaps}) { const el = this.nextElementSibling; el.classList.toggle('hidden'); const svg = this.querySelector('svg'); svg.classList.toggle('rotate-180'); }">
+              <div class="flex items-center gap-2">
+                <span class="${arrowClass}">${arrowIcon}</span>
+                <span class="text-gray-600 dark:text-gray-300 font-bold text-[10px] uppercase tracking-wider">${res.category}</span>
+              </div>
+              <div class="text-right flex flex-col items-end">
+                <span class="text-brand-red font-mono font-bold text-xs">${res.time_record}</span>
+                <span class="text-yellow-600 font-bold text-[9px] bg-yellow-500/10 px-1.5 py-0.5 rounded mt-0.5 whitespace-nowrap">Rank ${res.rank || '-'}</span>
+              </div>
             </div>
-            <div class="text-right flex flex-col items-end">
-              <span class="text-brand-red font-mono font-bold text-xs">${res.time_record}</span>
-              <span class="text-yellow-600 font-bold text-[9px] bg-yellow-500/10 px-1.5 py-0.5 rounded mt-0.5 whitespace-nowrap">Rank ${res.rank || '-'}</span>
-            </div>
+            ${lapsHtml}
           </div>
-          ${lapsHtml}
-        </div>
-      `;
-              <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">${res.category}</span>
-              ${res.laps && res.laps.length > 0 ? `<button onclick="window.toggleSplit('${res.result_id}')" class="text-gray-400 hover:text-brand-red p-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>` : ''}
-            </div>
-            <div class="text-right">
-              <span class="font-mono font-bold text-brand-red text-sm bg-brand-red/5 px-1.5 rounded">${res.time_record}</span>
-              <span class="text-[10px] text-gray-400 ml-1">Rank ${res.rank || '-'}</span>
-            </div>
-          </div>
-          <div id="split-${res.result_id}" class="hidden pl-2 pr-2 py-2 mb-2 bg-gray-50 dark:bg-[#140e16] rounded-lg mt-1 border border-gray-100 dark:border-gray-800 shadow-inner">
-            ${(res.laps || []).map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('')}
-          </div>
-        `).join('');
+          `;
+        }).join('');
       } else {
         resultsHtml = `<div class="text-[10px] text-gray-400 italic text-center py-2">Belum ada hasil perlombaan / nomor lomba kosong.</div>`;
       }
@@ -435,8 +427,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             <button onclick="window.editEvent('${ev.event_id}')" class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-400 hover:text-brand-red transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             </button>
+          </div>
+          <div class="space-y-1">${resultsHtml}</div>
         </div>
-      </div>`;
+      `;
     });
     container.innerHTML = htmlString;
   }

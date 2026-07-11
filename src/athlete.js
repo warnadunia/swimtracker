@@ -164,8 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderTrainingModule(trials, drylands) {
     const ttContainer = document.getElementById('tt-list-container');
-    
-    // Simpan trials di window object untuk filter chart
     window.globalTimeTrials = trials || [];
 
     if (ttContainer) {
@@ -186,65 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Render TT Chart Default
     initTTChart('all');
-  }
-
-  function initTTChart(styleFilter) {
-    const ctx = document.getElementById('ttChart');
-    if (!ctx) return;
-    
-    if (window.myTTChart) {
-      window.myTTChart.destroy();
-    }
-
-    let filtered = window.globalTimeTrials || [];
-    if (styleFilter !== 'all') {
-      filtered = filtered.filter(t => t.style_name.toLowerCase().includes(styleFilter.toLowerCase()));
-    }
-
-    if (filtered.length === 0) return;
-
-    // Sort ascending by date
-    filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    
-    const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
-    
-    // Parse time to seconds
-    const dataPoints = filtered.map(t => {
-      const p = t.time_record.split(/[:.]/);
-      return p.length === 4 ? (parseInt(p[0])*3600)+(parseInt(p[1])*60)+parseInt(p[2])+(parseInt(p[3])/100) : 0;
-    });
-
-    window.myTTChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Waktu (Detik)',
-          data: dataPoints,
-          borderColor: '#ff4d4d',
-          backgroundColor: 'rgba(255, 77, 77, 0.1)',
-          borderWidth: 2,
-          tension: 0.3,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
-      }
-    });
-  }
-
-  // Bind filter dropdown for TT
-  const ttFilter = document.getElementById('tt-style-filter');
-  if (ttFilter) {
-    ttFilter.addEventListener('change', (e) => {
-      initTTChart(e.target.value);
-    });
-  }
 
     const dryContainer = document.getElementById('training-dryland-list');
     if (dryContainer) {
@@ -261,6 +201,42 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>`).join('');
       }
     }
+  }
+
+  function initTTChart(styleFilter) {
+    const ctx = document.getElementById('ttChart');
+    if (!ctx) return;
+    
+    if (window.myTTChart) window.myTTChart.destroy();
+
+    let filtered = window.globalTimeTrials || [];
+    if (styleFilter !== 'all') filtered = filtered.filter(t => t.style_name.toLowerCase().includes(styleFilter.toLowerCase()));
+    if (filtered.length === 0) return;
+
+    filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+    const dataPoints = filtered.map(t => {
+      const p = t.time_record.split(/[:.]/);
+      return p.length === 4 ? (parseInt(p[0])*3600)+(parseInt(p[1])*60)+parseInt(p[2])+(parseInt(p[3])/100) : 0;
+    });
+
+    window.myTTChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Waktu (Detik)', data: dataPoints, borderColor: '#ff4d4d', backgroundColor: 'rgba(255, 77, 77, 0.1)', borderWidth: 2, tension: 0.3, fill: true
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  const ttFilter = document.getElementById('tt-style-filter');
+  if (ttFilter) {
+    ttFilter.addEventListener('change', (e) => {
+      initTTChart(e.target.value);
+    });
   }
 
   // ==========================================
