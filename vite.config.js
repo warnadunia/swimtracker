@@ -18,7 +18,10 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'),
         coach_app: resolve(__dirname, 'coach_app.html'),
         coach_setup_tt: resolve(__dirname, 'coach_setup_tt.html'),
-        coach_stopwatch_tt: resolve(__dirname, 'coach_stopwatch_tt.html')
+        coach_stopwatch_tt: resolve(__dirname, 'coach_stopwatch_tt.html'),
+        parent_detail: resolve(__dirname, 'parent_detail.html'),
+        profile: resolve(__dirname, 'profile.html'),
+        progress: resolve(__dirname, 'progress.html')
       }
     }
   }
