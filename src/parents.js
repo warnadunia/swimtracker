@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Kartu Anak sebagai LINK (Clickable) bray!
         container.innerHTML += `
-          <div onclick="window.location.href='/parent_detail.html?id=${child.id}&name=${encodeURIComponent(child.full_name)}'" 
+          <div onclick="window.location.href='/app.html?id=${child.id}&name=${encodeURIComponent(child.full_name)}'" 
                class="bg-white dark:bg-[#221c29] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden mb-4 cursor-pointer hover:ring-2 hover:ring-brand-red/50 transition-all active:scale-[0.98]">
             <div class="p-4 bg-gray-50 dark:bg-[#2b2532] border-b flex justify-between items-center">
               <div>

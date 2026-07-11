@@ -1,1 +1,0 @@
-import dotenv from 'dotenv'; dotenv.config(); import { getDB } from './api/db.js'; async function run() { const db = await getDB(); const [t1] = await db.query('DESCRIBE time_trials_results'); console.log('time_trials_results:', t1); const [t2] = await db.query('DESCRIBE event_results'); console.log('event_results:', t2); process.exit(0); } run();

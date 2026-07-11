@@ -1,1 +1,0 @@
-import dotenv from 'dotenv'; dotenv.config(); import { getDB } from '../api/db.js'; async function run() { const db = await getDB(); const [rows] = await db.query('SELECT id FROM profiles WHERE role = ''coach'' LIMIT 1'); console.log(rows); process.exit(0); } run();

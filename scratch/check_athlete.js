@@ -1,1 +1,0 @@
-import dotenv from 'dotenv'; dotenv.config(); import { getDB } from './api/db.js'; async function run() { const db = await getDB(); const [rows] = await db.query('SELECT * FROM profiles WHERE full_name LIKE ''%Adelaide%'''); console.log(rows); process.exit(0); } run();
