@@ -412,48 +412,96 @@ document.addEventListener('DOMContentLoaded', async () => {
         dryContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada target tugas dryland fisik minggu ini.</div>`;
       } else {
         dryContainer.innerHTML = drylands.map(d => `
-          <div class="p-3 bg-gray-50 dark:bg-[#140e16]/40 rounded-xl border dark:border-gray-800 flex justify-between items-center mb-1.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-all" onclick="window.openDrylandDetail('${encodeURIComponent(d.task_name)}')">
+          <div class="bg-gray-50 dark:bg-[#1a1423] p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex justify-between items-center mb-3">
             <div>
-              <div class="font-bold text-gray-700 dark:text-zinc-300">${d.task_name}</div>
-              <div class="text-[9px] text-gray-400 mt-0.5">Tanggal Tugas: ${d.date.split('T')[0]}</div>
+              <h4 class="font-bold text-gray-800 dark:text-white text-sm">${d.task_name}</h4>
+              <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Tanggal Tugas: ${d.date.split('T')[0]}</div>
             </div>
-            <span class="text-[9px] bg-blue-500/10 text-blue-500 font-extrabold px-1.5 py-0.5 rounded-md uppercase">Detail</span>
+            <button onclick="window.openDrylandDetail('${encodeURIComponent(d.task_name)}')" class="bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-md uppercase hover:bg-blue-600/20 dark:hover:bg-blue-600/30 transition-colors">DETAIL</button>
           </div>`).join('');
       }
     }
   }
 
+  window.closeDrylandModal = function() {
+    const modal = document.getElementById('modal-dryland-detail');
+    const inner = document.getElementById('modal-dryland-inner');
+    if (modal && inner) {
+      inner.classList.add('translate-y-full');
+      modal.classList.add('opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+  };
+
   // Dryland Detail Modal Injector & Opener
   window.openDrylandDetail = function(encodedName) {
-    const taskName = decodeURIComponent(encodedName);
+    const taskName = decodeURIComponent(encodedName).toUpperCase();
     let modal = document.getElementById('modal-dryland-detail');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-dryland-detail';
-      modal.className = 'fixed inset-0 z-[1000] hidden flex flex-col justify-end sm:justify-center bg-black/60 backdrop-blur-sm transition-opacity opacity-0';
+      modal.className = 'fixed inset-0 z-[1000] hidden flex flex-col justify-end bg-black/60 backdrop-blur-sm transition-opacity opacity-0 duration-300';
       modal.innerHTML = `
-        <div id="modal-dryland-inner" class="bg-white dark:bg-[#1a1423] w-full sm:max-w-md mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform translate-y-full flex flex-col h-[85vh] sm:h-auto sm:max-h-[85vh]">
-          <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-            <h3 class="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-widest" id="dryland-detail-title">Detail Latihan</h3>
-            <button onclick="window.closeModal('modal-dryland-detail', 'modal-dryland-inner')" class="p-2 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full hover:text-brand-red transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <div id="modal-dryland-inner" class="bg-[#1a1423] w-full sm:max-w-md mx-auto rounded-t-[30px] sm:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-transform duration-300 translate-y-full flex flex-col max-h-[90vh]">
+          
+          <!-- Header -->
+          <div class="flex items-center gap-3 p-5 border-b border-gray-800 shrink-0">
+            <button onclick="window.closeDrylandModal()" class="w-8 h-8 flex items-center justify-center bg-[#251f2e] text-gray-400 rounded-full hover:text-brand-red transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
+            <h3 class="font-bold text-sm text-white tracking-widest" id="dryland-detail-title">HAND DRILL : PUSH UP</h3>
           </div>
-          <div class="p-5 overflow-y-auto grow">
-            <div id="dryland-video-container" class="w-full aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden mb-4 relative">
-              <img id="dryland-image" src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Latihan" class="w-full h-full object-cover opacity-60">
+
+          <div class="p-5 overflow-y-auto grow custom-scrollbar">
+            <!-- Desc -->
+            <p id="dryland-desc" class="text-[11px] text-gray-300 leading-relaxed mb-4">
+              Lakukan gerakan dengan posisi tubuh lurus, mulai dari kepala hingga tumit. Turunkan tubuh hingga dada hampir menyentuh lantai, lalu dorong kembali ke posisi awal.
+            </p>
+
+            <h4 class="font-black text-white text-[10px] tracking-widest mb-2 uppercase">Fungsi Latihan</h4>
+            <p id="dryland-fungsi" class="text-[11px] text-gray-400 leading-relaxed mb-6">
+              Meningkatkan kekuatan otot dada, bahu, dan trisep, serta memperkuat otot inti (core). Sangat penting untuk stabilitas gerakan tangan di dalam air.
+            </p>
+
+            <!-- Video -->
+            <h4 class="font-black text-gray-400 text-[10px] text-center tracking-widest mb-3 uppercase">Video / Photo Tutorial</h4>
+            <div class="w-full aspect-video bg-gray-900 rounded-2xl overflow-hidden mb-8 relative border border-gray-800 shadow-lg">
+              <img id="dryland-image" src="https://images.unsplash.com/photo-1598971639058-fab3541658ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Latihan" class="w-full h-full object-cover opacity-70">
               <div class="absolute inset-0 flex items-center justify-center">
-                <button class="w-12 h-12 bg-brand-red/90 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                <button class="w-12 h-12 bg-white/20 backdrop-blur border border-white/30 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
                   <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 </button>
               </div>
             </div>
-            <h4 class="font-bold text-gray-800 dark:text-white mb-2 text-sm uppercase">Tujuan Latihan:</h4>
-            <p id="dryland-desc" class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-              Latihan ini dirancang untuk meningkatkan kekuatan otot inti (core), ketahanan lengan, dan fleksibilitas tubuh secara keseluruhan. Lakukan dengan repetisi yang dianjurkan pelatih untuk hasil optimal di air.
-            </p>
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-3 rounded-xl">
-              <p class="text-[10px] font-semibold text-blue-600 dark:text-blue-400"><span class="mr-1">💡</span> Tips: Pastikan postur tubuh tegap dan fokus pada teknik gerakan, bukan sekadar kecepatan.</p>
+
+            <!-- Target & Time -->
+            <div class="flex items-center justify-center gap-6 bg-[#1f1927] border border-gray-800 py-3 px-6 rounded-2xl mb-8 w-max mx-auto">
+              <div class="text-center">
+                <div class="text-[8px] font-bold text-gray-500 tracking-widest uppercase mb-1">Target</div>
+                <div class="font-black text-white text-sm" id="dryland-target">3 x 30</div>
+              </div>
+              <div class="w-[1px] h-8 bg-gray-700"></div>
+              <div class="text-center">
+                <div class="text-[8px] font-bold text-gray-500 tracking-widest uppercase mb-1">Time</div>
+                <div class="font-black text-white text-sm" id="dryland-time">@ 02:00</div>
+              </div>
+            </div>
+
+            <!-- Stopwatch -->
+            <div class="text-center mb-8">
+              <div class="font-black text-[50px] text-white tracking-tighter leading-none" style="font-family: 'Inter', sans-serif;">00:00.00</div>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-3">
+              <button class="w-full bg-[#ff4d4d] text-white py-4 rounded-xl text-sm font-black shadow-[0_0_20px_rgba(255,77,77,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                LAKUKAN SEKARANG
+              </button>
+              <button class="w-full bg-[#1f1927] border border-gray-800 text-gray-400 hover:text-white py-4 rounded-xl text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                SIMPAN Waktu
+              </button>
             </div>
           </div>
         </div>
@@ -465,17 +513,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Custom logic based on task name
     const imgEl = document.getElementById('dryland-image');
+    const descEl = document.getElementById('dryland-desc');
+    const funcEl = document.getElementById('dryland-fungsi');
+    const targetEl = document.getElementById('dryland-target');
+
     if (taskName.toLowerCase().includes('push up')) {
       imgEl.src = "https://images.unsplash.com/photo-1598971639058-fab3541658ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      descEl.innerText = "Lakukan gerakan dengan posisi tubuh lurus, mulai dari kepala hingga tumit. Turunkan tubuh hingga dada hampir menyentuh lantai, lalu dorong kembali ke posisi awal.";
+      funcEl.innerText = "Meningkatkan kekuatan otot dada, bahu, dan trisep, serta memperkuat otot inti (core). Sangat penting untuk stabilitas gerakan tangan di dalam air.";
+      targetEl.innerText = "3 x 30";
     } else if (taskName.toLowerCase().includes('sit up') || taskName.toLowerCase().includes('core')) {
       imgEl.src = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      descEl.innerText = "Berbaring terlentang dengan lutut ditekuk. Angkat tubuh bagian atas menuju lutut menggunakan otot perut, lalu turunkan kembali secara perlahan.";
+      funcEl.innerText = "Memperkuat otot perut dan core secara keseluruhan. Membantu menjaga posisi tubuh (streamline) yang baik saat berenang.";
+      targetEl.innerText = "3 x 50";
     } else if (taskName.toLowerCase().includes('plank')) {
       imgEl.src = "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      descEl.innerText = "Tahan posisi tubuh menyerupai push-up dengan tumpuan pada lengan bawah. Jaga tubuh tetap lurus dan kencangkan otot perut.";
+      funcEl.innerText = "Latihan isometrik yang sangat baik untuk seluruh otot inti. Membantu perenang mempertahankan postur tubuh yang kaku dan efisien di air.";
+      targetEl.innerText = "3 x 2 Menit";
     } else {
       imgEl.src = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      descEl.innerText = "Lakukan gerakan fisik dengan intensitas yang disesuaikan. Fokus pada pernapasan dan postur tubuh yang benar.";
+      funcEl.innerText = "Meningkatkan stamina, kelenturan, dan kebugaran kardiovaskular secara keseluruhan. Baik untuk daya tahan berenang jarak jauh.";
+      targetEl.innerText = "1 x 30 Menit";
     }
 
-    window.openModal('modal-dryland-detail', 'modal-dryland-inner');
+    const modalEl = document.getElementById('modal-dryland-detail');
+    const innerEl = document.getElementById('modal-dryland-inner');
+    modalEl.classList.remove('hidden');
+    
+    // Animate in
+    setTimeout(() => {
+      modalEl.classList.remove('opacity-0');
+      innerEl.classList.remove('translate-y-full');
+    }, 10);
   };
 
   function initTTChart(styleFilter) {
@@ -716,7 +788,8 @@ window.editEvent = (eventId) => {
     const title = document.getElementById('input-event-name').value.trim();
     const level = document.getElementById('input-event-level').value.trim();
     const eventDate = document.getElementById('input-tanggal-event').value;
-    const poolSize = document.getElementById('input-event-pool').value;
+    const poolSizeEl = document.getElementById('input-event-pool');
+    const poolSize = poolSizeEl ? poolSizeEl.value : 50;
 
     if (!title || !eventDate) return alert('Nama Event dan Tanggal wajib diisi bray!');
 
