@@ -164,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.masterCategories = catResult.success ? catResult.data : [];
 
       if (result.success) {
+        window.athleteBirthYear = result.birth_year || null;
         window.globalResultsData = result.results || [];
         
         // Map results ke globalEventsData (mengelompokkan berdasarkan event_id)
@@ -199,7 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (dashName) dashName.innerText = athleteName;
           if (dashGreeting) dashGreeting.innerText = "Halo Atlet Terbaik,";
           if (dashAvatar) dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athleteName)}&background=ff4d4d&color=fff&bold=true`;
-          if (btnEdit) btnEdit.style.display = 'none';
           if (dashKuEl) {
             dashKuEl.innerText = "ATLET";
             dashKuEl.className = 'text-[10px] font-bold text-brand-red mt-1 bg-brand-red/10 border border-brand-red/20 px-2 py-0.5 rounded-md inline-block';
@@ -768,6 +768,28 @@ window.editEvent = (eventId) => {
     document.getElementById('container-nomor-lomba').appendChild(newRow);
   });
 
+  window.tambahBarisLomba = () => document.getElementById('btn-add-nomor')?.click();
+
+  // Event listener untuk tombol input baru
+  document.getElementById('btn-input-kejuaraan')?.addEventListener('click', () => {
+    isEditMode = false;
+    window.currentEditEventId = null;
+    document.getElementById('input-event-name').value = '';
+    document.getElementById('input-event-level').value = 'Lokal';
+    document.getElementById('input-tanggal-event').value = '';
+    document.getElementById('input-tahun-lahir').value = window.athleteBirthYear || '';
+    document.getElementById('display-ku').value = '';
+    document.getElementById('container-nomor-lomba').innerHTML = '';
+    if (window.tambahBarisLomba) window.tambahBarisLomba();
+    document.getElementById('btn-save-event').innerText = "Simpan Semua Data";
+    window.openModal('modal-input', 'modal-inner');
+  });
+
+  document.getElementById('btn-close-modal')?.addEventListener('click', () => {
+    window.closeModal('modal-input', 'modal-inner');
+  });
+
+  // Auto format 00:00:00:00 di event input
   document.addEventListener('input', (e) => {
     if (e.target.classList.contains('input-time')) {
       let val = e.target.value.replace(/\D/g, ''); 
@@ -780,6 +802,101 @@ window.editEvent = (eventId) => {
       e.target.value = formatted;
     }
   });
+
+  // Calculate KU automatically
+  const calculateKU = () => {
+    const eventDateStr = document.getElementById('input-tanggal-event').value;
+    const displayKu = document.getElementById('display-ku');
+    if (!eventDateStr || !window.athleteBirthYear) {
+      displayKu.value = '';
+      return;
+    }
+    const eventYear = new Date(eventDateStr).getFullYear();
+    const age = eventYear - window.athleteBirthYear;
+    if (age >= 19) displayKu.value = "Senior";
+    else if (age >= 16) displayKu.value = "Grup 1";
+    else if (age >= 14) displayKu.value = "Grup 2";
+    else if (age >= 12) displayKu.value = "Grup 3";
+    else if (age >= 10) displayKu.value = "Grup 4";
+    else displayKu.value = "Grup 5";
+  };
+  document.getElementById('input-tanggal-event')?.addEventListener('change', calculateKU);
+
+  // ==========================================
+  // STOPWATCH LOGIC
+  // ==========================================
+  let swTimer = null;
+  let swTime = 0;
+  let swIsRunning = false;
+  let swTargetInput = null;
+
+  const formatSwTime = (ms) => {
+    const msPart = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
+    const totalSec = Math.floor(ms / 1000);
+    const s = (totalSec % 60).toString().padStart(2, '0');
+    const m = Math.floor((totalSec / 60) % 60).toString().padStart(2, '0');
+    const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
+    return `${h === '00' ? '' : h + ':'}${m}:${s}.${msPart}`;
+  };
+
+  window.openStopwatch = (btn) => {
+    swTargetInput = btn.closest('.row-lomba').querySelector('.input-time');
+    const modal = document.getElementById('modal-stopwatch');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    document.getElementById('sw-display').innerText = '00:00.00';
+    swTime = 0;
+    swIsRunning = false;
+    document.getElementById('sw-btn-start').innerText = 'START';
+    document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
+    document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+  };
+
+  window.closeStopwatch = () => {
+    const modal = document.getElementById('modal-stopwatch');
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+    clearInterval(swTimer);
+  };
+
+  window.toggleStopwatch = () => {
+    if (swIsRunning) {
+      clearInterval(swTimer);
+      swIsRunning = false;
+      document.getElementById('sw-btn-start').innerText = 'RESUME';
+      document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
+      document.getElementById('sw-btn-save').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+    } else {
+      swIsRunning = true;
+      document.getElementById('sw-btn-start').innerText = 'STOP';
+      document.getElementById('sw-btn-start').classList.replace('bg-brand-red', 'bg-orange-500');
+      document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      const startTime = Date.now() - swTime;
+      swTimer = setInterval(() => {
+        swTime = Date.now() - startTime;
+        document.getElementById('sw-display').innerText = formatSwTime(swTime);
+      }, 10);
+    }
+  };
+
+  window.resetStopwatch = () => {
+    clearInterval(swTimer);
+    swTime = 0;
+    swIsRunning = false;
+    document.getElementById('sw-display').innerText = '00:00.00';
+    document.getElementById('sw-btn-start').innerText = 'START';
+    document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
+    document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+  };
+
+  window.saveStopwatch = () => {
+    if (swTargetInput) {
+      swTargetInput.value = formatSwTime(swTime);
+      window.closeStopwatch();
+    }
+  };
 
   // ==========================================
   // EKSEKUSI API SUBMISSIONS
