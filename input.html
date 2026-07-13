@@ -24,6 +24,21 @@
                 <option selected disabled>Pilih Tingkat</option><option>Nasional</option><option>Provinsi</option><option>Kota/Kabupaten</option><option>Antar Perkumpulan</option>
               </select>
             </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Lokasi</label>
+                <input type="text" id="input-event-location" class="w-full px-3 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-xs" placeholder="Contoh: Jakarta">
+              </div>
+              <div>
+                <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Ukuran Kolam</label>
+                <select id="input-event-pool" class="w-full px-3 py-2 bg-gray-50 dark:bg-brand-dark border border-gray-200 dark:border-gray-600 rounded-lg focus:border-brand-red outline-none text-xs appearance-none">
+                  <option value="50">50 Meter (Long Course)</option>
+                  <option value="25">25 Meter (Short Course)</option>
+                </select>
+              </div>
+            </div>
+
             <div class="grid grid-cols-3 gap-3">
               <div class="col-span-1">
                 <label class="block text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tgl Event</label>
@@ -71,10 +86,11 @@
       <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     <h3 class="text-brand-red text-sm font-bold tracking-[0.3em] mb-4 uppercase">Live Timer</h3>
-    <div id="sw-display" class="text-5xl sm:text-6xl font-mono font-bold text-white mb-10 tracking-wider tabular-nums">00:00:00:00</div>
-    <div class="flex items-center justify-center gap-6 w-full">
-      <button id="sw-btn-reset" onclick="resetStopwatch()" class="w-16 h-16 rounded-full border-2 border-gray-600 text-gray-300 font-bold hover:bg-gray-800 transition-colors flex items-center justify-center">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+    <div id="sw-display" class="text-5xl sm:text-6xl font-mono font-bold text-white mb-2 tracking-wider tabular-nums">00:00.00</div>
+    <div id="sw-laps-container" class="w-full max-h-32 overflow-y-auto mb-6 space-y-1 scrollbar-hide text-center px-4"></div>
+    <div class="flex items-center justify-center gap-4 w-full">
+      <button id="sw-btn-lap" onclick="lapStopwatch()" class="w-16 h-16 rounded-full border-2 border-gray-600 text-gray-300 font-bold hover:bg-gray-800 transition-colors flex flex-col items-center justify-center">
+        <span id="sw-btn-lap-text" class="text-xs">LAP</span>
       </button>
       <button id="sw-btn-start" onclick="toggleStopwatch()" class="w-24 h-24 rounded-full bg-brand-red text-white font-bold text-xl shadow-[0_0_30px_rgba(255,77,77,0.5)] hover:scale-105 transition-transform flex items-center justify-center">START</button>
       <button id="sw-btn-save" onclick="saveStopwatch()" class="w-16 h-16 rounded-full border-2 border-green-500 text-green-500 font-bold hover:bg-green-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed pointer-events-none">

@@ -214,6 +214,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             dashKuEl.innerText = kuText;
           }
+
+          if (btnEdit) {
+            btnEdit.onclick = (e) => {
+              e.preventDefault();
+              window.location.href = `biodata.html?id=${athleteId}&name=${encodeURIComponent(athleteName)}`;
+            };
+          }
         }
 
         // Hitung total medali podium kejuaraan resmi bray
@@ -688,7 +695,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initProfileModal();
   initDashboardProfile();
   
-  document.getElementById('theme-toggle')?.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+  const toggleTheme = () => document.documentElement.classList.toggle('dark');
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('btn-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('btn-logout')?.addEventListener('click', () => { localStorage.removeItem('swim_user'); window.location.replace('/index.html'); });
 
   // RUN AMBIL DATA UTAMA ATLET
@@ -704,9 +713,14 @@ window.editEvent = (eventId) => {
     document.getElementById('input-event-name').value = ev.title;
     document.getElementById('input-event-level').value = ev.level || 'Lokal';
     document.getElementById('input-tanggal-event').value = ev.event_date ? ev.event_date.split('T')[0] : '';
+    
+    const locInput = document.getElementById('input-event-location');
+    if (locInput) locInput.value = ev.location || '';
+    
     // Pool size could be inferred from the first result or set default
     const poolSize = ev.event_results && ev.event_results.length > 0 ? ev.event_results[0].pool_size : '50';
-    document.getElementById('input-event-pool').value = poolSize;
+    const poolInput = document.getElementById('input-event-pool');
+    if (poolInput) poolInput.value = poolSize;
     
     document.getElementById('container-nomor-lomba').innerHTML = '';
     
@@ -870,6 +884,8 @@ window.editEvent = (eventId) => {
     return `${h === '00' ? '' : h + ':'}${m}:${s}.${msPart}`;
   };
 
+  let swLaps = [];
+
   window.openStopwatch = (btn) => {
     swTargetInput = btn.closest('.row-lomba').querySelector('.input-time');
     const modal = document.getElementById('modal-stopwatch');
@@ -877,11 +893,14 @@ window.editEvent = (eventId) => {
     modal.classList.remove('hidden');
     setTimeout(() => modal.classList.remove('opacity-0'), 10);
     document.getElementById('sw-display').innerText = '00:00.00';
+    document.getElementById('sw-laps-container').innerHTML = '';
     swTime = 0;
     swIsRunning = false;
+    swLaps = [];
     document.getElementById('sw-btn-start').innerText = 'START';
     document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
     document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+    document.getElementById('sw-btn-lap-text').innerText = 'RESET';
   };
 
   window.closeStopwatch = () => {
@@ -899,11 +918,13 @@ window.editEvent = (eventId) => {
       document.getElementById('sw-btn-start').innerText = 'RESUME';
       document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
       document.getElementById('sw-btn-save').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      document.getElementById('sw-btn-lap-text').innerText = 'RESET';
     } else {
       swIsRunning = true;
       document.getElementById('sw-btn-start').innerText = 'STOP';
       document.getElementById('sw-btn-start').classList.replace('bg-brand-red', 'bg-orange-500');
       document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      document.getElementById('sw-btn-lap-text').innerText = 'LAP';
       const startTime = Date.now() - swTime;
       swTimer = setInterval(() => {
         swTime = Date.now() - startTime;
@@ -912,19 +933,34 @@ window.editEvent = (eventId) => {
     }
   };
 
-  window.resetStopwatch = () => {
-    clearInterval(swTimer);
-    swTime = 0;
-    swIsRunning = false;
-    document.getElementById('sw-display').innerText = '00:00.00';
-    document.getElementById('sw-btn-start').innerText = 'START';
-    document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
-    document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+  window.lapStopwatch = () => {
+    if (swIsRunning) {
+      // Record Lap
+      swLaps.push(formatSwTime(swTime));
+      const container = document.getElementById('sw-laps-container');
+      const lapEl = document.createElement('div');
+      lapEl.className = 'text-gray-300 font-mono text-sm flex justify-between border-b border-gray-700 pb-1';
+      lapEl.innerHTML = `<span class="text-gray-500">SET ${swLaps.length}</span> <span>${swLaps[swLaps.length - 1]}</span>`;
+      container.prepend(lapEl);
+    } else {
+      // Reset
+      clearInterval(swTimer);
+      swTime = 0;
+      swLaps = [];
+      swIsRunning = false;
+      document.getElementById('sw-display').innerText = '00:00.00';
+      document.getElementById('sw-laps-container').innerHTML = '';
+      document.getElementById('sw-btn-start').innerText = 'START';
+      document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
+      document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      document.getElementById('sw-btn-lap-text').innerText = 'RESET';
+    }
   };
 
   window.saveStopwatch = () => {
     if (swTargetInput) {
       swTargetInput.value = formatSwTime(swTime);
+      swTargetInput.dataset.laps = JSON.stringify(swLaps);
       window.closeStopwatch();
     }
   };
@@ -948,15 +984,19 @@ window.editEvent = (eventId) => {
       const style_id = styleSelect.value || styleSelect.getAttribute('data-value'); // In case disabled prevents value, but usually .value works on disabled selects.
       const distStr = row.querySelector('.input-distance').value;
       const distance = distStr ? parseInt(distStr, 10) : 0;
-      const time_record = row.querySelector('.input-time').value.trim();
+      const timeInput = row.querySelector('.input-time');
+      const time_record = timeInput.value.trim();
       const rank = row.querySelector('.input-rank').value;
       const result_id = row.dataset.resultId;
-      const hasLaps = row.dataset.hasLaps === "true";
+      
+      let laps = [];
+      if (timeInput.dataset.laps) {
+        try { laps = JSON.parse(timeInput.dataset.laps); } catch(e){}
+      }
 
       // Allow empty time_record if they just prefill it, but don't add to array if BOTH time and style are empty.
       if (style_id) {
-        // We do not send splits back from this UI. The backend only uses splits on INSERT new row (where splits is empty array).
-        results.push({ result_id, style_id, distance, time_record, rank });
+        results.push({ result_id, style_id, distance, time_record, rank, laps });
       }
     });
 
@@ -967,10 +1007,13 @@ window.editEvent = (eventId) => {
 
     try {
       const endpoint = isEditMode ? '/api/parents?action=update_kejuaraan' : '/api/parents?action=input_kejuaraan';
+      const locationEl = document.getElementById('input-event-location');
+      const location = locationEl ? locationEl.value.trim() : '';
+
       const payload = {
         parent_id: user.id,
         athlete_id: athleteId,
-        title, level, event_date: eventDate, pool_size: poolSize,
+        title, level, event_date: eventDate, pool_size: poolSize, location,
         results
       };
       
