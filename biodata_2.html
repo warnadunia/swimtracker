@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Update Biodata</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</head>
+<body class="bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200">
+  <!-- Kunci layout jadi ukuran Mobile -->
+  <div class="max-w-md mx-auto min-h-screen bg-white dark:bg-[#18131f] flex flex-col shadow-2xl border-x border-gray-100 dark:border-gray-900 pb-10">
+    
+    <!-- HEADER -->
+    <header class="sticky top-0 bg-white/90 dark:bg-[#18131f]/90 backdrop-blur-md z-40 flex justify-between items-center px-4 h-16 border-b border-gray-100 dark:border-gray-800/80">
+      <h3 class="font-black text-sm text-gray-800 dark:text-white uppercase tracking-widest">Update Biodata</h3>
+      <button onclick="history.back()" class="text-brand-red font-bold text-xs bg-brand-red/10 px-3 py-1.5 rounded-lg active:scale-95 transition-transform">TUTUP</button>
+    </header>
+
+    <!-- KONTEN -->
+    <div class="p-5 overflow-y-auto grow custom-scrollbar space-y-6 mt-4">
+      
+      <!-- Avatar Upload -->
+      <div class="flex justify-center mb-6">
+         <div class="relative group">
+            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100 dark:border-[#251f2e] shadow-lg bg-gray-200 dark:bg-gray-800">
+              <img id="profile-img" src="https://ui-avatars.com/api/?name=Atlet&background=c2f042&color=000" class="w-full h-full object-cover">
+            </div>
+            <label for="avatar-upload" class="absolute bottom-0 right-0 bg-brand-red text-white p-2 rounded-full shadow-md cursor-pointer hover:scale-105 transition-transform">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+            </label>
+            <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+         </div>
+      </div>
+      <p id="upload-status" class="text-[10px] text-center text-gray-400 font-medium"></p>
+
+      <!-- Form Inputs -->
+      <div class="space-y-4">
+        <div>
+          <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nama Lengkap</label>
+          <input type="text" id="prof-fullname" class="w-full px-4 py-3 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-bold focus:border-brand-red outline-none text-gray-800 dark:text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Tanggal Lahir</label>
+            <input type="date" id="prof-birthdate" class="w-full px-4 py-3 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-bold focus:border-brand-red outline-none text-gray-800 dark:text-white">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Jenis Kelamin</label>
+            <select id="prof-gender" class="w-full px-4 py-3 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-bold focus:border-brand-red outline-none text-gray-800 dark:text-white">
+              <option value="L">Laki-Laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Klub / Perkumpulan</label>
+          <input type="text" id="prof-club" class="w-full px-4 py-3 bg-gray-50 dark:bg-[#140e16] border border-gray-200 dark:border-gray-700/80 rounded-xl text-sm font-bold focus:border-brand-red outline-none text-gray-800 dark:text-white">
+        </div>
+      </div>
+      
+      <div class="pt-6">
+        <button id="btn-save" class="w-full bg-[#ff4d4d] hover:bg-red-500 text-white py-4 rounded-xl text-sm font-black shadow-[0_0_20px_rgba(255,77,77,0.3)] active:scale-95 transition-transform uppercase tracking-wider">
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <script type="module" src="/src/biodata.js"></script>
+</body>
+</html>

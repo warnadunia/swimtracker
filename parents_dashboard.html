@@ -20,11 +20,14 @@
 
   <div class="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-[#18131f] shadow-2xl relative border-x border-gray-100 dark:border-gray-900 pb-12">
     
-    <!-- HEADER PANEL PARENTS -->
     <header class="sticky top-0 bg-white/90 dark:bg-[#18131f]/90 backdrop-blur-md z-40 flex justify-between items-center px-4 h-16 border-b border-gray-100 dark:border-gray-800/80">
-      <div>
-        <h1 class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest leading-none mb-1">Parents Monitoring</h1>
-        <p id="parent-display-name" class="text-sm font-bold text-gray-800 dark:text-white leading-none">Memuat nama...</p>
+      <div class="flex items-center gap-3">
+        <!-- Inject Parent Header Image -->
+        <img src="/assets/image_19bc61.png" alt="Parent Portal" class="h-10 w-auto object-contain rounded-lg shadow-sm">
+        <div>
+          <h1 class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest leading-none mb-1">Parents Monitoring</h1>
+          <p id="parent-display-name" class="text-sm font-bold text-gray-800 dark:text-white leading-none">Memuat nama...</p>
+        </div>
       </div>
       <button id="btn-parents-logout" class="bg-gray-100 dark:bg-[#251f2e] text-gray-600 dark:text-gray-400 p-2 rounded-xl text-xs font-bold hover:text-brand-red transition-all">
         🚪 Keluar

@@ -9,13 +9,56 @@ import headerHTML from '../header.html?raw';
 import dashboardHTML from '../dashboard.html?raw';
 import progressHTML from '../progress.html?raw';
 import trainingHTML from '../training.html?raw';
-import navHTML from '../bottomnav.html?raw'; 
+import navHTML from '../bottomnav.html?raw';
 import modalHTML from '../input.html?raw';
 
 import { initProfileModal, initDashboardProfile } from './profile_modal.js';
 
 window.rowCounter = 0;
 window.masterCategories = [];
+
+window.renderAnalisisGaya = function (gaya) {
+  const container = document.getElementById('container-analisa-teknik');
+  if (!container) return;
+
+  let html = '';
+  const cleanGaya = gaya.toLowerCase().trim();
+
+  if (cleanGaya.includes('kupu')) {
+    html = `
+      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA KUPU-KUPU (BUTTERFLY)</h4>
+      <div class="space-y-3">
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Stroke Mechanics</span><span class="text-gray-800 dark:text-white">85%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Dolphin Kick</span><span class="text-brand-red">90%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 90%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Breathing Timing</span><span class="text-gray-800 dark:text-white">78%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
+      </div>`;
+  } else if (cleanGaya.includes('punggung')) {
+    html = `
+      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA PUNGGUNG (BACKSTROKE)</h4>
+      <div class="space-y-3">
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Body Rotation</span><span class="text-gray-800 dark:text-white">82%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 82%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Kicking Power</span><span class="text-gray-800 dark:text-white">85%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Start (Backstroke)</span><span class="text-gray-800 dark:text-white">80%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
+      </div>`;
+  } else if (cleanGaya.includes('dada')) {
+    html = `
+      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA DADA (BREASTSTROKE)</h4>
+      <div class="space-y-3">
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Pull Mechanics</span><span class="text-gray-800 dark:text-white">75%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 75%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Whip Kick Power</span><span class="text-gray-800 dark:text-white">80%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Glide Timing</span><span class="text-gray-800 dark:text-white">78%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
+      </div>`;
+  } else {
+    // Default (Gaya Bebas)
+    html = `
+      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA BEBAS (FREESTYLE)</h4>
+      <div class="space-y-3">
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Catch & Pull</span><span class="text-brand-red">88%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 88%"></div></div></div>
+        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Flutter Kick</span><span class="text-gray-800 dark:text-white">75%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 75%"></div></div></div>
+      </div>`;
+  }
+  container.innerHTML = html;
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. SATPAM PROTEKSI LOGIN ATLET & PARENTS
@@ -26,12 +69,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (user.role !== 'atlet' && user.role !== 'admin' && user.role !== 'parents') {
     return window.location.replace('/index.html');
   }
-  
+
   const isParent = user.role === 'parents';
   const urlParams = new URLSearchParams(window.location.search);
   const athleteId = isParent ? urlParams.get('id') : user.id;
   const athleteName = urlParams.get('name') || 'Atlet';
-  
+
   if (isParent && !athleteId) {
     return window.location.replace('/parents_dashboard.html');
   }
@@ -39,40 +82,43 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. SUNTIK LAYOUT STRUKTUR TAB ATLET BARU BRAY
   try {
     document.getElementById('header-container').innerHTML = headerHTML;
-    
+
     if (isParent) {
-      const headerEl = document.getElementById('header-container').querySelector('header');
-      if (headerEl) {
-        headerEl.innerHTML = `
-          <div class="flex items-center gap-3">
-            <button onclick="window.location.href='/parents_dashboard.html'" class="p-2 bg-gray-100 dark:bg-[#251f2e] rounded-xl text-gray-500 hover:text-brand-red transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <div>
-              <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Parent View</h1>
-              <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">${user.full_name || 'Parent'}</p>
-            </div>
+      // OVERRIDE HANYA BAGIAN KIRI: Ganti Logo jadi Tombol Back & Ubah Subtitle
+      const headerLeft = document.getElementById('header-left-section');
+      if (headerLeft) {
+        headerLeft.innerHTML = `
+          <button id="btn-back" class="w-10 h-10 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-brand-red transition-colors" onclick="window.location.href='/parents_dashboard.html'">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          
+          <div class="flex flex-col">
+            <h1 class="font-black text-sm text-gray-800 dark:text-white uppercase tracking-widest leading-tight">SWIMTRACKER APP</h1>
+            <p class="text-[10px] font-medium leading-tight mt-0.5">
+              <span class="text-brand-red">Parent : </span> 
+              <span class="text-gray-500 dark:text-gray-400">${user.full_name || 'Loading...'}</span>
+            </p>
           </div>
-          <button id="btn-theme-parent" class="p-2 text-xl bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-gray-200">🌓</button>
         `;
-        const themeBtn = document.getElementById('btn-theme-parent');
-        if (themeBtn) themeBtn.addEventListener('click', () => {
-          const isDark = document.documentElement.classList.toggle('dark');
-          localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
       }
     }
-    
+
+    // Fix jarak gap header (kembali normal)
+    const mainContainer = document.getElementById('main-container');
+    if (mainContainer) {
+      mainContainer.className = 'p-4 max-w-md mx-auto';
+    }
+
     // Injeksi 3 Modul Utama Wadah Konten
     document.getElementById('main-container').innerHTML = `
       <div id="wrapper-dashboard" class="tab-content-atlet hidden">${dashboardHTML}</div>
       <div id="wrapper-training" class="tab-content-atlet hidden">${trainingHTML}</div>
       <div id="wrapper-progress" class="tab-content-atlet hidden">${progressHTML}</div>
     `;
-    
+
     document.getElementById('nav-container').innerHTML = navHTML;
     document.getElementById('modal-container').innerHTML = modalHTML;
-    
+
     // Sembunyikan atau Tampilkan tombol input kejuaraan sesuai role
     const addBtn = document.getElementById('container-btn-input-kejuaraan');
     if (addBtn) {
@@ -101,9 +147,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.HSStaticMethods) window.HSStaticMethods.autoInit();
 
   // 3. SWITCH TAB ENGINE KHUSUS 3 UTAMA MENU ATLET BRAY
-  window.switchTab = function(tabId) {
+  window.switchTab = function (tabId) {
     document.querySelectorAll('.tab-content-atlet').forEach(el => el.classList.add('hidden'));
-    
+
     // Map internal id in HTML structure
     if (tabId === 'dashboard' || tabId === 'tab-history') {
       document.getElementById('wrapper-dashboard').classList.remove('hidden');
@@ -126,13 +172,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  window.switchTrainingTab = function(subId) {
+  window.switchTrainingTab = function (subId) {
     document.getElementById('training-tt-view').classList.add('hidden');
     document.getElementById('training-hw-view').classList.add('hidden');
-    
+
     document.getElementById('btn-tt').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
     document.getElementById('btn-tt').classList.add('text-gray-500', 'dark:text-gray-400');
-    
+
     document.getElementById('btn-hw').classList.remove('bg-white', 'dark:bg-gray-700', 'shadow', 'text-brand-red');
     document.getElementById('btn-hw').classList.add('text-gray-500', 'dark:text-gray-400');
 
@@ -148,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // Set default Tab (Dashboard)
-  window.switchTab('tab-history'); 
+  window.switchTab('tab-history');
 
   // 4. LOAD & TAMPILKAN ALL DATA MURNI DARI TiDB
   window.globalResultsData = [];
@@ -166,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (result.success) {
         window.athleteBirthYear = result.birth_year || null;
         window.globalResultsData = result.results || [];
-        
+
         // Map results ke globalEventsData (mengelompokkan berdasarkan event_id)
         const eventsMap = {};
         (result.results || []).forEach(res => {
@@ -181,25 +227,23 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
           // Parse split_times_json string back to array if necessary
           if (typeof res.split_times_json === 'string') {
-            try { res.laps = JSON.parse(res.split_times_json); } catch(e) { res.laps = []; }
+            try { res.laps = JSON.parse(res.split_times_json); } catch (e) { res.laps = []; }
           } else {
             res.laps = res.split_times_json || [];
           }
           eventsMap[res.event_id].event_results.push(res);
         });
-        window.globalEventsData = Object.values(eventsMap).sort((a,b) => new Date(b.event_date) - new Date(a.event_date));
+        window.globalEventsData = Object.values(eventsMap).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
 
-        // Jika Parent, override profile card dashboard
+        // Jika Parent, override profile card dashboard text
         if (isParent) {
           const dashName = document.getElementById('dash-fullname');
           const dashGreeting = document.getElementById('dash-greeting');
-          const dashAvatar = document.getElementById('dash-avatar');
           const btnEdit = document.getElementById('btn-edit-profile');
           const dashKuEl = document.getElementById('dashboard-ku-text');
-          
+
           if (dashName) dashName.innerText = athleteName;
-          if (dashAvatar) dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athleteName)}&background=ff4d4d&color=fff&bold=true`;
-          
+
           if (dashKuEl) {
             let kuText = "ATLET";
             if (window.athleteBirthYear) {
@@ -222,6 +266,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
           }
         }
+
+        // --- FIXING AVATAR: TAMPILKAN FOTO DARI DATABASE BRAY! ---
+        const dashAvatar = document.getElementById('dash-avatar');
+        if (dashAvatar) {
+          // Prioritaskan avatar_url hasil kembalian dari response TiDB
+          if (result.avatar_url) {
+            dashAvatar.src = result.avatar_url;
+          }
+          // Jika result tidak bawa avatar_url, cek dari session storage user
+          else if (!isParent && user.avatar_url) {
+            dashAvatar.src = user.avatar_url;
+          }
+          // Jika memang belum pernah upload foto sama sekali, pakai inisial huruf
+          else {
+            const displayName = isParent ? athleteName : (user.full_name || 'Atlet');
+            dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff4d4d&color=fff&bold=true`;
+          }
+        }
+        // ---------------------------------------------------------
 
         // Hitung total medali podium kejuaraan resmi bray
         let emas = 0, perak = 0, perunggu = 0;
@@ -246,39 +309,46 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (a) a.innerText = result.biometric.arm_span_cm || '--';
         }
 
-        // Setup filter gaya buttons
+        // Setup filter gaya buttons (Analisis Teknik)
         document.querySelectorAll('.pill-gaya').forEach(btn => {
           btn.addEventListener('click', (e) => {
+            // 1. Reset semua pill ke state INACTIVE
             document.querySelectorAll('.pill-gaya').forEach(b => {
-              b.classList.remove('bg-brand-red', 'text-white', 'shadow-md', 'shadow-brand-red/40');
-              b.classList.add('bg-gray-100', 'dark:bg-[#1f1a24]', 'text-gray-500', 'dark:text-gray-400', 'border', 'border-gray-200', 'dark:border-gray-700');
+              b.classList.remove('bg-white', 'text-gray-800', 'dark:bg-gray-700', 'dark:text-white', 'shadow-sm', 'font-bold');
+              b.classList.add('text-gray-500', 'dark:text-gray-400', 'font-medium');
             });
-            e.target.classList.remove('bg-gray-100', 'dark:bg-[#1f1a24]', 'text-gray-500', 'dark:text-gray-400', 'border', 'border-gray-200', 'dark:border-gray-700');
-            e.target.classList.add('bg-brand-red', 'text-white', 'shadow-md', 'shadow-brand-red/40');
+
+            // 2. Set pill yang diklik ke state ACTIVE
+            e.target.classList.remove('text-gray-500', 'dark:text-gray-400', 'font-medium');
+            e.target.classList.add('bg-white', 'text-gray-800', 'dark:bg-gray-700', 'dark:text-white', 'shadow-sm', 'font-bold');
+
+            // 3. Trigger fungsi render grafiknya bray!
             initTabGrafik(e.target.dataset.style);
+            window.renderAnalisisGaya(e.target.dataset.style);
           });
         });
-        
+
         // Setup filter dropdown
         const selectTahun = document.getElementById('grafik-year-filter');
         const selectCompare = document.getElementById('grafik-compare-filter');
         if (selectTahun) selectTahun.addEventListener('change', () => {
-          const activeStyle = document.querySelector('.pill-gaya.bg-brand-red')?.dataset?.style || 'Bebas';
+          const activeStyle = document.querySelector('.pill-gaya.font-bold')?.dataset?.style || 'Bebas';
           initTabGrafik(activeStyle);
         });
         if (selectCompare) selectCompare.addEventListener('change', () => {
-          const activeStyle = document.querySelector('.pill-gaya.bg-brand-red')?.dataset?.style || 'Bebas';
+          const activeStyle = document.querySelector('.pill-gaya.font-bold')?.dataset?.style || 'Bebas';
           initTabGrafik(activeStyle);
         });
 
         // Render data sejarah kejuaraan resmi di Tab Dashboard bray
         renderHistoryList();
-        
+
         // Render Data Baru: Tab Menu Latihan (Training & Dryland) bray!
         renderTrainingModule(result.time_trials, result.dryland_tasks);
 
         // Siapkan grafik default
         initTabGrafik('Bebas');
+        window.renderAnalisisGaya('Bebas');
 
         // Init Radar Chart
         const ctxRadar = document.getElementById('profileRadarChart');
@@ -326,13 +396,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     let htmlString = '';
     window.globalEventsData.forEach((ev, evIdx) => {
       const dateStr = new Date(ev.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-      
+
       let badgesHtml = '';
       let resultsHtml = '';
-      
+
       if (ev.event_results && ev.event_results.length > 0) {
         // Generate Badges for Header
-        badgesHtml = `<div class="flex flex-wrap gap-2 mt-3">` + 
+        badgesHtml = `<div class="flex flex-wrap gap-2 mt-3">` +
           ev.event_results.map(res => {
             let icon = '🏅';
             let rankNum = parseInt(res.rank);
@@ -345,18 +415,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           }).join('') + `</div>`;
 
         // Generate Race Cards for Body
-        resultsHtml = `<div class="space-y-3 mt-4 hidden" id="ev-body-${evIdx}">` + 
+        resultsHtml = `<div class="space-y-3 mt-4 hidden" id="ev-body-${evIdx}">` +
           ev.event_results.map(res => {
             const laps = res.laps || [];
             const hasLaps = laps.length > 0;
             const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'hidden';
             const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>`;
-            
+
             let lapsHtml = '';
             if (hasLaps) {
-              lapsHtml = `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">` + 
-                laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] font-bold px-1"><span class="text-gray-600 dark:text-gray-400 tracking-widest">SET ${idx + 1}</span><span class="font-mono text-gray-500">${lap}</span></div>`).join('') + 
-              `</div>`;
+              lapsHtml = `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">` +
+                laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] font-bold px-1"><span class="text-gray-600 dark:text-gray-400 tracking-widest">SET ${idx + 1}</span><span class="font-mono text-gray-500">${lap}</span></div>`).join('') +
+                `</div>`;
             }
 
             return `
@@ -410,15 +480,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           const tglStr = new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
           let laps = [];
           if (t.split_times_json) {
-            try { laps = typeof t.split_times_json === 'string' ? JSON.parse(t.split_times_json) : t.split_times_json; } catch(e){}
+            try { laps = typeof t.split_times_json === 'string' ? JSON.parse(t.split_times_json) : t.split_times_json; } catch (e) { }
           }
           const hasLaps = laps.length > 0;
-          
+
           let lapsHtml = '';
           if (hasLaps) {
-            lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-800 space-y-1">` + 
-              laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') + 
-            `</div>`;
+            lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-800 space-y-1">` +
+              laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') +
+              `</div>`;
           }
 
           const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
@@ -461,7 +531,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  window.closeDrylandModal = function() {
+  window.closeDrylandModal = function () {
     const modal = document.getElementById('modal-dryland-detail');
     const inner = document.getElementById('modal-dryland-inner');
     if (modal && inner) {
@@ -472,7 +542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // Dryland Detail Modal Injector & Opener
-  window.openDrylandDetail = function(encodedName) {
+  window.openDrylandDetail = function (encodedName) {
     const taskName = decodeURIComponent(encodedName).toUpperCase();
     let modal = document.getElementById('modal-dryland-detail');
     if (!modal) {
@@ -546,9 +616,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
       document.body.appendChild(modal);
     }
-    
+
     document.getElementById('dryland-detail-title').innerText = taskName;
-    
+
     // Custom logic based on task name
     const imgEl = document.getElementById('dryland-image');
     const descEl = document.getElementById('dryland-desc');
@@ -580,7 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalEl = document.getElementById('modal-dryland-detail');
     const innerEl = document.getElementById('modal-dryland-inner');
     modalEl.classList.remove('hidden');
-    
+
     // Animate in
     setTimeout(() => {
       modalEl.classList.remove('opacity-0');
@@ -591,7 +661,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function initTTChart(styleFilter) {
     const ctx = document.getElementById('ttChart');
     if (!ctx) return;
-    
+
     if (window.myTTChart) window.myTTChart.destroy();
 
     let filtered = window.globalTimeTrials || [];
@@ -602,7 +672,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
     const dataPoints = filtered.map(t => {
       const p = t.time_record.split(/[:.]/);
-      return p.length === 4 ? (parseInt(p[0])*3600)+(parseInt(p[1])*60)+parseInt(p[2])+(parseInt(p[3])/100) : 0;
+      return p.length === 4 ? (parseInt(p[0]) * 3600) + (parseInt(p[1]) * 60) + parseInt(p[2]) + (parseInt(p[3]) / 100) : 0;
     });
 
     window.myTTChart = new Chart(ctx, {
@@ -630,7 +700,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function initTabGrafik(styleName) {
     const tbody = document.getElementById('table-grafik-body');
     if (!tbody) return;
-    
+
     const selectTahun = document.getElementById('grafik-year-filter');
     const selectCompare = document.getElementById('grafik-compare-filter');
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
@@ -670,7 +740,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const d = new Date(r.event_date);
           if (d.getFullYear() === yr) {
             const parts = r.time_record.split(/[:.]/);
-            const secs = parts.length === 4 ? (parseInt(parts[0])*3600)+(parseInt(parts[1])*60)+parseInt(parts[2])+(parseInt(parts[3])/100) : 0;
+            const secs = parts.length === 4 ? (parseInt(parts[0]) * 3600) + (parseInt(parts[1]) * 60) + parseInt(parts[2]) + (parseInt(parts[3]) / 100) : 0;
             if (monthly[d.getMonth()] === null || secs < monthly[d.getMonth()]) monthly[d.getMonth()] = secs;
           }
         }
@@ -686,7 +756,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.myProgressChart = new Chart(ctx, {
       type: 'line',
-      data: { labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'], datasets },
+      data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'], datasets },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
   }
@@ -694,8 +764,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // INTERAKSI TEMA & LOGOUT GLOBAL
   initProfileModal();
   initDashboardProfile();
-  
-  const toggleTheme = () => document.documentElement.classList.toggle('dark');
+
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
   document.getElementById('btn-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('btn-logout')?.addEventListener('click', () => { localStorage.removeItem('swim_user'); window.location.replace('/index.html'); });
@@ -703,27 +776,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // RUN AMBIL DATA UTAMA ATLET
   await loadAthleteData();
 
-window.editEvent = (eventId) => {
+  window.editEvent = (eventId) => {
     const ev = window.globalEventsData.find(e => e.event_id === eventId);
     if (!ev) return;
-    
+
     isEditMode = true;
     currentEditEventId = eventId;
-    
+
     document.getElementById('input-event-name').value = ev.title;
     document.getElementById('input-event-level').value = ev.level || 'Lokal';
     document.getElementById('input-tanggal-event').value = ev.event_date ? ev.event_date.split('T')[0] : '';
-    
+
     const locInput = document.getElementById('input-event-location');
     if (locInput) locInput.value = ev.location || '';
-    
+
     // Pool size could be inferred from the first result or set default
     const poolSize = ev.event_results && ev.event_results.length > 0 ? ev.event_results[0].pool_size : '50';
     const poolInput = document.getElementById('input-event-pool');
     if (poolInput) poolInput.value = poolSize;
-    
+
     document.getElementById('container-nomor-lomba').innerHTML = '';
-    
+
     if (ev.event_results && ev.event_results.length > 0) {
       ev.event_results.forEach(res => {
         window.rowCounter++;
@@ -772,7 +845,7 @@ window.editEvent = (eventId) => {
     } else {
       document.getElementById('btn-add-nomor').click();
     }
-    
+
     document.getElementById('btn-save-event').innerText = "Update Data Kejuaraan";
     window.openModal('modal-input', 'modal-inner');
   };
@@ -837,8 +910,8 @@ window.editEvent = (eventId) => {
   // Auto format 00:00:00:00 di event input
   document.addEventListener('input', (e) => {
     if (e.target.classList.contains('input-time')) {
-      let val = e.target.value.replace(/\D/g, ''); 
-      if (val.length > 8) val = val.substring(0, 8); 
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 8) val = val.substring(0, 8);
       let formatted = '';
       if (val.length > 0) formatted += val.substring(0, 2);
       if (val.length > 2) formatted += ':' + val.substring(2, 4);
@@ -868,23 +941,27 @@ window.editEvent = (eventId) => {
   document.getElementById('input-tanggal-event')?.addEventListener('change', calculateKU);
 
   // ==========================================
-  // STOPWATCH LOGIC
+  // STOPWATCH LOGIC (3 BUTTONS - START, RESET, LAP/CHECK)
   // ==========================================
   let swTimer = null;
-  let swTime = 0;
+  let swStartTime = 0;
+  let swElapsedTime = 0;
   let swIsRunning = false;
   let swTargetInput = null;
+  let swLaps = [];
 
   const formatSwTime = (ms) => {
     const msPart = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
     const totalSec = Math.floor(ms / 1000);
-    const s = (totalSec % 60).toString().padStart(2, '0');
     const m = Math.floor((totalSec / 60) % 60).toString().padStart(2, '0');
-    const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
-    return `${h === '00' ? '' : h + ':'}${m}:${s}.${msPart}`;
+    const s = (totalSec % 60).toString().padStart(2, '0');
+    return `${m}:${s}.${msPart}`;
   };
 
-  let swLaps = [];
+  const updateSwDisplay = () => {
+    swElapsedTime = Date.now() - swStartTime;
+    document.getElementById('sw-display').innerText = formatSwTime(swElapsedTime);
+  };
 
   window.openStopwatch = (btn) => {
     swTargetInput = btn.closest('.row-lomba').querySelector('.input-time');
@@ -892,75 +969,87 @@ window.editEvent = (eventId) => {
     if (!modal) return;
     modal.classList.remove('hidden');
     setTimeout(() => modal.classList.remove('opacity-0'), 10);
+
+    // Reset all state
+    swElapsedTime = 0; swIsRunning = false; swLaps = [];
     document.getElementById('sw-display').innerText = '00:00.00';
     document.getElementById('sw-laps-container').innerHTML = '';
-    swTime = 0;
-    swIsRunning = false;
-    swLaps = [];
-    document.getElementById('sw-btn-start').innerText = 'START';
-    document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
-    document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-    document.getElementById('sw-btn-lap-text').innerText = 'RESET';
+    const btnMain = document.getElementById('sw-btn-main');
+    btnMain.innerText = 'START';
+    btnMain.classList.replace('bg-orange-500', 'bg-brand-red');
   };
 
   window.closeStopwatch = () => {
     const modal = document.getElementById('modal-stopwatch');
-    if (!modal) return;
     modal.classList.add('opacity-0');
     setTimeout(() => modal.classList.add('hidden'), 300);
     clearInterval(swTimer);
+    swIsRunning = false;
   };
 
-  window.toggleStopwatch = () => {
+  window.handleTimerMain = () => {
+    const btnMain = document.getElementById('sw-btn-main');
     if (swIsRunning) {
-      clearInterval(swTimer);
+      // STOP
       swIsRunning = false;
-      document.getElementById('sw-btn-start').innerText = 'RESUME';
-      document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
-      document.getElementById('sw-btn-save').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      document.getElementById('sw-btn-lap-text').innerText = 'RESET';
+      clearInterval(swTimer);
+      btnMain.innerText = 'RESUME';
+      btnMain.classList.replace('bg-orange-500', 'bg-brand-red');
     } else {
+      // START / RESUME
       swIsRunning = true;
-      document.getElementById('sw-btn-start').innerText = 'STOP';
-      document.getElementById('sw-btn-start').classList.replace('bg-brand-red', 'bg-orange-500');
-      document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      document.getElementById('sw-btn-lap-text').innerText = 'LAP';
-      const startTime = Date.now() - swTime;
-      swTimer = setInterval(() => {
-        swTime = Date.now() - startTime;
-        document.getElementById('sw-display').innerText = formatSwTime(swTime);
-      }, 10);
+      swStartTime = Date.now() - swElapsedTime;
+      swTimer = setInterval(updateSwDisplay, 10);
+      btnMain.innerText = 'STOP';
+      btnMain.classList.replace('bg-brand-red', 'bg-orange-500');
     }
   };
 
-  window.lapStopwatch = () => {
-    if (swIsRunning) {
-      // Record Lap
-      swLaps.push(formatSwTime(swTime));
-      const container = document.getElementById('sw-laps-container');
-      const lapEl = document.createElement('div');
-      lapEl.className = 'text-gray-300 font-mono text-sm flex justify-between border-b border-gray-700 pb-1';
-      lapEl.innerHTML = `<span class="text-gray-500">SET ${swLaps.length}</span> <span>${swLaps[swLaps.length - 1]}</span>`;
-      container.prepend(lapEl);
-    } else {
-      // Reset
-      clearInterval(swTimer);
-      swTime = 0;
-      swLaps = [];
-      swIsRunning = false;
-      document.getElementById('sw-display').innerText = '00:00.00';
-      document.getElementById('sw-laps-container').innerHTML = '';
-      document.getElementById('sw-btn-start').innerText = 'START';
-      document.getElementById('sw-btn-start').classList.replace('bg-orange-500', 'bg-brand-red');
-      document.getElementById('sw-btn-save').classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      document.getElementById('sw-btn-lap-text').innerText = 'RESET';
-    }
+  window.handleTimerReset = () => {
+    if (swElapsedTime === 0) return;
+    if (!confirm('Reset seluruh hitungan waktu bray?')) return;
+
+    swIsRunning = false;
+    clearInterval(swTimer);
+    swElapsedTime = 0;
+    swLaps = [];
+
+    document.getElementById('sw-display').innerText = '00:00.00';
+    document.getElementById('sw-laps-container').innerHTML = '';
+    const btnMain = document.getElementById('sw-btn-main');
+    btnMain.innerText = 'START';
+    btnMain.classList.replace('bg-orange-500', 'bg-brand-red');
+  };
+
+  window.handleTimerLap = () => {
+    if (!swIsRunning) return; // Hanya bisa lap kalau timer jalan
+
+    const currentLapTime = formatSwTime(swElapsedTime);
+    swLaps.push(currentLapTime);
+
+    const container = document.getElementById('sw-laps-container');
+    const lapEl = document.createElement('div');
+    lapEl.className = 'flex justify-between items-center bg-zinc-900 p-3 rounded-xl border border-zinc-800 mb-2';
+    lapEl.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-zinc-500 font-mono">SET ${swLaps.length}</span>
+      </div>
+      <span class="font-mono text-sm font-bold text-white tracking-wider">${currentLapTime}</span>
+    `;
+    container.prepend(lapEl);
   };
 
   window.saveStopwatch = () => {
     if (swTargetInput) {
-      swTargetInput.value = formatSwTime(swTime);
-      swTargetInput.dataset.laps = JSON.stringify(swLaps);
+      // Kalau ngga dipencet lap sama sekali, kita auto push waktu terakhir sebagai set 1
+      if (swLaps.length === 0 && swElapsedTime > 0) {
+        swLaps.push(formatSwTime(swElapsedTime));
+      }
+
+      swTargetInput.value = formatSwTime(swElapsedTime);
+      if (swLaps.length > 0) {
+        swTargetInput.dataset.laps = JSON.stringify(swLaps);
+      }
       window.closeStopwatch();
     }
   };
@@ -988,10 +1077,10 @@ window.editEvent = (eventId) => {
       const time_record = timeInput.value.trim();
       const rank = row.querySelector('.input-rank').value;
       const result_id = row.dataset.resultId;
-      
+
       let laps = [];
       if (timeInput.dataset.laps) {
-        try { laps = JSON.parse(timeInput.dataset.laps); } catch(e){}
+        try { laps = JSON.parse(timeInput.dataset.laps); } catch (e) { }
       }
 
       // Allow empty time_record if they just prefill it, but don't add to array if BOTH time and style are empty.
@@ -1016,7 +1105,7 @@ window.editEvent = (eventId) => {
         title, level, event_date: eventDate, pool_size: poolSize, location,
         results
       };
-      
+
       if (isEditMode) payload.event_id = currentEditEventId;
 
       const response = await fetch(endpoint, {
@@ -1024,14 +1113,14 @@ window.editEvent = (eventId) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       const resResult = await response.json();
       if (resResult.success) {
         window.closeModal('modal-input', 'modal-inner');
-        await loadAthleteData(); 
+        await loadAthleteData();
       } else { alert("Gagal: " + resResult.message); }
     } catch (err) { console.error(err); } finally {
-      btn.innerText = isEditMode ? "Update Data Kejuaraan" : "Simpan Semua Data"; 
+      btn.innerText = isEditMode ? "Update Data Kejuaraan" : "Simpan Semua Data";
       btn.disabled = false;
     }
   });
@@ -1050,7 +1139,7 @@ window.editEvent = (eventId) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ athlete_id: athleteId, height_cm, weight_kg, arm_span_cm, recorded_at })
       });
-      
+
       const result = await response.json();
       if (result.success) {
         window.closeModal('modal-biometrik', 'modal-bio-inner');
@@ -1062,11 +1151,11 @@ window.editEvent = (eventId) => {
   await loadAthleteData();
 });
 
-  window.openModal = (bgId, innerId) => {
-    document.getElementById(bgId).classList.remove('hidden');
-    setTimeout(() => { document.getElementById(innerId).classList.remove('scale-95', 'opacity-0'); }, 10);
-  };
-  window.closeModal = (bgId, innerId) => {
-    document.getElementById(innerId).classList.add('scale-95', 'opacity-0');
-    setTimeout(() => { document.getElementById(bgId).classList.add('hidden'); }, 300);
-  };
+window.openModal = (bgId, innerId) => {
+  document.getElementById(bgId).classList.remove('hidden');
+  setTimeout(() => { document.getElementById(innerId).classList.remove('scale-95', 'opacity-0'); }, 10);
+};
+window.closeModal = (bgId, innerId) => {
+  document.getElementById(innerId).classList.add('scale-95', 'opacity-0');
+  setTimeout(() => { document.getElementById(bgId).classList.add('hidden'); }, 300);
+};
