@@ -13,6 +13,8 @@ import navHTML from '../bottomnav.html?raw';
 
 import { initProfileModal, initDashboardProfile } from './profile_modal.js';
 
+window.rowCounter = 0;
+
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. SATPAM PROTEKSI LOGIN ATLET & PARENTS
   const sessionUser = localStorage.getItem('swim_user');
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </button>
             <div>
               <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Parent View</h1>
-              <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">${user.name || 'Parent'}</p>
+              <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">${user.full_name || 'Parent'}</p>
             </div>
           </div>
           <button id="btn-theme-parent" class="p-2 text-xl bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-gray-200">🌓</button>
@@ -156,7 +158,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (result.success) {
         window.globalResultsData = result.results || [];
-        window.globalEventsData = result.events || [];
+        
+        // Map results ke globalEventsData (mengelompokkan berdasarkan event_id)
+        const eventsMap = {};
+        (result.results || []).forEach(res => {
+          if (!eventsMap[res.event_id]) {
+            eventsMap[res.event_id] = {
+              event_id: res.event_id,
+              title: res.title,
+              level: res.level,
+              event_date: res.event_date,
+              event_results: []
+            };
+          }
+          // Parse split_times_json string back to array if necessary
+          if (typeof res.split_times_json === 'string') {
+            try { res.laps = JSON.parse(res.split_times_json); } catch(e) { res.laps = []; }
+          } else {
+            res.laps = res.split_times_json || [];
+          }
+          eventsMap[res.event_id].event_results.push(res);
+        });
+        window.globalEventsData = Object.values(eventsMap).sort((a,b) => new Date(b.event_date) - new Date(a.event_date));
 
         // Jika Parent, override profile card dashboard
         if (isParent) {
@@ -188,6 +211,41 @@ document.addEventListener('DOMContentLoaded', async () => {
           document.getElementById('count-perak').innerText = perak;
           document.getElementById('count-perunggu').innerText = perunggu;
         }
+
+        // Render Data Biometrik jika ada bray
+        if (result.biometric) {
+          const h = document.getElementById('bio-display-height');
+          const w = document.getElementById('bio-display-weight');
+          const a = document.getElementById('bio-display-arm');
+          if (h) h.innerText = result.biometric.height_cm || '--';
+          if (w) w.innerText = result.biometric.weight_kg || '--';
+          if (a) a.innerText = result.biometric.arm_span_cm || '--';
+        }
+
+        // Setup filter gaya buttons
+        document.querySelectorAll('.pill-gaya').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.pill-gaya').forEach(b => {
+              b.classList.remove('bg-brand-red', 'text-white', 'shadow-md', 'shadow-brand-red/40');
+              b.classList.add('bg-gray-100', 'dark:bg-[#1f1a24]', 'text-gray-500', 'dark:text-gray-400', 'border', 'border-gray-200', 'dark:border-gray-700');
+            });
+            e.target.classList.remove('bg-gray-100', 'dark:bg-[#1f1a24]', 'text-gray-500', 'dark:text-gray-400', 'border', 'border-gray-200', 'dark:border-gray-700');
+            e.target.classList.add('bg-brand-red', 'text-white', 'shadow-md', 'shadow-brand-red/40');
+            initTabGrafik(e.target.dataset.style);
+          });
+        });
+        
+        // Setup filter dropdown
+        const selectTahun = document.getElementById('grafik-year-filter');
+        const selectCompare = document.getElementById('grafik-compare-filter');
+        if (selectTahun) selectTahun.addEventListener('change', () => {
+          const activeStyle = document.querySelector('.pill-gaya.bg-brand-red')?.dataset?.style || 'Bebas';
+          initTabGrafik(activeStyle);
+        });
+        if (selectCompare) selectCompare.addEventListener('change', () => {
+          const activeStyle = document.querySelector('.pill-gaya.bg-brand-red')?.dataset?.style || 'Bebas';
+          initTabGrafik(activeStyle);
+        });
 
         // Render data sejarah kejuaraan resmi di Tab Dashboard bray
         renderHistoryList();
@@ -454,10 +512,10 @@ window.editEvent = (eventId) => {
     
     if (ev.event_results && ev.event_results.length > 0) {
       ev.event_results.forEach(res => {
-        rowCounter++;
+        window.rowCounter++;
         const hasLaps = res.laps && res.laps.length > 0;
         const newRow = document.createElement('div');
-        newRow.id = `row-lomba-${rowCounter}`;
+        newRow.id = `row-lomba-${window.rowCounter}`;
         newRow.className = 'row-lomba bg-white dark:bg-[#140e16] rounded-xl border dark:border-gray-700 overflow-hidden';
         newRow.dataset.resultId = res.result_id;
         if (hasLaps) newRow.dataset.hasLaps = "true";
@@ -509,9 +567,9 @@ window.editEvent = (eventId) => {
 
   // Logic nambah row nomor lomba di modal Event (Dengan Tombol Stopwatch)
   document.getElementById('btn-add-nomor')?.addEventListener('click', () => {
-    rowCounter++;
+    window.rowCounter++;
     const newRow = document.createElement('div');
-    newRow.id = `row-lomba-${rowCounter}`;
+    newRow.id = `row-lomba-${window.rowCounter}`;
     newRow.className = 'row-lomba bg-white dark:bg-[#140e16] rounded-xl border dark:border-gray-700 overflow-hidden';
     newRow.innerHTML = `
       <div class="grid grid-cols-12 gap-1 items-center p-1">
