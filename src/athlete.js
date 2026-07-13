@@ -10,10 +10,12 @@ import dashboardHTML from '../dashboard.html?raw';
 import progressHTML from '../progress.html?raw';
 import trainingHTML from '../training.html?raw';
 import navHTML from '../bottomnav.html?raw'; 
+import modalHTML from '../input.html?raw';
 
 import { initProfileModal, initDashboardProfile } from './profile_modal.js';
 
 window.rowCounter = 0;
+window.masterCategories = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. SATPAM PROTEKSI LOGIN ATLET & PARENTS
@@ -69,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     
     document.getElementById('nav-container').innerHTML = navHTML;
+    document.getElementById('modal-container').innerHTML = modalHTML;
     
     // Sembunyikan atau Tampilkan tombol input kejuaraan sesuai role
     const addBtn = document.getElementById('container-btn-input-kejuaraan');
@@ -155,6 +158,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const response = await fetch(`/api/athletes?action=dashboard_data&user_id=${athleteId}`);
       const result = await response.json();
+
+      const catResponse = await fetch('/api/athletes?action=categories');
+      const catResult = await catResponse.json();
+      window.masterCategories = catResult.success ? catResult.data : [];
 
       if (result.success) {
         window.globalResultsData = result.results || [];
@@ -255,6 +262,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Siapkan grafik default
         initTabGrafik('Bebas');
+
+        // Init Radar Chart
+        const ctxRadar = document.getElementById('profileRadarChart');
+        if (ctxRadar) {
+          if (window.myRadarChart) window.myRadarChart.destroy();
+          window.myRadarChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+              labels: ['Speed', 'Stamina', 'Strength', 'Tech', 'Mental'],
+              datasets: [{
+                label: 'Statistik Atlet',
+                data: [85, 75, 80, 90, 70], // dummy data for now
+                backgroundColor: 'rgba(255, 77, 77, 0.2)',
+                borderColor: '#ff4d4d',
+                pointBackgroundColor: '#ff4d4d',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#ff4d4d'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                r: {
+                  angleLines: { display: true, color: 'rgba(0,0,0,0.1)' },
+                  grid: { color: 'rgba(0,0,0,0.1)' },
+                  pointLabels: { font: { size: 8 } },
+                  ticks: { display: false, min: 0, max: 100 }
+                }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
       }
     } catch (err) { console.error(err); }
   }
@@ -370,16 +412,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         dryContainer.innerHTML = `<div class="text-center py-4 text-gray-400 text-[11px]">Belum ada target tugas dryland fisik minggu ini.</div>`;
       } else {
         dryContainer.innerHTML = drylands.map(d => `
-          <div class="p-3 bg-gray-50 dark:bg-[#140e16]/40 rounded-xl border dark:border-gray-800 flex justify-between items-center mb-1.5">
+          <div class="p-3 bg-gray-50 dark:bg-[#140e16]/40 rounded-xl border dark:border-gray-800 flex justify-between items-center mb-1.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-all" onclick="window.openDrylandDetail('${encodeURIComponent(d.task_name)}')">
             <div>
               <div class="font-bold text-gray-700 dark:text-zinc-300">${d.task_name}</div>
               <div class="text-[9px] text-gray-400 mt-0.5">Tanggal Tugas: ${d.date.split('T')[0]}</div>
             </div>
-            <span class="text-[9px] bg-blue-500/10 text-blue-500 font-extrabold px-1.5 py-0.5 rounded-md uppercase">Dryland</span>
+            <span class="text-[9px] bg-blue-500/10 text-blue-500 font-extrabold px-1.5 py-0.5 rounded-md uppercase">Detail</span>
           </div>`).join('');
       }
     }
   }
+
+  // Dryland Detail Modal Injector & Opener
+  window.openDrylandDetail = function(encodedName) {
+    const taskName = decodeURIComponent(encodedName);
+    let modal = document.getElementById('modal-dryland-detail');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-dryland-detail';
+      modal.className = 'fixed inset-0 z-[1000] hidden flex flex-col justify-end sm:justify-center bg-black/60 backdrop-blur-sm transition-opacity opacity-0';
+      modal.innerHTML = `
+        <div id="modal-dryland-inner" class="bg-white dark:bg-[#1a1423] w-full sm:max-w-md mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform translate-y-full flex flex-col h-[85vh] sm:h-auto sm:max-h-[85vh]">
+          <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+            <h3 class="font-bold text-sm text-gray-800 dark:text-white uppercase tracking-widest" id="dryland-detail-title">Detail Latihan</h3>
+            <button onclick="window.closeModal('modal-dryland-detail', 'modal-dryland-inner')" class="p-2 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full hover:text-brand-red transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="p-5 overflow-y-auto grow">
+            <div id="dryland-video-container" class="w-full aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden mb-4 relative">
+              <img id="dryland-image" src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Latihan" class="w-full h-full object-cover opacity-60">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <button class="w-12 h-12 bg-brand-red/90 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <h4 class="font-bold text-gray-800 dark:text-white mb-2 text-sm uppercase">Tujuan Latihan:</h4>
+            <p id="dryland-desc" class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+              Latihan ini dirancang untuk meningkatkan kekuatan otot inti (core), ketahanan lengan, dan fleksibilitas tubuh secara keseluruhan. Lakukan dengan repetisi yang dianjurkan pelatih untuk hasil optimal di air.
+            </p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-3 rounded-xl">
+              <p class="text-[10px] font-semibold text-blue-600 dark:text-blue-400"><span class="mr-1">💡</span> Tips: Pastikan postur tubuh tegap dan fokus pada teknik gerakan, bukan sekadar kecepatan.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    document.getElementById('dryland-detail-title').innerText = taskName;
+    
+    // Custom logic based on task name
+    const imgEl = document.getElementById('dryland-image');
+    if (taskName.toLowerCase().includes('push up')) {
+      imgEl.src = "https://images.unsplash.com/photo-1598971639058-fab3541658ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+    } else if (taskName.toLowerCase().includes('sit up') || taskName.toLowerCase().includes('core')) {
+      imgEl.src = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+    } else if (taskName.toLowerCase().includes('plank')) {
+      imgEl.src = "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+    } else {
+      imgEl.src = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+    }
+
+    window.openModal('modal-dryland-detail', 'modal-dryland-inner');
+  };
 
   function initTTChart(styleFilter) {
     const ctx = document.getElementById('ttChart');
