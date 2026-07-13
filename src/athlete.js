@@ -198,11 +198,21 @@ document.addEventListener('DOMContentLoaded', async () => {
           const dashKuEl = document.getElementById('dashboard-ku-text');
           
           if (dashName) dashName.innerText = athleteName;
-          if (dashGreeting) dashGreeting.innerText = "Halo Atlet Terbaik,";
           if (dashAvatar) dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athleteName)}&background=ff4d4d&color=fff&bold=true`;
+          
           if (dashKuEl) {
-            dashKuEl.innerText = "ATLET";
-            dashKuEl.className = 'text-[10px] font-bold text-brand-red mt-1 bg-brand-red/10 border border-brand-red/20 px-2 py-0.5 rounded-md inline-block';
+            let kuText = "ATLET";
+            if (window.athleteBirthYear) {
+              const currentYear = new Date().getFullYear();
+              const age = currentYear - window.athleteBirthYear;
+              if (age >= 19) kuText = `KU Senior (${window.athleteBirthYear})`;
+              else if (age >= 16) kuText = `KU 1 (${window.athleteBirthYear})`;
+              else if (age >= 14) kuText = `KU 2 (${window.athleteBirthYear})`;
+              else if (age >= 12) kuText = `KU 3 (${window.athleteBirthYear})`;
+              else if (age >= 10) kuText = `KU 4 (${window.athleteBirthYear})`;
+              else kuText = `KU 5 (${window.athleteBirthYear})`;
+            }
+            dashKuEl.innerText = kuText;
           }
         }
 
@@ -307,54 +317,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.globalEventsData.length === 0) return container.innerHTML = `<div class="text-center py-8 text-xs text-gray-500">Belum ada rekor kejuaraan resmi bray.</div>`;
 
     let htmlString = '';
-    window.globalEventsData.forEach(ev => {
+    window.globalEventsData.forEach((ev, evIdx) => {
       const dateStr = new Date(ev.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
       
+      let badgesHtml = '';
       let resultsHtml = '';
+      
       if (ev.event_results && ev.event_results.length > 0) {
-        resultsHtml = ev.event_results.map(res => {
-          const laps = res.laps || [];
-          const hasLaps = laps.length > 0;
-          const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'text-gray-200 pointer-events-none opacity-30';
-          const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
-          
-          let lapsHtml = '';
-          if (hasLaps) {
-            lapsHtml = `<div class="hidden mt-2 pt-2 border-t dark:border-gray-700 space-y-1">` + 
-              laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] text-gray-500 px-1"><span class="uppercase tracking-widest font-bold">Set ${idx + 1}</span><span class="font-mono">${lap}</span></div>`).join('') + 
-            `</div>`;
-          }
+        // Generate Badges for Header
+        badgesHtml = `<div class="flex flex-wrap gap-2 mt-3">` + 
+          ev.event_results.map(res => {
+            let icon = '🏅';
+            let rankNum = parseInt(res.rank);
+            if (rankNum === 1) icon = '🥇';
+            else if (rankNum === 2) icon = '🥈';
+            else if (rankNum === 3) icon = '🥉';
+            let rankText = res.rank ? `Rank ${res.rank}` : 'Rank --';
+            let colorClass = (rankNum >= 1 && rankNum <= 3) ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'text-gray-500 bg-gray-50 dark:bg-gray-800';
+            return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold ${colorClass}">${icon} ${rankText} - ${res.category}</span>`;
+          }).join('') + `</div>`;
 
-          return `
-          <div class="bg-gray-50 dark:bg-[#251f2e] border dark:border-gray-700 rounded-lg p-2 mb-2 transition-all">
-            <div class="flex justify-between items-center ${hasLaps ? 'cursor-pointer' : ''}" onclick="if(${hasLaps}) { const el = this.nextElementSibling; el.classList.toggle('hidden'); const svg = this.querySelector('svg'); svg.classList.toggle('rotate-180'); }">
-              <div class="flex items-center gap-2">
-                <span class="${arrowClass}">${arrowIcon}</span>
-                <span class="text-gray-600 dark:text-gray-300 font-bold text-[10px] uppercase tracking-wider">${res.category}</span>
+        // Generate Race Cards for Body
+        resultsHtml = `<div class="space-y-3 mt-4 hidden" id="ev-body-${evIdx}">` + 
+          ev.event_results.map(res => {
+            const laps = res.laps || [];
+            const hasLaps = laps.length > 0;
+            const arrowClass = hasLaps ? 'text-gray-400 cursor-pointer hover:text-brand-red' : 'hidden';
+            const arrowIcon = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>`;
+            
+            let lapsHtml = '';
+            if (hasLaps) {
+              lapsHtml = `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">` + 
+                laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] font-bold px-1"><span class="text-gray-600 dark:text-gray-400 tracking-widest">SET ${idx + 1}</span><span class="font-mono text-gray-500">${lap}</span></div>`).join('') + 
+              `</div>`;
+            }
+
+            return `
+            <div class="bg-white dark:bg-brand-card border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm relative overflow-hidden transition-all">
+              <div class="flex justify-between items-start">
+                <div class="flex items-center gap-2">
+                  <span class="${arrowClass} transform rotate-180" onclick="const p = this.closest('.bg-white'); const l = p.querySelector('.border-t'); if(l) { l.classList.toggle('hidden'); this.classList.toggle('rotate-180'); }">${arrowIcon}</span>
+                  <span class="text-gray-800 dark:text-gray-200 font-bold text-xs uppercase tracking-wider">${res.category}</span>
+                </div>
+                <div class="text-right flex flex-col items-end gap-1">
+                  <span class="text-brand-red font-mono font-black text-xs">${res.time_record}</span>
+                  <span class="text-orange-500 font-bold text-[9px] bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded uppercase">Rank ${res.rank || '-'}</span>
+                </div>
               </div>
-              <div class="text-right flex flex-col items-end">
-                <span class="text-brand-red font-mono font-bold text-xs">${res.time_record}</span>
-                <span class="text-yellow-600 font-bold text-[9px] bg-yellow-500/10 px-1.5 py-0.5 rounded mt-0.5 whitespace-nowrap">Rank ${res.rank || '-'}</span>
-              </div>
+              ${lapsHtml}
             </div>
-            ${lapsHtml}
-          </div>
-          `;
-        }).join('');
+            `;
+          }).join('') + `</div>`;
       } else {
-        resultsHtml = `<div class="text-[10px] text-gray-400 italic text-center py-2">Belum ada hasil perlombaan / nomor lomba kosong.</div>`;
+        resultsHtml = `<div class="hidden mt-4 text-[10px] text-gray-400 italic text-center py-2" id="ev-body-${evIdx}">Belum ada hasil perlombaan.</div>`;
       }
 
       htmlString += `
-        <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm mb-3">
-          <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">
-            <div>
-              <h4 class="font-bold text-xs tracking-wide text-gray-800 dark:text-white uppercase">${ev.title}</h4>
-              <p class="text-[9px] font-semibold text-brand-red mt-0.5">${ev.level} â€¢ ${dateStr}</p>
+        <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
+          <div class="flex justify-between items-start cursor-pointer" onclick="document.getElementById('ev-body-${evIdx}').classList.toggle('hidden'); const sv = this.querySelector('.chevron-icon'); if(sv) sv.classList.toggle('rotate-180');">
+            <div class="flex-1">
+              <h4 class="font-black text-xs tracking-wide text-gray-800 dark:text-white uppercase">${ev.title}</h4>
+              <p class="text-[10px] font-medium text-gray-400 mt-1">${ev.level} &bull; ${dateStr}</p>
             </div>
-            ${window.isParent ? `<button onclick="window.editEventData('${ev.event_id}')" class="text-brand-red p-1 hover:bg-brand-red/10 rounded" title="Edit Lomba"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>` : ''}
+            <div class="flex items-center gap-2 ml-4">
+              ${window.isParent ? `<button onclick="event.stopPropagation(); window.editEventData('${ev.event_id}')" class="text-brand-red p-1.5 hover:bg-brand-red/10 rounded-lg transition-colors" title="Edit Lomba"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>` : ''}
+              <svg class="chevron-icon w-4 h-4 text-gray-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+            </div>
           </div>
-          <div class="space-y-1">${resultsHtml}</div>
+          ${badgesHtml}
+          ${resultsHtml}
         </div>`;
     });
     container.innerHTML = htmlString;
