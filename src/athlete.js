@@ -45,11 +45,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
             <div>
-              <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Detail Anak</h1>
-              <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">${athleteName}</p>
+              <h1 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Parent View</h1>
+              <p class="text-sm font-bold text-gray-800 dark:text-white leading-none">${user.name || 'Parent'}</p>
             </div>
           </div>
-          <button id="btn-theme-parent" class="p-2 text-xl bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-gray-200">ðŸŒ“</button>
+          <button id="btn-theme-parent" class="p-2 text-xl bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-gray-200">🌓</button>
         `;
         const themeBtn = document.getElementById('btn-theme-parent');
         if (themeBtn) themeBtn.addEventListener('click', () => {
@@ -157,6 +157,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (result.success) {
         window.globalResultsData = result.results || [];
         window.globalEventsData = result.events || [];
+
+        // Jika Parent, override profile card dashboard
+        if (isParent) {
+          const dashName = document.getElementById('dash-fullname');
+          const dashGreeting = document.getElementById('dash-greeting');
+          const dashAvatar = document.getElementById('dash-avatar');
+          const btnEdit = document.getElementById('btn-edit-profile');
+          const dashKuEl = document.getElementById('dashboard-ku-text');
+          
+          if (dashName) dashName.innerText = athleteName;
+          if (dashGreeting) dashGreeting.innerText = "Halo Atlet Terbaik,";
+          if (dashAvatar) dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athleteName)}&background=ff4d4d&color=fff&bold=true`;
+          if (btnEdit) btnEdit.style.display = 'none';
+          if (dashKuEl) {
+            dashKuEl.innerText = "ATLET";
+            dashKuEl.className = 'text-[10px] font-bold text-brand-red mt-1 bg-brand-red/10 border border-brand-red/20 px-2 py-0.5 rounded-md inline-block';
+          }
+        }
 
         // Hitung total medali podium kejuaraan resmi bray
         let emas = 0, perak = 0, perunggu = 0;
@@ -348,6 +366,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('table-grafik-body');
     if (!tbody) return;
     
+    const selectTahun = document.getElementById('grafik-year-filter');
+    const selectCompare = document.getElementById('grafik-compare-filter');
     const styleRecords = window.globalResultsData.filter(r => r.category.toLowerCase().includes(styleName.toLowerCase()));
     if (selectTahun) renderChartProgress(styleName, selectTahun.value, selectCompare ? selectCompare.value : 'none');
 
@@ -622,3 +642,12 @@ window.editEvent = (eventId) => {
 
   await loadAthleteData();
 });
+
+  window.openModal = (bgId, innerId) => {
+    document.getElementById(bgId).classList.remove('hidden');
+    setTimeout(() => { document.getElementById(innerId).classList.remove('scale-95', 'opacity-0'); }, 10);
+  };
+  window.closeModal = (bgId, innerId) => {
+    document.getElementById(innerId).classList.add('scale-95', 'opacity-0');
+    setTimeout(() => { document.getElementById(bgId).classList.add('hidden'); }, 300);
+  };
