@@ -1,6 +1,6 @@
-<div id="tab-history" class="w-full pb-8 overflow-hidden">
+<div id="tab-history" class="w-full pb-8 overflow-x-hidden">
 
-  <!-- PROFILE & MEDALI (EDGE-TO-EDGE LAYOUT) -->
+  <!-- 1. PROFILE & MEDALI (EDGE-TO-EDGE LAYOUT) -->
   <div class="bg-white dark:bg-[#18131f] border-b border-gray-200 dark:border-gray-800 shadow-sm mb-6 flex -mx-4 sm:mx-0 sm:rounded-2xl overflow-hidden relative">
     
     <!-- KOLOM KIRI: Info, Radar, Medali -->
@@ -10,6 +10,7 @@
         <h2 id="dash-fullname" class="text-sm font-black text-gray-800 dark:text-white leading-tight">Loading...</h2>
         <div class="flex items-center gap-2 mt-1">
           <p id="dashboard-ku-text" class="text-[8px] font-bold text-brand-red border border-brand-red/30 bg-brand-red/5 px-1.5 py-0.5 rounded uppercase tracking-wider">-</p>
+          <span id="dash-role" class="hidden text-[8px] font-bold text-brand-red uppercase tracking-wider bg-red-500/10 px-1.5 py-0.5 rounded">ADMIN</span>
         </div>
       </div>
 
@@ -17,28 +18,34 @@
       <div class="w-full aspect-square relative -mt-4">
         <canvas id="profileRadarChart" class="w-full h-full"></canvas>
       </div>
+      <div class="text-center mt-[-15px] mb-4">
+        <p class="text-[7px] text-gray-400 dark:text-gray-500 italic leading-tight">* Ketuk salah satu atribut (e.g. Stamina) untuk melihat analisis.</p>
+      </div>
 
       <!-- Perolehan Medali -->
       <div class="mt-[-10px]">
         <h3 class="font-black text-[9px] tracking-wider text-gray-800 dark:text-white uppercase mb-2">Perolehan Medali</h3>
         <div class="grid grid-cols-3 gap-1.5">
-          <div class="bg-gray-50 dark:bg-[#1a1423] rounded-xl border border-yellow-400/30 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-yellow-400/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
             <span class="text-sm mb-0.5 drop-shadow-sm">🥇</span>
             <span id="count-emas" class="text-xs font-black text-yellow-500 tabular-nums">0</span>
+            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Emas</span>
           </div>
-          <div class="bg-gray-50 dark:bg-[#1a1423] rounded-xl border border-slate-300/30 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-slate-300/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
             <span class="text-sm mb-0.5 drop-shadow-sm">🥈</span>
             <span id="count-perak" class="text-xs font-black text-slate-400 tabular-nums">0</span>
+            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Perak</span>
           </div>
-          <div class="bg-gray-50 dark:bg-[#1a1423] rounded-xl border border-amber-600/30 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-amber-600/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
             <span class="text-sm mb-0.5 drop-shadow-sm">🥉</span>
             <span id="count-perunggu" class="text-xs font-black text-amber-600 tabular-nums">0</span>
+            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Perunggu</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- KOLOM KANAN: Foto Full Rata Kanan -->
+    <!-- KOLOM KANAN: Foto Full Rata Kanan (Draggable) -->
     <div class="w-[45%] relative bg-gray-100 dark:bg-gray-900 shrink-0" style="touch-action: none;">
       <!-- Gradient Shadow penghalus batas kiri ke kanan -->
       <div class="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-white dark:from-[#18131f] to-transparent z-10"></div>
@@ -53,7 +60,7 @@
     </div>
   </div>
 
-  <!-- ANALISIS TEKNIK PER GAYA -->
+  <!-- 2. ANALISIS TEKNIK PER GAYA -->
   <div class="mb-6">
     <div class="flex items-center gap-2 mb-3">
       <svg class="w-4 h-4 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,172 +69,70 @@
       <h3 class="font-bold text-xs tracking-wider text-gray-800 dark:text-white uppercase">ANALISIS TEKNIK PER GAYA</h3>
     </div>
 
-    <div
-      class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-xl p-3 mb-4 flex gap-2 items-start text-brand-red">
+    <div class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-xl p-3 mb-4 flex gap-2 items-start text-brand-red">
       <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z">
-        </path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path>
       </svg>
-      <p class="text-[9px] font-medium leading-relaxed">* Komponen disinkronisasi dinamis dari target kurikulum Pusat.
-      </p>
+      <p class="text-[9px] font-medium leading-relaxed">*Komponen disinkronisasi dinamis dari target kurikulum Pusat.</p>
     </div>
 
     <!-- Container Segmented Toggle -->
-    <div
-      class="flex bg-white dark:bg-[#18131f] p-1 rounded-xl w-full mb-5 border border-gray-200 dark:border-gray-800 shadow-sm">
-      <button data-style="Bebas"
-        class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-gray-100 dark:bg-[#251f2e] text-gray-800 dark:text-white shadow-sm font-bold">Bebas</button>
-      <button data-style="Kupu"
-        class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Kupu-kupu</button>
-      <button data-style="Punggung"
-        class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Punggung</button>
-      <button data-style="Dada"
-        class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Dada</button>
+    <div class="flex bg-white dark:bg-[#18131f] p-1 rounded-xl w-full mb-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+      <button data-style="Bebas" class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-gray-100 dark:bg-[#251f2e] text-gray-800 dark:text-white shadow-sm font-bold">Bebas</button>
+      <button data-style="Kupu" class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Kupu-kupu</button>
+      <button data-style="Punggung" class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Punggung</button>
+      <button data-style="Dada" class="pill-gaya flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Dada</button>
     </div>
 
     <!-- Container Utama Card Analisa Teknik -->
     <div id="container-analisa-teknik">
       <!-- 1. GAYA BEBAS (Default Visible) -->
-      <div id="card-bebas"
-        class="card-analisa bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA BEBAS
-          (FREESTYLE)</h4>
+      <div id="card-bebas" class="card-analisa bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA BEBAS (FREESTYLE)</h4>
         <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Stroke / Tarikan</span><span class="text-gray-800 dark:text-gray-200">88%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 88%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Kick / Kaki</span><span class="text-brand-red">92%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-brand-red h-1.5 rounded-full" style="width: 92%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Breath / Napas</span><span class="text-gray-800 dark:text-gray-200">80%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div>
-            </div>
-          </div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Stroke / Tarikan</span><span class="text-gray-800 dark:text-gray-200">88%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 88%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Kick / Kaki</span><span class="text-brand-red">92%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 92%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Breath / Napas</span><span class="text-gray-800 dark:text-gray-200">80%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
         </div>
       </div>
 
       <!-- 2. GAYA KUPU-KUPU (Hidden) -->
-      <div id="card-kupu"
-        class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA
-          KUPU-KUPU (BUTTERFLY)</h4>
+      <div id="card-kupu" class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA KUPU-KUPU (BUTTERFLY)</h4>
         <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Stroke Mechanics</span><span class="text-gray-800 dark:text-gray-200">85%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 85%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Dolphin Kick</span><span class="text-brand-red">90%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-brand-red h-1.5 rounded-full" style="width: 90%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Breathing Timing</span><span class="text-gray-800 dark:text-gray-200">78%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 78%"></div>
-            </div>
-          </div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Stroke Mechanics</span><span class="text-gray-800 dark:text-gray-200">85%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Dolphin Kick</span><span class="text-brand-red">90%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 90%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Breathing Timing</span><span class="text-gray-800 dark:text-gray-200">78%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
         </div>
       </div>
 
       <!-- 3. GAYA PUNGGUNG (Hidden) -->
-      <div id="card-punggung"
-        class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA PUNGGUNG
-          (BACKSTROKE)</h4>
+      <div id="card-punggung" class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA PUNGGUNG (BACKSTROKE)</h4>
         <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Body Rotation</span><span class="text-gray-800 dark:text-gray-200">82%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 82%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Kicking Power</span><span class="text-gray-800 dark:text-gray-200">85%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 85%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Start (Backstroke)</span><span class="text-gray-800 dark:text-gray-200">80%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div>
-            </div>
-          </div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Body Rotation</span><span class="text-gray-800 dark:text-gray-200">82%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 82%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Kicking Power</span><span class="text-gray-800 dark:text-gray-200">85%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Start (Backstroke)</span><span class="text-gray-800 dark:text-gray-200">80%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
         </div>
       </div>
 
       <!-- 4. GAYA DADA (Hidden) -->
-      <div id="card-dada"
-        class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
-        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA DADA
-          (BREASTSTROKE)</h4>
+      <div id="card-dada" class="card-analisa hidden bg-white dark:bg-brand-card rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+        <h4 class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-4">GAYA DADA (BREASTSTROKE)</h4>
         <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Pull Mechanics</span><span class="text-gray-800 dark:text-gray-200">75%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 75%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Whip Kick Power</span><span class="text-gray-800 dark:text-gray-200">80%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-              <span>Glide Timing</span><span class="text-gray-800 dark:text-gray-200">78%</span>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-              <div class="bg-slate-500 h-1.5 rounded-full" style="width: 78%"></div>
-            </div>
-          </div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Pull Mechanics</span><span class="text-gray-800 dark:text-gray-200">75%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 75%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Whip Kick Power</span><span class="text-gray-800 dark:text-gray-200">80%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
+          <div><div class="flex justify-between text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-wider"><span>Glide Timing</span><span class="text-gray-800 dark:text-gray-200">78%</span></div><div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-slate-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FILTER RECORD KOMPETISI -->
+  <!-- 3. RECORD KOMPETISI -->
   <div class="flex justify-between items-center mb-4 mt-2">
     <h3 class="font-bold text-sm tracking-wider text-gray-800 dark:text-white uppercase">Record Kompetisi</h3>
     <div class="relative">
-      <select id="history-year-filter"
-        class="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white text-[10px] font-bold rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-brand-red cursor-pointer shadow-sm">
+      <select id="history-year-filter" class="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white text-[10px] font-bold rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-brand-red cursor-pointer shadow-sm">
         <option value="2026">2026</option>
         <option value="2025">2025</option>
         <option value="2024">2024</option>
@@ -242,9 +147,10 @@
 
   <!-- LISTING EVENT (Dinamic Load dari JS) -->
   <div id="container-history-list" class="space-y-3">
-    <div
-      class="text-center py-8 bg-gray-50 dark:bg-gray-800/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 animate-pulse">
+    <!-- Loader / Placeholder -->
+    <div class="text-center py-8 bg-gray-50 dark:bg-gray-800/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 animate-pulse">
       <p class="text-xs text-gray-400 font-semibold uppercase tracking-widest">🔄 Menarik Data...</p>
     </div>
   </div>
+
 </div>
