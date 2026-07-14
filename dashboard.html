@@ -1,79 +1,64 @@
 <div id="tab-history" class="w-full pb-8 overflow-x-hidden">
 
-  <!-- 1. PROFILE & MEDALI (EDGE-TO-EDGE LAYOUT) -->
-  <div
-    class="bg-white dark:bg-[#18131f] border-b border-gray-200 dark:border-gray-800 shadow-sm mb-6 flex -mx-4 sm:mx-0 sm:rounded-2xl overflow-hidden relative">
+  <!-- 1. PROFILE HERO & FLOATING MEDALS -->
+  <div class="relative -mx-4 sm:mx-0 sm:rounded-t-2xl mb-8">
+    
+    <!-- BACKGROUND FOTO (FULL COVER) -->
+    <div class="absolute inset-0 z-0">
+      <img id="dash-avatar" src="https://ui-avatars.com/api/?name=Atlet&background=ff4d4d&color=fff&bold=true" alt="Profile" class="w-full h-full object-cover object-center">
+      <!-- Gradient Overlay (Biar teks putih & chart tetep kebaca jelas di foto terang/gelap) -->
+      <div class="absolute inset-0 bg-gradient-to-b from-[#18131f]/80 via-[#18131f]/40 to-[#18131f] dark:from-[#120e16]/90 dark:to-[#120e16]"></div>
+    </div>
 
-    <!-- KOLOM KIRI: Info, Radar, Medali -->
-    <div class="w-[55%] p-4 pl-5 flex flex-col justify-between z-10 bg-white dark:bg-[#18131f]">
-      <!-- Header: Nama & Badge KU -->
-      <div class="mb-2">
-        <h2 id="dash-fullname" class="text-sm font-black text-gray-800 dark:text-white leading-tight">Loading...</h2>
-        <div class="flex items-center gap-2 mt-1">
-          <p id="dashboard-ku-text"
-            class="text-[8px] font-bold text-brand-red border border-brand-red/30 bg-brand-red/5 px-1.5 py-0.5 rounded uppercase tracking-wider">
-            -</p>
-          <span id="dash-role"
-            class="hidden text-[8px] font-bold text-brand-red uppercase tracking-wider bg-red-500/10 px-1.5 py-0.5 rounded">ADMIN</span>
+    <!-- CONTENT PROFILE -->
+    <div class="relative z-10 pt-6 px-4 pb-20 flex flex-col">
+      
+      <!-- Top Bar: Name & Edit Button -->
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h2 id="dash-fullname" class="text-lg font-black text-white leading-tight drop-shadow-md">Loading...</h2>
+          <div class="flex items-center gap-2 mt-1.5">
+            <p id="dashboard-ku-text" class="text-[9px] font-bold text-brand-red bg-white/90 dark:bg-[#251f2e] px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">-</p>
+          </div>
         </div>
+        <a href="#" id="btn-edit-profile" class="p-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white hover:bg-white/30 transition-all shadow-sm">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        </a>
       </div>
 
       <!-- Radar Chart -->
-      <div class="w-full aspect-square relative -mt-4">
+      <div class="w-full max-w-[260px] aspect-square mx-auto relative mb-2">
         <canvas id="profileRadarChart" class="w-full h-full"></canvas>
       </div>
-      <div class="text-center mt-[-15px] mb-4">
-        <p class="text-[7px] text-gray-400 dark:text-gray-500 italic leading-tight">* Ketuk salah satu atribut (e.g.
-          Stamina) untuk melihat analisis.</p>
-      </div>
+    </div>
 
-      <!-- Perolehan Medali -->
-      <div class="mt-[-10px]">
-        <h3 class="font-black text-[9px] tracking-wider text-gray-800 dark:text-white uppercase mb-2">Perolehan Medali
-        </h3>
-        <div class="grid grid-cols-3 gap-1.5">
-          <div
-            class="bg-white dark:bg-[#1a1423] rounded-xl border border-yellow-400/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
-            <span class="text-sm mb-0.5 drop-shadow-sm">🥇</span>
-            <span id="count-emas" class="text-xs font-black text-yellow-500 tabular-nums">0</span>
-            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Emas</span>
+    <!-- FLOATING MEDALI CARD (Mencekik ke atas foto) -->
+    <div class="relative z-20 px-4 -mt-14">
+      <div class="bg-white dark:bg-brand-card rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-4">
+        <h3 class="font-black text-[10px] tracking-wider text-gray-800 dark:text-white uppercase mb-4">Perolehan Medali</h3>
+        <div class="grid grid-cols-3 gap-3">
+          <!-- EMAS -->
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-yellow-400/50 p-2 shadow-[0_4px_15px_rgba(250,204,21,0.2)] text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+            <span class="text-xl mb-1.5 drop-shadow-sm">🥇</span>
+            <span id="count-emas" class="text-lg font-black text-yellow-500 tabular-nums leading-none mb-1">0</span>
+            <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Emas</span>
           </div>
-          <div
-            class="bg-white dark:bg-[#1a1423] rounded-xl border border-slate-300/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
-            <span class="text-sm mb-0.5 drop-shadow-sm">🥈</span>
-            <span id="count-perak" class="text-xs font-black text-slate-400 tabular-nums">0</span>
-            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Perak</span>
+          <!-- PERAK -->
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-slate-300/50 p-2 shadow-[0_4px_15px_rgba(148,163,184,0.2)] text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+            <span class="text-xl mb-1.5 drop-shadow-sm">🥈</span>
+            <span id="count-perak" class="text-lg font-black text-slate-400 tabular-nums leading-none mb-1">0</span>
+            <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Perak</span>
           </div>
-          <div
-            class="bg-white dark:bg-[#1a1423] rounded-xl border border-amber-600/50 p-1.5 shadow-sm text-center flex flex-col items-center justify-center">
-            <span class="text-sm mb-0.5 drop-shadow-sm">🥉</span>
-            <span id="count-perunggu" class="text-xs font-black text-amber-600 tabular-nums">0</span>
-            <span class="text-[6px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Perunggu</span>
+          <!-- PERUNGGU -->
+          <div class="bg-white dark:bg-[#1a1423] rounded-xl border border-amber-600/50 p-2 shadow-[0_4px_15px_rgba(217,119,6,0.2)] text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+            <span class="text-xl mb-1.5 drop-shadow-sm">🥉</span>
+            <span id="count-perunggu" class="text-lg font-black text-amber-600 tabular-nums leading-none mb-1">0</span>
+            <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Perunggu</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- KOLOM KANAN: Foto Full Rata Kanan (Draggable) -->
-    <div class="w-[45%] relative bg-gray-100 dark:bg-gray-900 shrink-0" style="touch-action: none;">
-      <!-- Gradient Shadow penghalus batas kiri ke kanan -->
-      <div class="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-white dark:from-[#18131f] to-transparent z-10">
-      </div>
-
-      <!-- Foto Draggable -->
-      <img id="dash-avatar" src="https://ui-avatars.com/api/?name=Atlet&background=ff4d4d&color=fff&bold=true"
-        alt="Profile"
-        class="absolute inset-0 w-full h-full object-cover object-center cursor-move select-none transition-none z-0">
-
-      <!-- Tombol Edit -->
-      <a href="#" id="btn-edit-profile"
-        class="absolute top-3 right-3 p-1.5 bg-white/70 backdrop-blur-md dark:bg-black/40 rounded-xl text-brand-red dark:text-brand-red shadow-sm z-20">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      </a>
-    </div>
   </div>
 
   <!-- 2. ANALISIS TEKNIK PER GAYA -->

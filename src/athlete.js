@@ -338,11 +338,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.myRadarChart = new Chart(ctxRadar, {
             type: 'radar',
             data: {
-              labels: ['Speed', 'Stamina', 'Strength', 'Tech', 'Mental'],
+              labels: ['Speed', 'Stamina', 'Power', 'Turn', 'Start', 'Teknik'],
               datasets: [{
                 label: 'Statistik Atlet',
-                data: [85, 75, 80, 90, 70], // dummy data for now
-                backgroundColor: 'rgba(255, 77, 77, 0.2)',
+                data: [85, 75, 80, 90, 70, 85], // dummy data for now
+                backgroundColor: 'rgba(255, 77, 77, 0.4)', // merah lebih tebal
                 borderColor: '#ff4d4d',
                 pointBackgroundColor: '#ff4d4d',
                 pointBorderColor: '#fff',
@@ -355,13 +355,16 @@ document.addEventListener('DOMContentLoaded', async () => {
               maintainAspectRatio: false,
               scales: {
                 r: {
-                  angleLines: { display: true, color: 'rgba(0,0,0,0.1)' },
-                  grid: { color: 'rgba(0,0,0,0.1)' },
-                  pointLabels: { font: { size: 8 } },
+                  angleLines: { display: true, color: 'rgba(255,255,255,0.2)' }, // Jaring putih tipis
+                  grid: { color: 'rgba(255,255,255,0.2)' }, // Lingkaran putih tipis
+                  pointLabels: { 
+                    font: { size: 9, weight: 'bold' },
+                    color: '#f3f4f6' // Teks putih keabuan biar jelas
+                  },
                   ticks: { display: false, min: 0, max: 100 }
                 }
               },
-              plugins: { legend: { display: false } }
+              plugins: { legend: { display: false }, tooltip: {enabled: false} }
             }
           });
         }
