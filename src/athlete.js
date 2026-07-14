@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderHistoryList() {
     const container = document.getElementById('container-history-list');
     if (!container) return;
-    if (window.globalEventsData.length === 0) return container.innerHTML = `<div class="text-center py-8 text-xs text-gray-500">Belum ada rekor kejuaraan resmi bray.</div>`;
+    if (window.globalEventsData.length === 0) return container.innerHTML = `<div class="text-center py-8 text-xs text-gray-500">Belum ada rekor kejuaraan resmi.</div>`;
 
     let htmlString = '';
     window.globalEventsData.forEach((ev, evIdx) => {
@@ -382,20 +382,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       let resultsHtml = '';
 
       if (ev.event_results && ev.event_results.length > 0) {
-        // Generate Badges for Header
-        badgesHtml = `<div class="flex flex-wrap gap-2 mt-3">` +
+        // Generate Badges for Header (Sesuai Desain Gambar Final)
+        badgesHtml = `<div class="flex flex-wrap gap-2 mt-3.5">` +
           ev.event_results.map(res => {
             let icon = '🏅';
             let rankNum = parseInt(res.rank);
-            if (rankNum === 1) icon = '🥇';
-            else if (rankNum === 2) icon = '🥈';
-            else if (rankNum === 3) icon = '🥉';
+            // Default styling abu-abu untuk yang tidak juara/kosong
+            let colorClass = 'text-gray-500 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700';
+            
+            if (rankNum === 1) { 
+              icon = '🥇'; 
+              colorClass = 'text-yellow-600 bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-900/30'; 
+            } else if (rankNum === 2) { 
+              icon = '🥈'; 
+              colorClass = 'text-slate-600 bg-slate-50/50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50'; 
+            } else if (rankNum === 3) { 
+              icon = '🥉'; 
+              colorClass = 'text-amber-600 bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/30'; 
+            }
+
             let rankText = res.rank ? `Rank ${res.rank}` : 'Rank --';
-            let colorClass = (rankNum >= 1 && rankNum <= 3) ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'text-gray-500 bg-gray-50 dark:bg-gray-800';
-            return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold ${colorClass}">${icon} ${rankText} - ${res.category}</span>`;
+            return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[9px] font-bold ${colorClass}">${icon} <span class="text-gray-700 dark:text-gray-300">${rankText} - ${res.category}</span></span>`;
           }).join('') + `</div>`;
 
-        // Generate Race Cards for Body
+        // Generate Race Cards for Body (Inner Details)
         resultsHtml = `<div class="space-y-3 mt-4 hidden" id="ev-body-${evIdx}">` +
           ev.event_results.map(res => {
             const laps = res.laps || [];
@@ -405,21 +415,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let lapsHtml = '';
             if (hasLaps) {
-              lapsHtml = `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">` +
-                laps.map((lap, idx) => `<div class="flex justify-between items-center text-[10px] font-bold px-1"><span class="text-gray-600 dark:text-gray-400 tracking-widest">SET ${idx + 1}</span><span class="font-mono text-gray-500">${lap}</span></div>`).join('') +
+              lapsHtml = `<div class="mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700 space-y-2">` +
+                laps.map((lap, idx) => `
+                  <div class="flex justify-between items-center text-[10px] font-black px-1">
+                    <span class="text-gray-500 tracking-widest uppercase">SET ${idx + 1}</span>
+                    <span class="font-mono text-blue-500/80 dark:text-blue-400">${lap}</span>
+                  </div>`).join('') +
                 `</div>`;
             }
 
             return `
-            <div class="bg-white dark:bg-brand-card border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm relative overflow-hidden transition-all">
+            <div class="bg-gray-50/50 dark:bg-[#1a1423]/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-3 relative overflow-hidden transition-all">
               <div class="flex justify-between items-start">
-                <div class="flex items-center gap-2">
-                  <span class="${arrowClass} transform rotate-180" onclick="const p = this.closest('.bg-white'); const l = p.querySelector('.border-t'); if(l) { l.classList.toggle('hidden'); this.classList.toggle('rotate-180'); }">${arrowIcon}</span>
-                  <span class="text-gray-800 dark:text-gray-200 font-bold text-xs uppercase tracking-wider">${res.category}</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="${arrowClass} transform rotate-180" onclick="const p = this.closest('.rounded-xl'); const l = p.querySelector('.border-t-2'); if(l) { l.classList.toggle('hidden'); this.classList.toggle('rotate-180'); }">${arrowIcon}</span>
+                  <span class="text-gray-700 dark:text-gray-200 font-black text-[11px] uppercase tracking-wider">${res.category}</span>
                 </div>
-                <div class="text-right flex flex-col items-end gap-1">
-                  <span class="text-brand-red font-mono font-black text-xs">${res.time_record}</span>
-                  <span class="text-orange-500 font-bold text-[9px] bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded uppercase">Rank ${res.rank || '-'}</span>
+                <div class="text-right flex flex-col items-end gap-1.5">
+                  <span class="text-brand-red font-mono font-black text-xs leading-none">${res.time_record}</span>
+                  <span class="text-yellow-600 font-bold text-[9px] bg-yellow-50 dark:bg-yellow-900/20 px-2 py-0.5 rounded leading-none">Rank ${res.rank || '-'}</span>
                 </div>
               </div>
               ${lapsHtml}
@@ -434,12 +448,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
           <div class="flex justify-between items-start cursor-pointer" onclick="document.getElementById('ev-body-${evIdx}').classList.toggle('hidden'); const sv = this.querySelector('.chevron-icon'); if(sv) sv.classList.toggle('rotate-180');">
             <div class="flex-1">
-              <h4 class="font-black text-xs tracking-wide text-gray-800 dark:text-white uppercase">${ev.title}</h4>
-              <p class="text-[10px] font-medium text-gray-400 mt-1">${ev.level} &bull; ${dateStr}</p>
+              <h4 class="font-black text-sm tracking-wide text-gray-900 dark:text-white">${ev.title}</h4>
+              <p class="text-[10px] font-medium text-gray-500 mt-0.5">${ev.level} &bull; ${dateStr}</p>
             </div>
             <div class="flex items-center gap-2 ml-4">
               ${window.isParent ? `<button onclick="event.stopPropagation(); window.editEventData('${ev.event_id}')" class="text-brand-red p-1.5 hover:bg-brand-red/10 rounded-lg transition-colors" title="Edit Lomba"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>` : ''}
-              <svg class="chevron-icon w-4 h-4 text-gray-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+              <svg class="chevron-icon w-5 h-5 text-gray-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </div>
           </div>
           ${badgesHtml}
@@ -814,12 +828,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     createSparkline('sparklineArm', dataArm, '#f59e0b');       // Kuning
   };
 
-  const ttFilter = document.getElementById('tt-style-filter');
-  if (ttFilter) {
-    ttFilter.addEventListener('change', (e) => {
-      initTTChart(e.target.value);
+  // Setup filter Segmented Toggle untuk Time Trial (Tab Training)
+  document.querySelectorAll('.pill-tt').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const currentBtn = e.currentTarget;
+      const selectedTTStyle = currentBtn.dataset.ttStyle;
+
+      // 1. Reset semua button ke state INACTIVE
+      document.querySelectorAll('.pill-tt').forEach(b => {
+        b.classList.remove('bg-white', 'text-gray-800', 'dark:bg-[#251f2e]', 'dark:text-white', 'shadow-sm', 'font-bold');
+        b.classList.add('bg-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-medium');
+      });
+
+      // 2. Set button yang diklik ke state ACTIVE
+      currentBtn.classList.remove('bg-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-medium');
+      currentBtn.classList.add('bg-white', 'text-gray-800', 'dark:bg-[#251f2e]', 'dark:text-white', 'shadow-sm', 'font-bold');
+
+      // 3. Trigger fungsi render grafik
+      initTTChart(selectedTTStyle);
     });
-  }
+  });
 
   // ==========================================
   // 5. PROGRESS GRAFIK ENGINE

@@ -13,11 +13,17 @@
 
   <!-- Time Trial View -->
   <div id="training-tt-view" class="block space-y-6">
-    <div class="flex justify-between items-center bg-white dark:bg-brand-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-      <h3 class="text-sm font-bold text-gray-800 dark:text-white">Trend Waktu (Time Trial)</h3>
-      <select id="tt-style-filter" class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-semibold rounded-lg px-2 py-1 outline-none text-brand-red">
-        <option value="all">Semua Gaya</option>
-      </select>
+    <!-- FILTER TREND WAKTU (TOGGLE BUTTON) -->
+    <div class="flex items-center gap-2 mb-3 mt-6">
+      <h3 class="font-bold text-xs tracking-wider text-gray-800 dark:text-white uppercase">Tren Waktu (Time Trial)</h3>
+    </div>
+
+    <div class="flex bg-gray-100 dark:bg-[#140e16] p-1 rounded-xl w-full mb-4 border border-gray-200 dark:border-gray-800 shadow-sm">
+      <button data-tt-style="all" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-white dark:bg-[#251f2e] text-gray-800 dark:text-white shadow-sm font-bold">Semua</button>
+      <button data-tt-style="Bebas" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Bebas</button>
+      <button data-tt-style="Kupu" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Kupu</button>
+      <button data-tt-style="Punggung" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Punggung</button>
+      <button data-tt-style="Dada" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Dada</button>
     </div>
 
     <div class="bg-white dark:bg-brand-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
