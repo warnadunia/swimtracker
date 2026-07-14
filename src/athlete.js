@@ -270,17 +270,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           document.getElementById('count-perunggu').innerText = perunggu;
         }
 
-        // Render Data Biometrik jika ada bray
-        if (result.biometric) {
-          const h = document.getElementById('bio-display-height');
-          const w = document.getElementById('bio-display-weight');
-          const a = document.getElementById('bio-display-arm');
-          if (h) h.innerText = result.biometric.height_cm || '--';
-          if (w) w.innerText = result.biometric.weight_kg || '--';
-          if (a) a.innerText = result.biometric.arm_span_cm || '--';
-        }
+        // Render Data Biometrik & Tren Fisik (Sparkline Stack) bray
         if (result.biometric_history) {
-          renderBioChart(result.biometric_history);
+          renderBioSparklines(result.biometric_history);
         }
 
         // Setup filter Segmented Toggle (Analisis Teknik & Grafik)
@@ -725,40 +717,101 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Render Grafik Biometrik Dual-Axis
-  const renderBioChart = (bioDataArray) => {
-    const ctxBio = document.getElementById('bioProgressChart');
-    if (!ctxBio || !bioDataArray || bioDataArray.length === 0) return;
+  // ==========================================
+  // RENDER BIOMETRIK SPARKLINE STACK
+  // ==========================================
+  const renderBioSparklines = (bioDataArray) => {
+    if (!bioDataArray || bioDataArray.length === 0) return;
 
-    if (window.myBioChart) window.myBioChart.destroy();
+    // Pastikan data urut dari yang terlama sampai terbaru
+    const sortedData = [...bioDataArray].sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
 
-    // Urutkan berdasarkan tanggal
-    const sortedBio = [...bioDataArray].sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
+    // Pisahkan datanya
+    const dataHeight = sortedData.map(b => parseFloat(b.height_cm) || 0);
+    const dataWeight = sortedData.map(b => parseFloat(b.weight_kg) || 0);
+    const dataArm = sortedData.map(b => parseFloat(b.arm_span_cm) || 0);
 
-    const labels = sortedBio.map(b => new Date(b.recorded_at).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' }));
-    const dataHeight = sortedBio.map(b => b.height_cm);
-    const dataArm = sortedBio.map(b => b.arm_span_cm);
-    const dataWeight = sortedBio.map(b => b.weight_kg);
+    // Engine Kalkulasi Tren (Bandingkan data terakhir dgn sebelumnya)
+    const setTrendAndValue = (valId, trendId, dataArr) => {
+      const valEl = document.getElementById(valId);
+      const trendEl = document.getElementById(trendId);
+      if (!valEl || !trendEl || dataArr.length === 0) return;
 
-    window.myBioChart = new Chart(ctxBio, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: 'Tinggi (cm)', data: dataHeight, borderColor: '#3b82f6', backgroundColor: '#3b82f6', yAxisID: 'y' },
-          { label: 'Rentang Lengan (cm)', data: dataArm, borderColor: '#8b5cf6', borderDash: [5, 5], yAxisID: 'y' },
-          { label: 'Berat (kg)', data: dataWeight, borderColor: '#ff4d4d', backgroundColor: '#ff4d4d', yAxisID: 'y1' }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#9ca3af', font: { size: 9 } } } },
-        scales: {
-          y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'CM', color: '#9ca3af', font: {size: 8} } },
-          y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'KG', color: '#ff4d4d', font: {size: 8} } }
+      const current = dataArr[dataArr.length - 1];
+      valEl.innerText = current;
+
+      if (dataArr.length > 1) {
+        const prev = dataArr[dataArr.length - 2];
+        const diff = (current - prev).toFixed(1);
+        
+        // Reset classes
+        trendEl.className = 'text-[10px] font-bold flex items-center tabular-nums ml-1';
+        
+        if (diff > 0) {
+          trendEl.classList.add('text-emerald-500');
+          trendEl.innerHTML = `<svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>${diff}`;
+        } else if (diff < 0) {
+          trendEl.classList.add('text-brand-red');
+          trendEl.innerHTML = `<svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>${Math.abs(diff)}`;
+        } else {
+          trendEl.classList.add('text-gray-400');
+          trendEl.innerHTML = `<span class="mr-1">-</span> 0.0`;
         }
+      } else {
+        trendEl.innerHTML = ''; // Kosongkan kalau data baru 1x input
       }
-    });
+    };
+
+    // Terapkan ke DOM HTML
+    setTrendAndValue('bio-val-height', 'bio-trend-height', dataHeight);
+    setTrendAndValue('bio-val-weight', 'bio-trend-weight', dataWeight);
+    setTrendAndValue('bio-val-arm', 'bio-trend-arm', dataArm);
+
+    // Engine Pembuat Mini Chart (Sparkline)
+    const createSparkline = (canvasId, dataArr, color) => {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      if (window[canvasId + 'Chart']) window[canvasId + 'Chart'].destroy();
+
+      // Kalkulasi min max agar grafiknya bergelombang cantik (nggak flat di tengah)
+      const minVal = Math.min(...dataArr);
+      const maxVal = Math.max(...dataArr);
+      const padding = (maxVal - minVal) * 0.1 || 1;
+
+      window[canvasId + 'Chart'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dataArr.map((_, i) => i), // Dummy label buat sumbu X
+          datasets: [{
+            data: dataArr,
+            borderColor: color,
+            borderWidth: 2,
+            tension: 0.4, // Melengkung smooth
+            pointRadius: 0, // Hilangkan titik
+            pointHoverRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            x: { display: false }, // Hilangkan grid & teks X
+            y: { 
+              display: false,      // Hilangkan grid & teks Y
+              min: minVal - padding, 
+              max: maxVal + padding 
+            }
+          },
+          layout: { padding: 0 }
+        }
+      });
+    };
+
+    // Eksekusi Render Chart
+    createSparkline('sparklineHeight', dataHeight, '#3b82f6'); // Biru
+    createSparkline('sparklineWeight', dataWeight, '#10b981'); // Hijau
+    createSparkline('sparklineArm', dataArm, '#f59e0b');       // Kuning
   };
 
   const ttFilter = document.getElementById('tt-style-filter');

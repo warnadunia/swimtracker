@@ -11,50 +11,60 @@
     </button>
   </div>
 
-  <!-- CARD BIOMETRIK ANAK -->
-  <div
-    class="bg-white dark:bg-[#1f1a24] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-4 relative overflow-hidden">
-    <div
-      class="absolute top-0 right-0 bg-blue-600/10 text-blue-600 px-3 py-1 rounded-bl-xl text-[9px] font-bold tracking-wider">
-      BIOMETRIK</div>
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="font-bold text-xs tracking-widest text-gray-800 dark:text-white uppercase flex items-center gap-1.5">
-        <span class="text-sm">🧬</span> Data Fisik</h3>
-      <button onclick="window.openBiometrikModal()"
-        class="p-1.5 bg-brand-red/10 text-brand-red rounded-lg hover:bg-brand-red hover:text-white transition-colors"
-        title="Update Biometrik">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-        </svg>
+  <!-- PERKEMBANGAN FISIK (SPARKLINE STACK) -->
+  <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-xs tracking-wider text-gray-800 dark:text-white uppercase">Perkembangan Fisik</h3>
+      <button onclick="window.openBiometrikModal()" class="text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded-md transition-colors" title="Tambah Data">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
       </button>
     </div>
-    <div class="grid grid-cols-3 gap-3">
-      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
-        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Tinggi</p>
-        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-height">--</span> <span
-            class="text-[9px] text-gray-400">cm</span></p>
-      </div>
-      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
-        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Berat</p>
-        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-weight">--</span> <span
-            class="text-[9px] text-gray-400">kg</span></p>
-      </div>
-      <div class="bg-gray-50 dark:bg-[#2b2532] p-2 rounded-xl text-center">
-        <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-1">Arm Span</p>
-        <p class="font-mono text-sm font-bold text-brand-red"><span id="bio-display-arm">--</span> <span
-            class="text-[9px] text-gray-400">cm</span></p>
-      </div>
-    </div>
-  </div>
 
-  <!-- MODAL BIOMETRIK -->
-  <!-- Container Grafik Biometrik -->
-  <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
-    <h3 class="font-bold text-xs text-gray-800 dark:text-white uppercase tracking-wider mb-2">Tren Pertumbuhan Fisik
-    </h3>
-    <div class="w-full h-48 relative">
-      <canvas id="bioProgressChart"></canvas>
+    <div class="space-y-4">
+      <!-- BARIS 1: TINGGI BADAN -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="w-1/2">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Tinggi Badan</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="bio-val-height" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span class="text-[10px] font-bold text-gray-400">cm</span>
+            <span id="bio-trend-height" class="text-[10px] font-bold flex items-center tabular-nums"></span>
+          </div>
+        </div>
+        <div class="w-1/3 h-10 relative">
+          <canvas id="sparklineHeight"></canvas>
+        </div>
+      </div>
+
+      <!-- BARIS 2: BERAT BADAN -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="w-1/2">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Berat Badan</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="bio-val-weight" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span class="text-[10px] font-bold text-gray-400">kg</span>
+            <span id="bio-trend-weight" class="text-[10px] font-bold flex items-center tabular-nums"></span>
+          </div>
+        </div>
+        <div class="w-1/3 h-10 relative">
+          <canvas id="sparklineWeight"></canvas>
+        </div>
+      </div>
+
+      <!-- BARIS 3: RENTANG LENGAN -->
+      <div class="flex items-center justify-between">
+        <div class="w-1/2">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Rentang Lengan</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="bio-val-arm" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span class="text-[10px] font-bold text-gray-400">cm</span>
+            <span id="bio-trend-arm" class="text-[10px] font-bold flex items-center tabular-nums"></span>
+          </div>
+        </div>
+        <div class="w-1/3 h-10 relative">
+          <canvas id="sparklineArm"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
