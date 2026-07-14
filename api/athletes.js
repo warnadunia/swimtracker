@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       const fullName = profileRows[0]?.full_name || '';
       const birthYear = profileRows[0]?.birth_year || null;
 
-      const [bioRows] = await db.query(`SELECT height_cm, weight_kg, arm_span_cm, recorded_at FROM athlete_biometrics WHERE athlete_id = ? ORDER BY recorded_at DESC LIMIT 1`, [user_id]);
+      const [bioRows] = await db.query(`SELECT height_cm, weight_kg, arm_span_cm, recorded_at FROM athlete_biometrics WHERE athlete_id = ? ORDER BY recorded_at DESC`, [user_id]);
       const biometric = bioRows[0] || null;
 
       return res.status(200).json({ 
@@ -55,7 +55,8 @@ export default async function handler(req, res) {
         group_level: currentGroup,
         full_name: fullName,
         birth_year: birthYear,
-        biometric
+        biometric,
+        biometric_history: bioRows
       });
     }
     return res.status(400).json({ success: false });

@@ -24,39 +24,7 @@ window.renderAnalisisGaya = function (gaya) {
   let html = '';
   const cleanGaya = gaya.toLowerCase().trim();
 
-  if (cleanGaya.includes('kupu')) {
-    html = `
-      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA KUPU-KUPU (BUTTERFLY)</h4>
-      <div class="space-y-3">
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Stroke Mechanics</span><span class="text-gray-800 dark:text-white">85%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Dolphin Kick</span><span class="text-brand-red">90%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 90%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Breathing Timing</span><span class="text-gray-800 dark:text-white">78%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
-      </div>`;
-  } else if (cleanGaya.includes('punggung')) {
-    html = `
-      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA PUNGGUNG (BACKSTROKE)</h4>
-      <div class="space-y-3">
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Body Rotation</span><span class="text-gray-800 dark:text-white">82%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 82%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Kicking Power</span><span class="text-gray-800 dark:text-white">85%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 85%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Start (Backstroke)</span><span class="text-gray-800 dark:text-white">80%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
-      </div>`;
-  } else if (cleanGaya.includes('dada')) {
-    html = `
-      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA DADA (BREASTSTROKE)</h4>
-      <div class="space-y-3">
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Pull Mechanics</span><span class="text-gray-800 dark:text-white">75%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 75%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Whip Kick Power</span><span class="text-gray-800 dark:text-white">80%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 80%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Glide Timing</span><span class="text-gray-800 dark:text-white">78%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 78%"></div></div></div>
-      </div>`;
-  } else {
-    // Default (Gaya Bebas)
-    html = `
-      <h4 class="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-wider mb-4">GAYA BEBAS (FREESTYLE)</h4>
-      <div class="space-y-3">
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Catch & Pull</span><span class="text-brand-red">88%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-brand-red h-1.5 rounded-full" style="width: 88%"></div></div></div>
-        <div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-500">Flutter Kick</span><span class="text-gray-800 dark:text-white">75%</span></div><div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5"><div class="bg-gray-500 h-1.5 rounded-full" style="width: 75%"></div></div></div>
-      </div>`;
-  }
+
   container.innerHTML = html;
 };
 
@@ -267,24 +235,27 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
 
-        // --- FIXING AVATAR: TAMPILKAN FOTO DARI DATABASE BRAY! ---
-        const dashAvatar = document.getElementById('dash-avatar');
-        if (dashAvatar) {
-          // Prioritaskan avatar_url hasil kembalian dari response TiDB
-          if (result.avatar_url) {
-            dashAvatar.src = result.avatar_url;
+        // --- FIXING AVATAR: TEMBAK API PROFILE BIAR PASTI MUNCUL BRAY! ---
+        try {
+          const profResponse = await fetch(`/api/profile?action=get_profile&user_id=${athleteId}`);
+          const profResult = await profResponse.json();
+          const dashAvatar = document.getElementById('dash-avatar');
+
+          if (dashAvatar && profResult.success && profResult.data) {
+            // Cek apakah ada avatar_url dari tabel profiles / athlete_biodata
+            if (profResult.data.avatar_url) {
+              dashAvatar.src = profResult.data.avatar_url;
+            }
+            // Jika belum ada foto, fallback pakai inisial UI-Avatars
+            else {
+              const displayName = isParent ? athleteName : (user.full_name || 'Atlet');
+              dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff4d4d&color=fff&bold=true`;
+            }
           }
-          // Jika result tidak bawa avatar_url, cek dari session storage user
-          else if (!isParent && user.avatar_url) {
-            dashAvatar.src = user.avatar_url;
-          }
-          // Jika memang belum pernah upload foto sama sekali, pakai inisial huruf
-          else {
-            const displayName = isParent ? athleteName : (user.full_name || 'Atlet');
-            dashAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff4d4d&color=fff&bold=true`;
-          }
+        } catch (e) {
+          console.error("Gagal load avatar dashboard:", e);
         }
-        // ---------------------------------------------------------
+        // -----------------------------------------------------------------
 
         // Hitung total medali podium kejuaraan resmi bray
         let emas = 0, perak = 0, perunggu = 0;
@@ -308,23 +279,41 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (w) w.innerText = result.biometric.weight_kg || '--';
           if (a) a.innerText = result.biometric.arm_span_cm || '--';
         }
+        if (result.biometric_history) {
+          renderBioChart(result.biometric_history);
+        }
 
-        // Setup filter gaya buttons (Analisis Teknik)
+        // Setup filter Segmented Toggle (Analisis Teknik & Grafik)
         document.querySelectorAll('.pill-gaya').forEach(btn => {
           btn.addEventListener('click', (e) => {
-            // 1. Reset semua pill ke state INACTIVE
+            const currentBtn = e.currentTarget;
+            const selectedStyle = currentBtn.dataset.style; // "Bebas", "Kupu-kupu", "Punggung", "Dada"
+
+            // 1. Reset visual Button Toggle
             document.querySelectorAll('.pill-gaya').forEach(b => {
-              b.classList.remove('bg-white', 'text-gray-800', 'dark:bg-gray-700', 'dark:text-white', 'shadow-sm', 'font-bold');
-              b.classList.add('text-gray-500', 'dark:text-gray-400', 'font-medium');
+              b.classList.remove('bg-gray-100', 'text-gray-800', 'dark:bg-[#251f2e]', 'dark:text-white', 'shadow-sm', 'font-bold');
+              b.classList.add('bg-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-medium');
             });
 
-            // 2. Set pill yang diklik ke state ACTIVE
-            e.target.classList.remove('text-gray-500', 'dark:text-gray-400', 'font-medium');
-            e.target.classList.add('bg-white', 'text-gray-800', 'dark:bg-gray-700', 'dark:text-white', 'shadow-sm', 'font-bold');
+            // 2. Set visual Button Toggle yang Aktif
+            currentBtn.classList.remove('bg-transparent', 'text-gray-500', 'dark:text-gray-400', 'font-medium');
+            currentBtn.classList.add('bg-gray-100', 'text-gray-800', 'dark:bg-[#251f2e]', 'dark:text-white', 'shadow-sm', 'font-bold');
 
-            // 3. Trigger fungsi render grafiknya bray!
-            initTabGrafik(e.target.dataset.style);
-            window.renderAnalisisGaya(e.target.dataset.style);
+            // 3. Sembunyikan semua Card Analisa
+            document.querySelectorAll('.card-analisa').forEach(card => {
+              card.classList.add('hidden');
+            });
+
+            // 4. Tampilkan Card Analisa sesuai ID
+            // Format ID kita: card-bebas, card-kupu-kupu, card-punggung, card-dada
+            const targetCardId = `card-${selectedStyle.toLowerCase()}`;
+            const targetCard = document.getElementById(targetCardId);
+            if (targetCard) {
+              targetCard.classList.remove('hidden');
+            }
+
+            // 5. Render ulang Grafik Chart
+            initTabGrafik(selectedStyle);
           });
         });
 
@@ -348,7 +337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Siapkan grafik default
         initTabGrafik('Bebas');
-        window.renderAnalisisGaya('Bebas');
+        //window.renderAnalisisGaya('Bebas');
 
         // Init Radar Chart
         const ctxRadar = document.getElementById('profileRadarChart');
@@ -670,22 +659,107 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const labels = filtered.map(t => new Date(t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
-    const dataPoints = filtered.map(t => {
-      const p = t.time_record.split(/[:.]/);
-      return p.length === 4 ? (parseInt(p[0]) * 3600) + (parseInt(p[1]) * 60) + parseInt(p[2]) + (parseInt(p[3]) / 100) : 0;
+
+    // Helper mengubah "00:30.50" jadi detik
+    const timeToSec = (timeStr) => {
+      if (!timeStr) return null;
+      const p = timeStr.split(/[:.]/);
+      return p.length === 3 ? (parseInt(p[0]) * 60) + parseInt(p[1]) + (parseInt(p[2]) / 100) : 
+             p.length === 4 ? (parseInt(p[0]) * 3600) + (parseInt(p[1]) * 60) + parseInt(p[2]) + (parseInt(p[3]) / 100) : null;
+    };
+
+    // Cari jumlah Set maksimal yang pernah dilakukan di data ini
+    let maxSets = 0;
+    filtered.forEach(t => {
+      let laps = [];
+      try { laps = typeof t.split_times_json === 'string' ? JSON.parse(t.split_times_json) : t.split_times_json; } catch(e){}
+      if (laps && laps.length > maxSets) maxSets = laps.length;
     });
+
+    const datasets = [];
+    const colorPalette = ['#ff4d4d', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
+
+    // Jika tidak ada data split/laps, tampilkan total waktu saja
+    if (maxSets === 0) {
+      datasets.push({
+        label: 'Total Waktu',
+        data: filtered.map(t => timeToSec(t.time_record)),
+        borderColor: '#ff4d4d', backgroundColor: 'rgba(255, 77, 77, 0.1)', borderWidth: 2, tension: 0.3, fill: true
+      });
+    } else {
+      // Generate dataset untuk tiap Set
+      for (let i = 0; i < maxSets; i++) {
+        const setData = filtered.map(t => {
+          let laps = [];
+          try { laps = typeof t.split_times_json === 'string' ? JSON.parse(t.split_times_json) : t.split_times_json; } catch(e){}
+          return laps && laps[i] ? timeToSec(laps[i]) : null; // null jika di tgl tersebut dia ga berenang sampe set ini
+        });
+
+        datasets.push({
+          label: `Set ${i + 1}`,
+          data: setData,
+          borderColor: colorPalette[i % colorPalette.length],
+          borderWidth: i === 0 ? 3 : 1.5, // Set 1 lebih tebal
+          borderDash: i === 0 ? [] : [5, 5], // Set selanjutnya garis putus-putus
+          tension: 0.3,
+          spanGaps: true
+        });
+      }
+    }
 
     window.myTTChart = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Waktu (Detik)', data: dataPoints, borderColor: '#ff4d4d', backgroundColor: 'rgba(255, 77, 77, 0.1)', borderWidth: 2, tension: 0.3, fill: true
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+          legend: { display: true, labels: { color: '#9ca3af', font: {size: 9}, boxWidth: 10 } },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+            y: { reverse: true, title: { display: true, text: 'Detik', color: '#9ca3af', font: {size: 8} } }
+        }
+      }
     });
   }
+
+  // Render Grafik Biometrik Dual-Axis
+  const renderBioChart = (bioDataArray) => {
+    const ctxBio = document.getElementById('bioProgressChart');
+    if (!ctxBio || !bioDataArray || bioDataArray.length === 0) return;
+
+    if (window.myBioChart) window.myBioChart.destroy();
+
+    // Urutkan berdasarkan tanggal
+    const sortedBio = [...bioDataArray].sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
+
+    const labels = sortedBio.map(b => new Date(b.recorded_at).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' }));
+    const dataHeight = sortedBio.map(b => b.height_cm);
+    const dataArm = sortedBio.map(b => b.arm_span_cm);
+    const dataWeight = sortedBio.map(b => b.weight_kg);
+
+    window.myBioChart = new Chart(ctxBio, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Tinggi (cm)', data: dataHeight, borderColor: '#3b82f6', backgroundColor: '#3b82f6', yAxisID: 'y' },
+          { label: 'Rentang Lengan (cm)', data: dataArm, borderColor: '#8b5cf6', borderDash: [5, 5], yAxisID: 'y' },
+          { label: 'Berat (kg)', data: dataWeight, borderColor: '#ff4d4d', backgroundColor: '#ff4d4d', yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#9ca3af', font: { size: 9 } } } },
+        scales: {
+          y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'CM', color: '#9ca3af', font: {size: 8} } },
+          y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'KG', color: '#ff4d4d', font: {size: 8} } }
+        }
+      }
+    });
+  };
 
   const ttFilter = document.getElementById('tt-style-filter');
   if (ttFilter) {
@@ -1144,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (result.success) {
         window.closeModal('modal-biometrik', 'modal-bio-inner');
         alert('Data fisik sukses disimpan!');
+        await loadAthleteData();
       } else { alert(result.message); }
     } catch (err) { console.error(err); }
   };
