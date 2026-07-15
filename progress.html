@@ -1,4 +1,4 @@
-<div id="tab-grafik" class="w-full pb-24">
+<div id="tab-grafik" class="p-4 w-full pb-24">
 
   <!-- TOMBOL INPUT KEJUARAAN (HANYA UNTUK PARENTS, DI-SHOW/HIDE VIA JS) -->
   <div class="mb-4 hidden" id="container-btn-input-kejuaraan">
@@ -15,8 +15,12 @@
   <div class="bg-white dark:bg-brand-card p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
     <div class="flex justify-between items-center mb-4">
       <h3 class="font-bold text-xs tracking-wider text-gray-800 dark:text-white uppercase">Perkembangan Fisik</h3>
-      <button onclick="window.openBiometrikModal()" class="text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded-md transition-colors" title="Tambah Data">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+      <button onclick="window.openBiometrikModal()"
+        class="text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded-md transition-colors"
+        title="Tambah Data">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
       </button>
     </div>
 
@@ -26,7 +30,8 @@
         <div class="w-1/2">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Tinggi Badan</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span id="bio-val-height" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span id="bio-val-height"
+              class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
             <span class="text-[10px] font-bold text-gray-400">cm</span>
             <span id="bio-trend-height" class="text-[10px] font-bold flex items-center tabular-nums"></span>
           </div>
@@ -41,7 +46,8 @@
         <div class="w-1/2">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Berat Badan</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span id="bio-val-weight" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span id="bio-val-weight"
+              class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
             <span class="text-[10px] font-bold text-gray-400">kg</span>
             <span id="bio-trend-weight" class="text-[10px] font-bold flex items-center tabular-nums"></span>
           </div>
@@ -56,7 +62,8 @@
         <div class="w-1/2">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Rentang Lengan</p>
           <div class="flex items-baseline gap-2 mt-1">
-            <span id="bio-val-arm" class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
+            <span id="bio-val-arm"
+              class="text-xl font-black text-gray-800 dark:text-white tabular-nums leading-none">--</span>
             <span class="text-[10px] font-bold text-gray-400">cm</span>
             <span id="bio-trend-arm" class="text-[10px] font-bold flex items-center tabular-nums"></span>
           </div>

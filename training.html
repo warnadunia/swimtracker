@@ -1,11 +1,13 @@
-<div id="tab-training" class="w-full pb-6">
+<div id="tab-training" class="w-full p-4 pb-6">
   <!-- Pill Toggle for Sub-tabs -->
   <div class="flex justify-center mb-6">
     <div class="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex shadow-inner">
-      <button onclick="window.switchTrainingTab('tt')" id="btn-tt" class="px-6 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-gray-700 shadow text-brand-red">
+      <button onclick="window.switchTrainingTab('tt')" id="btn-tt"
+        class="px-6 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-gray-700 shadow text-brand-red">
         Time Trial
       </button>
-      <button onclick="window.switchTrainingTab('hw')" id="btn-hw" class="px-6 py-2 rounded-lg text-xs font-bold transition-all text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+      <button onclick="window.switchTrainingTab('hw')" id="btn-hw"
+        class="px-6 py-2 rounded-lg text-xs font-bold transition-all text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
         Home Work
       </button>
     </div>
@@ -18,19 +20,26 @@
       <h3 class="font-bold text-xs tracking-wider text-gray-800 dark:text-white uppercase">Tren Waktu (Time Trial)</h3>
     </div>
 
-    <div class="flex bg-gray-100 dark:bg-[#140e16] p-1 rounded-xl w-full mb-4 border border-gray-200 dark:border-gray-800 shadow-sm">
-      <button data-tt-style="all" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-white dark:bg-[#251f2e] text-gray-800 dark:text-white shadow-sm font-bold">Semua</button>
-      <button data-tt-style="Bebas" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Bebas</button>
-      <button data-tt-style="Kupu" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Kupu</button>
-      <button data-tt-style="Punggung" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Punggung</button>
-      <button data-tt-style="Dada" class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Dada</button>
+    <div
+      class="flex bg-gray-100 dark:bg-[#140e16] p-1 rounded-xl w-full mb-4 border border-gray-200 dark:border-gray-800 shadow-sm">
+      <button data-tt-style="all"
+        class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-white dark:bg-[#251f2e] text-gray-800 dark:text-white shadow-sm font-bold">Semua</button>
+      <button data-tt-style="Bebas"
+        class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Bebas</button>
+      <button data-tt-style="Kupu"
+        class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Kupu</button>
+      <button data-tt-style="Punggung"
+        class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Punggung</button>
+      <button data-tt-style="Dada"
+        class="pill-tt flex-1 text-center py-2 text-[10px] sm:text-xs rounded-lg transition-all duration-200 bg-transparent text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300">Dada</button>
     </div>
 
     <div class="bg-white dark:bg-brand-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
       <canvas id="ttChart" class="w-full h-56"></canvas>
     </div>
 
-    <div class="bg-white dark:bg-brand-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div
+      class="bg-white dark:bg-brand-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
       <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#1a1423]">
         <h3 class="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider">Histori Time Trial</h3>
       </div>
@@ -44,14 +53,16 @@
   <div id="training-hw-view" class="hidden space-y-4">
     <div class="bg-white dark:bg-brand-card p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
       <h3 class="text-sm font-bold text-brand-red uppercase tracking-wider mb-2">Tugas Dryland / Latihan</h3>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Centang aktivitas yang sudah kamu selesaikan hari ini.</p>
-      
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Centang aktivitas yang sudah kamu selesaikan hari ini.
+      </p>
+
       <!-- Checklist Container -->
       <div id="training-dryland-list" class="space-y-3">
         <!-- List diinjeksi via JS -->
       </div>
-      
-      <button class="w-full mt-5 bg-brand-red text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-brand-red/30 active:scale-95 transition-all">
+
+      <button
+        class="w-full mt-5 bg-brand-red text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-brand-red/30 active:scale-95 transition-all">
         Kirim Laporan
       </button>
     </div>

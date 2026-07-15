@@ -45,3 +45,21 @@
   padding: 0 !important;
   margin: 0 !important;
 }
+
+.card-gold {
+  background: conic-gradient(from 90deg, #ffca0a 0%, #b89000 5%, #c1a115 22%, #f1ca3b 51%, #a0800d 66%, #bc8220 84%, #f9cf01 100%, #ffc800 100%);
+  border-color: #f1ca3b;
+  border-width: 1px;
+}
+
+.card-silver {
+  background: conic-gradient(from 90deg, #999999 0%, #6e6e6e 5%, #545454 22%, #716f6f 44%, #c7c7c7 53%, #5c5c5c 67%, #787878 80%, #a8a4a4 100%);
+  border-color: #c7c7c7;
+  border-width: 1px;
+}
+
+.card-bronze {
+  background: conic-gradient(from 90deg, #d2800f 0%, #97531c 5%, #6f2e0b 22%, #79370c 44%, #b87323 53%, #743b15 67%, #7b3d0a 80%, #ca6a1c 100%);
+  border-color: #b87323;
+  border-width: 1px;
+}
