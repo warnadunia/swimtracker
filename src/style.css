@@ -8,24 +8,40 @@
 
 @theme {
   --font-sans: "Poppins", sans-serif;
-  
+
   --color-brand-red: #ff4d4d;
   --color-brand-dark: #1a1a2e;
   --color-brand-card: #252542;
 }
+
 /* Custom Utility untuk Filter Tab Gaya Renang */
 @utility hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
 }
+
 /* Custom Utility untuk Bottom Nav Cutout (Lengkungan FAB) */
 @utility nav-cutout {
   -webkit-mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
   mask-image: radial-gradient(circle 38px at 50% 0%, transparent 38px, black 39px);
 }
 
-.toast-enter { transform: translateX(100%); opacity: 0; }
-.toast-active { transform: translateX(0); opacity: 1; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.toast-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.toast-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#main-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}

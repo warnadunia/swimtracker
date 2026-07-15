@@ -257,18 +257,100 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         // -----------------------------------------------------------------
 
-        // Hitung total medali podium kejuaraan resmi bray
-        let emas = 0, perak = 0, perunggu = 0;
-        window.globalResultsData.forEach(res => {
-          if (res.rank === 1) emas++;
-          else if (res.rank === 2) perak++;
-          else if (res.rank === 3) perunggu++;
-        });
-        if (document.getElementById('count-emas')) {
-          document.getElementById('count-emas').innerText = emas;
-          document.getElementById('count-perak').innerText = perak;
-          document.getElementById('count-perunggu').innerText = perunggu;
+        // HELPER: Convert 00:00.00 ke detik
+        function timeToSec(timeStr) {
+          if (!timeStr) return Infinity;
+          const p = timeStr.split(/[:.]/);
+          if (p.length === 3) return (parseInt(p[0])*60) + parseInt(p[1]) + (parseInt(p[2])/100);
+          if (p.length === 4) return (parseInt(p[0])*3600) + (parseInt(p[1])*60) + parseInt(p[2]) + (parseInt(p[3])/100);
+          return Infinity;
         }
+
+        // FUNGSI: Render Dashboard berdasarkan Tahun
+        window.updateDashboardGlobal = function(targetYear) {
+          const year = parseInt(targetYear);
+          let emas = 0, perak = 0, perunggu = 0;
+          
+          // 1. Hitung Medali di Tahun Tersebut
+          window.globalResultsData.forEach(res => {
+            const evYear = new Date(res.event_date).getFullYear();
+            if (evYear === year) {
+              if (res.rank === 1) emas++;
+              else if (res.rank === 2) perak++;
+              else if (res.rank === 3) perunggu++;
+            }
+          });
+          if (document.getElementById('count-emas')) document.getElementById('count-emas').innerText = emas;
+          if (document.getElementById('count-perak')) document.getElementById('count-perak').innerText = perak;
+          if (document.getElementById('count-perunggu')) document.getElementById('count-perunggu').innerText = perunggu;
+
+          // 2. Hitung Best Time / Break Time
+          const btContainer = document.getElementById('best-time-list');
+          if (btContainer) {
+            let bestTimes = [];
+            const categoryMap = {};
+
+            // Kelompokkan semua hasil lomba per Gaya & Jarak
+            window.globalResultsData.forEach(res => {
+              const evYear = new Date(res.event_date).getFullYear();
+              if (!categoryMap[res.category]) categoryMap[res.category] = [];
+              categoryMap[res.category].push({ year: evYear, time: res.time_record, secs: timeToSec(res.time_record) });
+            });
+
+            for (const cat in categoryMap) {
+              const records = categoryMap[cat];
+              
+              // Cari waktu terbaik di tahun yg dipilih
+              const yearRecords = records.filter(r => r.year === year).sort((a,b) => a.secs - b.secs);
+              if (yearRecords.length === 0) continue;
+              const bestInYear = yearRecords[0];
+
+              // Cari waktu terbaik SEBELUM tahun yg dipilih (buat tau pecah rekor ga)
+              const pastRecords = records.filter(r => r.year < year).sort((a,b) => a.secs - b.secs);
+              const bestPastSecs = pastRecords.length > 0 ? pastRecords[0].secs : Infinity;
+
+              // Kalau waktu tahun ini lebih baik (atau dia baru pertama kali lomba gaya ini), masukin ke Best Time
+              if (bestInYear.secs < bestPastSecs) {
+                bestTimes.push({ category: cat, year: year, time: bestInYear.time, secs: bestInYear.secs });
+              }
+            }
+
+            // Ambil Top 5
+            bestTimes.sort((a,b) => a.secs - b.secs);
+            const top5 = bestTimes.slice(0, 5);
+
+            if (top5.length === 0) {
+              btContainer.innerHTML = `<div class="text-gray-400 italic py-2 text-center border border-dashed border-gray-300 dark:border-gray-750 rounded-lg text-[8px]">Belum ada pemecahan rekor di tahun ini.</div>`;
+            } else {
+              btContainer.innerHTML = top5.map(bt => `
+                <div class="flex justify-between items-center py-0.5 border-b border-orange-200/30 dark:border-gray-700/50 last:border-0">
+                  <span class="truncate pr-2 tracking-tight">
+                    <strong class="text-gray-900 dark:text-white">${bt.year}</strong> 
+                    <span class="opacity-30 mx-0.5">|</span> 
+                    ${bt.category}
+                  </span> 
+                  <span class="font-mono text-gray-900 dark:text-white font-bold">${bt.time}</span>
+                </div>
+              `).join('');
+            }
+          }
+
+          // 3. Render List History Lomba (Hanya tampilkan tahun terpilih)
+          const filteredEventsData = window.globalEventsData.filter(ev => new Date(ev.event_date).getFullYear() === year);
+          renderHistoryList(filteredEventsData);
+        };
+
+        // TRIGGER EVENT LISTENER DROPDOWN
+        const mainYearFilter = document.getElementById('dashboard-year-filter');
+        if (mainYearFilter) {
+          mainYearFilter.addEventListener('change', (e) => {
+            window.updateDashboardGlobal(e.target.value);
+          });
+        }
+
+        // RUN PERTAMA KALI
+        const currentYearStr = mainYearFilter ? mainYearFilter.value : new Date().getFullYear();
+        window.updateDashboardGlobal(currentYearStr);
 
         // Render Data Biometrik & Tren Fisik (Sparkline Stack) bray
         if (result.biometric_history) {
@@ -321,8 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           initTabGrafik(activeStyle);
         });
 
-        // Render data sejarah kejuaraan resmi di Tab Dashboard bray
-        renderHistoryList();
+
 
         // Render Data Baru: Tab Menu Latihan (Training & Dryland) bray!
         renderTrainingModule(result.time_trials, result.dryland_tasks);
@@ -340,14 +421,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             data: {
               labels: ['Speed', 'Stamina', 'Power', 'Turn', 'Start', 'Teknik'],
               datasets: [{
-                label: 'Statistik Atlet',
                 data: [85, 75, 80, 90, 70, 85], // dummy data for now
-                backgroundColor: 'rgba(255, 77, 77, 0.4)', // merah lebih tebal
+                backgroundColor: 'rgba(255, 77, 77, 0.4)',
                 borderColor: '#ff4d4d',
                 pointBackgroundColor: '#ff4d4d',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: '#ff4d4d'
+                pointBorderColor: '#fff'
               }]
             },
             options: {
@@ -355,16 +433,16 @@ document.addEventListener('DOMContentLoaded', async () => {
               maintainAspectRatio: false,
               scales: {
                 r: {
-                  angleLines: { display: true, color: 'rgba(255,255,255,0.2)' }, // Jaring putih tipis
-                  grid: { color: 'rgba(255,255,255,0.2)' }, // Lingkaran putih tipis
+                  angleLines: { display: true, color: 'rgba(0,0,0,0.1)' }, 
+                  grid: { color: 'rgba(0,0,0,0.1)' }, 
                   pointLabels: { 
-                    font: { size: 9, weight: 'bold' },
-                    color: '#f3f4f6' // Teks putih keabuan biar jelas
+                    font: { size: 8, weight: 'bold' },
+                    color: '#475569' // <-- Slate-600
                   },
                   ticks: { display: false, min: 0, max: 100 }
                 }
               },
-              plugins: { legend: { display: false }, tooltip: {enabled: false} }
+              plugins: { legend: { display: false } }
             }
           });
         }
@@ -372,13 +450,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) { console.error(err); }
   }
 
-  function renderHistoryList() {
+  function renderHistoryList(eventsData) {
     const container = document.getElementById('container-history-list');
     if (!container) return;
-    if (window.globalEventsData.length === 0) return container.innerHTML = `<div class="text-center py-8 text-xs text-gray-500">Belum ada rekor kejuaraan resmi.</div>`;
+    if (eventsData.length === 0) return container.innerHTML = `<div class="text-center py-8 text-xs text-gray-500 bg-gray-50 dark:bg-[#1a1423]/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-850">Tidak ada perlombaan di tahun ini.</div>`;
 
     let htmlString = '';
-    window.globalEventsData.forEach((ev, evIdx) => {
+    eventsData.forEach((ev, evIdx) => {
       const dateStr = new Date(ev.event_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
       let badgesHtml = '';
